@@ -56,7 +56,7 @@ workspace "Renderer"
         }
 
         filter "configurations:Debug"
-            defines { "DEBUG" }
+            defines { "DEBUG", "BX_CONFIG_DEBUG=1" }
             symbols "On"
 
             links {
@@ -69,7 +69,7 @@ workspace "Renderer"
             }
 
         filter "configurations:Release"
-            defines { "NDEBUG" }
+            defines { "NDEBUG", "BX_CONFIG_DEBUG=0" }
             optimize "On"
 
             links {
@@ -81,14 +81,18 @@ workspace "Renderer"
                 "glfw3"
             }
 
-        filter "system:linux"
-            system "linux"
-
-        filter "system:windows"
+        filter { "system:windows", "action:vs*" } -- assumes (msvc)
             system "windows"
+            toolset "msc"
 
-            -- filter "toolset:msc"
-            --     includedirs { "%{dir.vendorsInstall}/include/bx/compat/msvc" }
+            includedirs { 
+                "%{dir.vendorsInstall}/include/bx/compat/msvc"  -- required for bgfx (msvc)
+            }
+
+            buildoptions { 
+                "/Zc:__cplusplus", -- required for bgfx (msvc)
+                "/Zc:preprocessor" -- required for bgfx (msvc)
+            }
         
 -- Helper functions
 local function touchDir(dir)
