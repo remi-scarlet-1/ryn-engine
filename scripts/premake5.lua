@@ -45,32 +45,19 @@ workspace "Renderer"
             "%{dir.vendorsInstall}/include",
         }
 
-        libdirs {
-            "%{dir.vendorsInstall}/lib"
-        }
-
         vpaths {
             ["Headers"] = { "**.h", "**.hpp" },
             ["Sources"] = { "**.c", "**.cpp" },
             ["Build"] = { "**/premake5.lua" },
         }
 
-        filter "configurations:Debug"
-            defines { "DEBUG", "BX_CONFIG_DEBUG=1" }
-            symbols "On"
-
-            links {
-                "bgfx_d",
-                "bimg_d",
-                "bimg_decode_d",
-                "bimg_encode_d",
-                "bx_d",
-                "glfw3_d"
-            }
+        libdirs {
+            "%{dir.vendorsInstall}/lib"
+        }
 
         filter "configurations:Release"
-            defines { "NDEBUG", "BX_CONFIG_DEBUG=0" }
             optimize "On"
+            defines { "NDEBUG", "BX_CONFIG_DEBUG=0" }
 
             links {
                 "bgfx",
@@ -81,17 +68,35 @@ workspace "Renderer"
                 "glfw3"
             }
 
-        filter { "system:windows", "action:vs*" } -- assumes (msvc)
+        filter "configurations:Debug"
+            symbols "On"
+            defines { "DEBUG", "BX_CONFIG_DEBUG=1" }
+
+            links {
+                "bgfx_d",
+                "bimg_d",
+                "bimg_decode_d",
+                "bimg_encode_d",
+                "bx_d",
+                "glfw3_d"
+            }
+
+        -- windows (msvc)
+        filter { "system:windows", "action:vs*" }
             system "windows"
             toolset "msc"
 
             includedirs { 
-                "%{dir.vendorsInstall}/include/bx/compat/msvc"  -- required for bgfx (msvc)
+                "%{dir.vendorsInstall}/include/bx/compat/msvc",  -- required for bgfx (msvc)
+            }
+
+            defines {
+                "GLFW_EXPOSE_NATIVE_WIN32", -- required for glfw (windows)
             }
 
             buildoptions { 
                 "/Zc:__cplusplus", -- required for bgfx (msvc)
-                "/Zc:preprocessor" -- required for bgfx (msvc)
+                "/Zc:preprocessor", -- required for bgfx (msvc)
             }
         
 -- Helper functions
