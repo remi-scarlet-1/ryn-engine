@@ -1,35 +1,22 @@
 #pragma once
 
-#include <chrono>
-#include <functional>
 #include <GLFW/glfw3.h>
 
 namespace rn {
 	class Window {
 	public:
-		Window(const char* title, int resX, int resY, bool resizable, bool vsync, std::function<void(float)> renderCallback);
+		Window(const char* title, int resX, int resY, bool resizable, bool vsync);
 		~Window() = default;
 
-		void presentFrame();
+		GLFWwindow* getHandle();
+		void* getNativeHandle();
+
+		bool getShouldClose();
+		void getResolution(int* x, int* y);
+
 		void pollEvents();
-		void close();
-
-		const GLFWwindow* getWindowHandle();
-		const float getDeltaTime();
-
-		const bool shouldClose();
-
-		void* (*getGLFunctionLoader())(const char*);
 
 	private:
-		// Tracks open window count to ensure windows <= 1 (temporary restriction, subject to change)
-		// TODO: implement support for multiple windows, make threadsafe
-		static int totalWindowCount;
-		
 		GLFWwindow* window;
-		std::function<void(float)> renderCallback;
-
-		float deltaTime;
-		std::chrono::high_resolution_clock::time_point lastPresentTime;
 	};
 }
