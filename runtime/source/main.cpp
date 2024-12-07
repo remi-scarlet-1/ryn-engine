@@ -24,15 +24,15 @@ int main(int argc, char** argv)
 	init.platformData.nwh = window.getNativeHandle();
 	init.resolution.width = (uint32_t)windowWidth;
 	init.resolution.height = (uint32_t)windowHeight;
-	init.resolution.reset = BGFX_RESET_VSYNC;
+	init.resolution.reset = BGFX_RESET_NONE;
 
 	if (!bgfx::init(init))
 		return 1;
 
 	// Set view 0 to the same dimensions as the window and to clear the color buffer.
-	const bgfx::ViewId kClearView = 0;
-	bgfx::setViewClear(kClearView, BGFX_CLEAR_COLOR);
-	bgfx::setViewRect(kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
+	const bgfx::ViewId view = 0;
+	bgfx::setViewClear(view, BGFX_CLEAR_COLOR);
+	bgfx::setViewRect(view, 0, 0, bgfx::BackbufferRatio::Equal);
 
 	while (!window.getShouldClose()) {
 		window.pollEvents();
@@ -46,7 +46,7 @@ int main(int argc, char** argv)
 		//}
 
 		// This dummy draw call is here to make sure that view 0 is cleared if no other draw calls are submitted to view 0.
-		bgfx::touch(kClearView);
+		bgfx::touch(view);
 
 		// Use debug font to print information about this example.
 		bgfx::dbgTextClear();
@@ -59,7 +59,6 @@ int main(int argc, char** argv)
 		bgfx::dbgTextPrintf(80, 2, 0x0f, "\x1b[;8m    \x1b[;9m    \x1b[;10m    \x1b[;11m    \x1b[;12m    \x1b[;13m    \x1b[;14m    \x1b[;15m    \x1b[0m");
 
 		const bgfx::Stats* stats = bgfx::getStats();
-
 		bgfx::dbgTextPrintf(0, 2, 0x0f, "Backbuffer %dW x %dH in pixels, debug text %dW x %dH in characters.", stats->width, stats->height, stats->textWidth, stats->textHeight);
 
 		// Enable stats or debug text.
