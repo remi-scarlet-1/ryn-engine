@@ -5,6 +5,10 @@
 #include "logo.h"
 #include "window.h"
 
+// TODO: add imgui (debug info)
+// TODO: cleanup code (finish window class etc.)
+// TODO: cleanup build system
+
 static bool s_showStats = false;
 
 int main(int argc, char** argv)

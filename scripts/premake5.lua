@@ -12,7 +12,7 @@ dir.runtimeBuild = path.join(dir.generate, "build")
 
 dir.vendors = path.join(dir.root, "vendors")
 dir.vendorsBuild = path.join(dir.generate, "vendor_projects")
-dir.vendorsInstall = path.join(dir.generate, "vendor_builds")
+dir.vendorsInstall = path.join(dir.generate, "vendor_install")
 
 -- Setup workspace
 os.chdir(dir.root)
@@ -37,18 +37,26 @@ workspace "Renderer"
             "%{dir.runtime}/source/**.hpp",
             "%{dir.runtime}/source/**.c",
             "%{dir.runtime}/source/**.cpp",
+            -- Vendors:
+            "%{dir.runtime}/vendors/**.c",
+            "%{dir.runtime}/vendors/**.cpp",
+            "%{dir.runtime}/vendors/**.h",
+            "%{dir.runtime}/vendors/**.hpp",
         }
 
         includedirs {
-            "%{dir.runtime}/source/**.h",
-            "%{dir.runtime}/source/**.hpp",
+            "%{dir.runtime}/source",
+            -- Vendors:
+            "%{dir.runtime}/vendors",
             "%{dir.vendorsInstall}/include",
         }
 
         vpaths {
-            ["Headers"] = { "**.h", "**.hpp" },
-            ["Sources"] = { "**.c", "**.cpp" },
             ["Build"] = { "**/premake5.lua" },
+            ["Headers"] = { "%{dir.runtime}/source/**.h", "%{dir.runtime}/source/**.hpp" },
+            ["Sources"] = { "%{dir.runtime}/source/**.c", "%{dir.runtime}/source/**.cpp" },
+            -- Vendors:
+            ["Vendors/*"] = { "%{dir.runtime}/vendors/**.h", "%{dir.runtime}/vendors/**.hpp", "%{dir.runtime}/vendors/**.c", "%{dir.runtime}/vendors/**.cpp" },
         }
 
         libdirs {
