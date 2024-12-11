@@ -1,7 +1,13 @@
 #include <stdio.h>
+
 #include <bx/bx.h>
 #include <bgfx/bgfx.h>
 #include <bgfx/platform.h>
+
+#include <imgui/imgui.h>
+#include <imgui/backends/imgui_impl_bgfx.h>
+#include <imgui/backends/imgui_impl_glfw.h>
+
 #include "logo.h"
 #include "window.h"
 
@@ -9,6 +15,7 @@ static bool s_showStats = false;
 
 int main(int argc, char** argv)
 {
+	// Initialize window
 	rn::Window window = rn::Window("Engine Window Test!", 1600, 900, false, false);
 
 	// Call bgfx::renderFrame before bgfx::init to signal to bgfx not to create a render thread.
@@ -34,6 +41,16 @@ int main(int argc, char** argv)
 	bgfx::setViewClear(view, BGFX_CLEAR_COLOR);
 	bgfx::setViewRect(view, 0, 0, bgfx::BackbufferRatio::Equal);
 
+	// Initialize imgui
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO();
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; 
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  
+
+	ImGui_Implbgfx_Init(view);
+	ImGui_ImplGlfw_InitForOther(window.getHandle(), true);
+
 	while (!window.getShouldClose()) {
 		window.pollEvents();
 
@@ -47,6 +64,12 @@ int main(int argc, char** argv)
 
 		// This dummy draw call is here to make sure that view 0 is cleared if no other draw calls are submitted to view 0.
 		bgfx::touch(view);
+
+		// imgui start frame
+		ImGui_Implbgfx_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+		ImGui::ShowDemoWindow();
 
 		// Use debug font to print information about this example.
 		bgfx::dbgTextClear();
@@ -64,10 +87,17 @@ int main(int argc, char** argv)
 		// Enable stats or debug text.
 		bgfx::setDebug(s_showStats ? BGFX_DEBUG_STATS : BGFX_DEBUG_TEXT);
 
+		// imgui end frame
+		ImGui::Render();
+		ImGui_Implbgfx_RenderDrawLists(ImGui::GetDrawData());
+
 		// Advance to next frame. Process submitted rendering primitives.
 		bgfx::frame();
 	}
 
+	ImGui_Implbgfx_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
 	bgfx::shutdown();
 	glfwTerminate();
 	return 0;
