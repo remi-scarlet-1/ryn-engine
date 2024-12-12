@@ -6,3 +6,4 @@
 - [ ] list debug info
 - [ ] cleanup code (finish window class etc.)
 - [ ] cleanup build system (add deploy config; stripts imgui?)
+- [ ] cleanup imgui (backends & files)

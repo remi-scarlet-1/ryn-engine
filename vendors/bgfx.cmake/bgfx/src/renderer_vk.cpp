@@ -46,7 +46,7 @@ namespace bgfx { namespace vk
 		{ VK_PRIMITIVE_TOPOLOGY_POINT_LIST,     1, 1, 0 },
 		{ VK_PRIMITIVE_TOPOLOGY_MAX_ENUM,       0, 0, 0 },
 	};
-	BX_STATIC_ASSERT(Topology::Count == BX_COUNTOF(s_primInfo)-1);
+	static_assert(Topology::Count == BX_COUNTOF(s_primInfo)-1);
 
 	static MsaaSamplerVK s_msaa[] =
 	{
@@ -271,7 +271,7 @@ VK_IMPORT_DEVICE
 #undef $B
 #undef $A
 	};
-	BX_STATIC_ASSERT(TextureFormat::Count == BX_COUNTOF(s_textureFormat) );
+	static_assert(TextureFormat::Count == BX_COUNTOF(s_textureFormat) );
 
 	struct ImageTest
 	{
@@ -322,7 +322,7 @@ VK_IMPORT_DEVICE
 		{ "VK_LAYER_LUNARG_standard_validation", 1, { false, false }, { false, false } },
 		{ "",                                    0, { false, false }, { false, false } },
 	};
-	BX_STATIC_ASSERT(Layer::Count == BX_COUNTOF(s_layer)-1);
+	static_assert(Layer::Count == BX_COUNTOF(s_layer)-1);
 
 	void updateLayer(const char* _name, uint32_t _version, bool _instanceLayer)
 	{
@@ -414,7 +414,7 @@ VK_IMPORT_DEVICE
 		{ VK_NN_VI_SURFACE_EXTENSION_NAME,          1, false, false, true,                                                          Layer::Count },
 #	endif
 	};
-	BX_STATIC_ASSERT(Extension::Count == BX_COUNTOF(s_extension) );
+	static_assert(Extension::Count == BX_COUNTOF(s_extension) );
 
 	bool updateExtension(const char* _name, uint32_t _version, bool _instanceExt, Extension _extensions[Extension::Count])
 	{
@@ -482,7 +482,7 @@ VK_IMPORT_DEVICE
 			{ VK_FORMAT_R32G32B32A32_SFLOAT,     VK_FORMAT_R32G32B32A32_SFLOAT      },
 		},
 	};
-	BX_STATIC_ASSERT(AttribType::Count == BX_COUNTOF(s_attribType) );
+	static_assert(AttribType::Count == BX_COUNTOF(s_attribType) );
 
 	void fillVertexLayout(const ShaderVK* _vsh, VkPipelineVertexInputStateCreateInfo& _vertexInputState, const VertexLayout& _layout)
 	{
@@ -571,7 +571,7 @@ VK_IMPORT_DEVICE
 		"vkDevice",
 		"vkInstance",
 	};
-	BX_STATIC_ASSERT(VK_SYSTEM_ALLOCATION_SCOPE_INSTANCE == BX_COUNTOF(s_allocScopeName)-1);
+	static_assert(VK_SYSTEM_ALLOCATION_SCOPE_INSTANCE == BX_COUNTOF(s_allocScopeName)-1);
 
 	constexpr size_t kMinAlignment = 16;
 
@@ -2705,6 +2705,7 @@ VK_IMPORT_DEVICE
 				m_indexBuffers[_blitter.m_ib->handle.idx].update(m_commandBuffer, 0, _numIndices*2, _blitter.m_ib->data);
 				m_vertexBuffers[_blitter.m_vb->handle.idx].update(m_commandBuffer, 0, numVertices*_blitter.m_layout.m_stride, _blitter.m_vb->data, true);
 
+
 				VkRenderPassBeginInfo rpbi;
 				rpbi.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 				rpbi.pNext = NULL;
@@ -2805,21 +2806,13 @@ VK_IMPORT_DEVICE
 				| BGFX_RESET_DEPTH_CLAMP
 				);
 
-			// Note: m_needToRefreshSwapchain is deliberately ignored when deciding whether to
-			// recreate the swapchain because it can happen several frames before submit is called
-			// with the new resolution.
-			//
-			// Instead, vkAcquireNextImageKHR and all draws to the backbuffer are skipped until
-			// the window size is updated. That also fixes a related issue where VK_ERROR_OUT_OF_DATE_KHR
-			// is returned from vkQueuePresentKHR when the window doesn't exist anymore, and
-			// vkGetPhysicalDeviceSurfaceCapabilitiesKHR fails with VK_ERROR_SURFACE_LOST_KHR.
-
 			if (false
 			||  m_resolution.format != _resolution.format
 			||  m_resolution.width  != _resolution.width
 			||  m_resolution.height != _resolution.height
 			||  m_resolution.reset  != flags
-			||  m_backBuffer.m_swapChain.m_needToRecreateSurface)
+			||  m_backBuffer.m_swapChain.m_needToRecreateSurface
+			||  m_backBuffer.m_swapChain.m_needToRecreateSwapchain)
 			{
 				flags &= ~BGFX_RESET_INTERNAL_FORCE;
 
@@ -2837,6 +2830,10 @@ VK_IMPORT_DEVICE
 				preReset();
 
 				m_backBuffer.update(m_commandBuffer, m_resolution);
+				// Update the resolution again here, as the actual width and height
+				// is now final (as it was potentially clamped by the Vulkan driver).
+				m_resolution.width = m_backBuffer.m_width;
+				m_resolution.height = m_backBuffer.m_height;
 
 				postReset();
 			}
@@ -5132,8 +5129,6 @@ VK_DESTROY
 		smci.codeSize = m_code->size;
 		smci.pCode    = (const uint32_t*)m_code->data;
 
-//		disassemble(bx::getDebugOut(), m_code->data, m_code->size);
-
 		VK_CHECK(vkCreateShaderModule(
 			  s_renderVK->m_device
 			, &smci
@@ -6849,6 +6844,7 @@ VK_DESTROY
 			;
 
 		const bool recreateSwapchain = false
+			|| m_needToRecreateSwapchain
 			|| m_resolution.format != _resolution.format
 			|| m_resolution.width  != _resolution.width
 			|| m_resolution.height != _resolution.height
@@ -6939,6 +6935,7 @@ VK_DESTROY
 				sci.hinstance = (HINSTANCE)GetModuleHandle(NULL);
 				sci.hwnd      = (HWND)m_nwh;
 				result = vkCreateWin32SurfaceKHR(instance, &sci, allocatorCb, &m_surface);
+				BX_WARN(VK_SUCCESS == result, "vkCreateWin32SurfaceKHR failed %d: %s.", result, getName(result) );
 			}
 		}
 #elif BX_PLATFORM_ANDROID
@@ -6951,14 +6948,17 @@ VK_DESTROY
 				sci.flags = 0;
 				sci.window = (ANativeWindow*)m_nwh;
 				result = vkCreateAndroidSurfaceKHR(instance, &sci, allocatorCb, &m_surface);
+				BX_WARN(VK_SUCCESS == result, "vkCreateAndroidSurfaceKHR failed %d: %s.", result, getName(result) );
 			}
 		}
 #elif BX_PLATFORM_LINUX
 		{
-			if (g_platformData.type == bgfx::NativeWindowHandleType::Wayland)
+			if (g_platformData.type == bgfx::NativeWindowHandleType::Wayland
+			&&  s_extension[Extension::KHR_wayland_surface].m_supported
+			&&  NULL != vkCreateWaylandSurfaceKHR
+			   )
 			{
-				BGFX_FATAL(s_extension[Extension::KHR_wayland_surface].m_supported, Fatal::UnableToInitialize, VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME " not supported");
-				BGFX_FATAL(NULL != vkCreateWaylandSurfaceKHR, Fatal::UnableToInitialize, "vkCreateWaylandSurfaceKHR == 0");
+				BX_TRACE("Attempting Wayland surface creation.");
 				VkWaylandSurfaceCreateInfoKHR sci;
 				sci.sType = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR;
 				sci.pNext = NULL;
@@ -6966,12 +6966,15 @@ VK_DESTROY
 				sci.display = (wl_display*)g_platformData.ndt;
 				sci.surface = (wl_surface*)m_nwh;
 				result = vkCreateWaylandSurfaceKHR(instance, &sci, allocatorCb, &m_surface);
+				BX_WARN(VK_SUCCESS == result, "vkCreateWaylandSurfaceKHR failed %d: %s.", result, getName(result) );
 			}
 			else
 			{
-				if (s_extension[Extension::KHR_xlib_surface].m_supported)
+				if (s_extension[Extension::KHR_xlib_surface].m_supported
+				&&  NULL != vkCreateXlibSurfaceKHR
+				   )
 				{
-					BGFX_FATAL(NULL != vkCreateXlibSurfaceKHR, Fatal::UnableToInitialize, "vkCreateXlibSurfaceKHR == 0")
+					BX_TRACE("Attempting Xlib surface creation.");
 					VkXlibSurfaceCreateInfoKHR sci;
 					sci.sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
 					sci.pNext = NULL;
@@ -6979,29 +6982,30 @@ VK_DESTROY
 					sci.dpy    = (Display*)g_platformData.ndt;
 					sci.window = (Window)m_nwh;
 					result = vkCreateXlibSurfaceKHR(instance, &sci, allocatorCb, &m_surface);
+					BX_WARN(VK_SUCCESS == result, "vkCreateXlibSurfaceKHR failed %d: %s.", result, getName(result) );
 				}
 
-				if (VK_SUCCESS != result && s_extension[Extension::KHR_xcb_surface].m_supported)
+				if (VK_SUCCESS != result
+				&&  s_extension[Extension::KHR_xcb_surface].m_supported
+				&&  NULL != vkCreateXcbSurfaceKHR
+				)
 				{
 					void* xcbdll = bx::dlopen("libX11-xcb.so.1");
 
-					if (NULL != xcbdll
-					&&  NULL != vkCreateXcbSurfaceKHR)
+					if (NULL != xcbdll)
 					{
+						BX_TRACE("Attempting XCB surface creation.");
 						typedef xcb_connection_t* (*PFN_XGETXCBCONNECTION)(Display*);
 						PFN_XGETXCBCONNECTION XGetXCBConnection = (PFN_XGETXCBCONNECTION)bx::dlsym(xcbdll, "XGetXCBConnection");
-
-						union { void* ptr; xcb_window_t window; } cast = { m_nwh };
-
-						BGFX_FATAL(NULL != vkCreateXcbSurfaceKHR, Fatal::UnableToInitialize, "vkCreateXcbSurfaceKHR == 0")
 
 						VkXcbSurfaceCreateInfoKHR sci;
 						sci.sType      = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
 						sci.pNext      = NULL;
 						sci.flags      = 0;
 						sci.connection = XGetXCBConnection( (Display*)g_platformData.ndt);
-						sci.window     = cast.window;
+						sci.window     = bx::narrowCast<xcb_window_t>(uintptr_t(m_nwh) );
 						result = vkCreateXcbSurfaceKHR(instance, &sci, allocatorCb, &m_surface);
+						BX_WARN(VK_SUCCESS == result, "vkCreateXcbSurfaceKHR failed %d: %s.", result, getName(result) );
 
 						bx::dlclose(xcbdll);
 					}
@@ -7046,6 +7050,7 @@ VK_DESTROY
 				sci.flags = 0;
 				sci.pView = (__bridge void*)layer;
 				result = vkCreateMacOSSurfaceMVK(instance, &sci, allocatorCb, &m_surface);
+				BX_WARN(VK_SUCCESS == result, "vkCreateMacOSSurfaceMVK failed %d: %s.", result, getName(result) );
 			}
 		}
 #elif BX_PLATFORM_NX
@@ -7057,6 +7062,7 @@ VK_DESTROY
 			sci.flags  = 0;
 			sci.window = m_nwh;
 			result = vkCreateViSurfaceNN(instance, &sci, allocatorCb, &m_surface);
+			BX_WARN(VK_SUCCESS == result, "vkCreateViSurfaceNN failed %d: %s.", result, getName(result) );
 		}
 #else
 #	error "Figure out KHR surface..."
@@ -7101,8 +7107,9 @@ VK_DESTROY
 		const VkAllocationCallbacks* allocatorCb = s_renderVK->m_allocatorCb;
 
 		// Waiting for the device to be idle seems to get rid of VK_DEVICE_LOST
-		// upon resizing the window quickly. (See https://github.com/mpv-player/mpv/issues/8360
-		// and https://github.com/bkaradzic/bgfx/issues/3227).
+		// upon resizing the window quickly. See:
+		//  - https://github.com/mpv-player/mpv/issues/8360
+		//  - https://github.com/bkaradzic/bgfx/issues/3227
 		result = vkDeviceWaitIdle(device);
 		BX_WARN(VK_SUCCESS == result, "Create swapchain error: vkDeviceWaitIdle() failed: %d: %s", result, getName(result));
 
@@ -7159,6 +7166,15 @@ VK_DESTROY
 			, surfaceCapabilities.minImageExtent.height
 			, surfaceCapabilities.maxImageExtent.height
 			);
+		if (width != m_resolution.width || height != m_resolution.height)
+		{
+			BX_TRACE("Clamped swapchain resolution from %dx%d to %dx%d"
+					, m_resolution.width
+					, m_resolution.height
+					, width
+					, height
+					);
+		}
 
 		VkCompositeAlphaFlagBitsKHR compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 
@@ -7285,6 +7301,8 @@ VK_DESTROY
 			m_backBufferColorImageLayout[ii] = VK_IMAGE_LAYOUT_UNDEFINED;
 		}
 
+		BX_TRACE("Succesfully created swapchain (%dx%d) with %d images.", width, height, m_numSwapChainImages);
+
 		VkSemaphoreCreateInfo sci;
 		sci.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 		sci.pNext = NULL;
@@ -7307,7 +7325,7 @@ VK_DESTROY
 		m_currentSemaphore = 0;
 
 		m_needPresent = false;
-		m_needToRefreshSwapchain = false;
+		m_needToRecreateSwapchain = false;
 
 		return result;
 	}
@@ -7619,7 +7637,7 @@ VK_DESTROY
 	{
 		BGFX_PROFILER_SCOPE("SwapChainVK::acquire", kColorFrame);
 		if (VK_NULL_HANDLE == m_swapChain
-		||  m_needToRefreshSwapchain)
+		||  m_needToRecreateSwapchain)
 		{
 			return false;
 		}
@@ -7645,6 +7663,12 @@ VK_DESTROY
 					);
 			}
 
+
+			if (result != VK_SUCCESS)
+			{
+				BX_TRACE("vkAcquireNextImageKHR(...): result = %s", getName(result));
+			}
+
 			switch (result)
 			{
 			case VK_SUCCESS:
@@ -7652,11 +7676,12 @@ VK_DESTROY
 
 			case VK_ERROR_SURFACE_LOST_KHR:
 				m_needToRecreateSurface = true;
-				[[fallthrough]];
+				m_needToRecreateSwapchain = true;
+				return false;
 
 			case VK_ERROR_OUT_OF_DATE_KHR:
 			case VK_SUBOPTIMAL_KHR:
-				m_needToRefreshSwapchain = true;
+				m_needToRecreateSwapchain = true;
 				return false;
 
 			default:
@@ -7705,15 +7730,21 @@ VK_DESTROY
 				result = vkQueuePresentKHR(m_queue, &pi);
 			}
 
+			if (result != VK_SUCCESS)
+			{
+				BX_TRACE("vkQueuePresentKHR(...): result = %s", getName(result));
+			}
+
 			switch (result)
 			{
 			case VK_ERROR_SURFACE_LOST_KHR:
 				m_needToRecreateSurface = true;
-				[[fallthrough]];
+				m_needToRecreateSwapchain = true;
+				break;
 
 			case VK_ERROR_OUT_OF_DATE_KHR:
 			case VK_SUBOPTIMAL_KHR:
-				m_needToRefreshSwapchain = true;
+				m_needToRecreateSwapchain = true;
 				break;
 
 			default:
@@ -7876,8 +7907,10 @@ VK_DESTROY
 		BGFX_PROFILER_SCOPE("FrameBufferVK::update", kColorResource);
 		m_swapChain.update(_commandBuffer, m_nwh, _resolution);
 		VK_CHECK(s_renderVK->getRenderPass(m_swapChain, &m_renderPass) );
-		m_width   = _resolution.width;
-		m_height  = _resolution.height;
+		// Don't believe the passed Resolution, as the Vulkan driver might have
+		// specified another resolution, which we had to obey.
+		m_width   = m_swapChain.m_sci.imageExtent.width;
+		m_height  = m_swapChain.m_sci.imageExtent.height;
 		m_sampler = m_swapChain.m_sampler;
 	}
 
@@ -8556,11 +8589,25 @@ VK_DESTROY
 					if (isFrameBufferValid)
 					{
 						viewState.m_rect = _render->m_view[view].m_rect;
-						const Rect& rect        = _render->m_view[view].m_rect;
-						const Rect& scissorRect = _render->m_view[view].m_scissor;
+						Rect rect        = _render->m_view[view].m_rect;
+						Rect scissorRect = _render->m_view[view].m_scissor;
 						viewHasScissor  = !scissorRect.isZero();
 						viewScissorRect = viewHasScissor ? scissorRect : rect;
 						restoreScissor = false;
+
+						// Clamp the rect to what's valid according to Vulkan.
+						rect.m_width = bx::min(rect.m_width, fb.m_width - rect.m_x);
+						rect.m_height = bx::min(rect.m_height, fb.m_height - rect.m_y);
+						if (_render->m_view[view].m_rect.m_width != rect.m_width
+						 || _render->m_view[view].m_rect.m_height != rect.m_height)
+						{
+							BX_TRACE("Clamp render pass from %dx%d to %dx%d"
+								, _render->m_view[view].m_rect.m_width
+								, _render->m_view[view].m_rect.m_height
+								, rect.m_width
+								, rect.m_height
+								);
+						}
 
 						rpbi.framebuffer = fb.m_currentFramebuffer;
 						rpbi.renderPass  = fb.m_renderPass;
@@ -9382,7 +9429,6 @@ VK_DESTROY
 				}
 
 				tvm.printf(10, pos++, 0x8b, "      Indices: %7d ", statsNumIndices);
-//				tvm.printf(10, pos++, 0x8b, " Uniform size: %7d, Max: %7d ", _render->m_uniformEnd, _render->m_uniformMax);
 				tvm.printf(10, pos++, 0x8b, "     DVB size: %7d ", _render->m_vboffset);
 				tvm.printf(10, pos++, 0x8b, "     DIB size: %7d ", _render->m_iboffset);
 

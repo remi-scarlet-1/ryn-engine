@@ -133,22 +133,6 @@ namespace entry
 		return GamepadAxis::Enum(s_translateGamepadAxis[_sdl]);
 	}
 
-	struct AxisDpadRemap
-	{
-		Key::Enum first;
-		Key::Enum second;
-	};
-
-	static AxisDpadRemap s_axisDpad[] =
-	{
-		{ Key::GamepadLeft, Key::GamepadRight },
-		{ Key::GamepadUp,   Key::GamepadDown  },
-		{ Key::None,        Key::None         },
-		{ Key::GamepadLeft, Key::GamepadRight },
-		{ Key::GamepadUp,   Key::GamepadDown  },
-		{ Key::None,        Key::None         },
-	};
-
 	struct GamepadSDL
 	{
 		GamepadSDL()
@@ -446,7 +430,7 @@ namespace entry
 
 			// Force window resolution...
 			WindowHandle defaultWindow = { 0 };
-			setWindowSize(defaultWindow, m_width, m_height, true);
+			entry::setWindowSize(defaultWindow, m_width, m_height);
 
 			SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
 
@@ -624,7 +608,15 @@ namespace entry
 							case SDL_WINDOWEVENT_SIZE_CHANGED:
 								{
 									WindowHandle handle = findHandle(wev.windowID);
-									setWindowSize(handle, wev.data1, wev.data2);
+									uint32_t width = wev.data1;
+									uint32_t height = wev.data2;
+									if (width  != m_width
+									||  height != m_height)
+									{
+										m_width  = width;
+										m_height = height;
+										m_eventQueue.postSizeEvent(handle, m_width, m_height);
+									}
 								}
 								break;
 
@@ -825,7 +817,7 @@ namespace entry
 									Msg* msg = (Msg*)uev.data2;
 									if (isValid(handle) )
 									{
-										setWindowSize(handle, msg->m_width, msg->m_height);
+										SDL_SetWindowSize(m_window[handle.idx], msg->m_width, msg->m_height);
 									}
 									delete msg;
 								}
@@ -895,20 +887,6 @@ namespace entry
 
 			WindowHandle invalid = { UINT16_MAX };
 			return invalid;
-		}
-
-		void setWindowSize(WindowHandle _handle, uint32_t _width, uint32_t _height, bool _force = false)
-		{
-			if (_width  != m_width
-			||  _height != m_height
-			||  _force)
-			{
-				m_width  = _width;
-				m_height = _height;
-
-				SDL_SetWindowSize(m_window[_handle.idx], m_width, m_height);
-				m_eventQueue.postSizeEvent(_handle, m_width, m_height);
-			}
 		}
 
 		GamepadHandle findGamepad(SDL_JoystickID _jid)
@@ -1011,6 +989,7 @@ namespace entry
 
 	void setWindowSize(WindowHandle _handle, uint32_t _width, uint32_t _height)
 	{
+		// Function to set the window size programmatically from the examples/tools.
 		Msg* msg = new Msg;
 		msg->m_width  = _width;
 		msg->m_height = _height;

@@ -307,7 +307,7 @@ namespace bgfx { namespace vk
 		::Vk##_name* operator &() { return &vk; }                \
 		const ::Vk##_name* operator &() const { return &vk; }    \
 	};                                                           \
-	BX_STATIC_ASSERT(sizeof(::Vk##_name) == sizeof(Vk##_name) ); \
+	static_assert(sizeof(::Vk##_name) == sizeof(Vk##_name) ); \
 	void vkDestroy(Vk##_name&);                                  \
 	void release(Vk##_name&)
 VK_DESTROY
@@ -762,7 +762,7 @@ VK_DESTROY_FUNC(DescriptorSet);
 		VkSemaphore m_lastImageAcquiredSemaphore;
 
 		bool m_needPresent;
-		bool m_needToRefreshSwapchain;
+		bool m_needToRecreateSwapchain;
 		bool m_needToRecreateSurface;
 
 		TextureVK   m_backBufferDepthStencil;

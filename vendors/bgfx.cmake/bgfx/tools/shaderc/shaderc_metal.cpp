@@ -197,7 +197,7 @@ namespace bgfx { namespace metal
 		"a_texcoord6",
 		"a_texcoord7",
 	};
-	BX_STATIC_ASSERT(bgfx::Attrib::Count == BX_COUNTOF(s_attribName) );
+	static_assert(bgfx::Attrib::Count == BX_COUNTOF(s_attribName) );
 
 	bgfx::Attrib::Enum toAttribEnum(const bx::StringView& _name)
 	{
@@ -427,7 +427,7 @@ namespace bgfx { namespace metal
 					end   = start + 20;
 				}
 
-				printCode(_code.c_str(), line, start, end, column);
+				printCode(_code.c_str(), bx::uint32_satsub(line, 1), start, end, column);
 
 				bx::write(_messageWriter, &messageErr, "%s\n", log);
 			}
