@@ -1,22 +1,30 @@
 #pragma once
 
-#include <GLFW/glfw3.h>
+#include <functional>
+
+struct GLFWwindow;
 
 namespace rn {
 	class Window {
 	public:
-		Window(const char* title, int resX, int resY, bool resizable, bool vsync);
-		~Window() = default;
+		using OnResize = std::function<void(int, int)>;
+		
+		Window(const char* title, int resX = 1600, int resY = 900, bool resizable = true, bool vsync = true);
+		~Window();
 
-		GLFWwindow* getHandle();
+		void setResizeCallback(OnResize callback);
+
 		void* getNativeHandle();
-
+		GLFWwindow* getGlfwHandle();
 		bool getShouldClose();
 		void getResolution(int* x, int* y);
 
 		void pollEvents();
 
 	private:
+		static int windowCount;
 		GLFWwindow* window;
+		
+		OnResize onResizeCallback;
 	};
 }

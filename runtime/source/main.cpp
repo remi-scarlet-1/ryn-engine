@@ -1,4 +1,5 @@
-#include <stdio.h>
+#include <fmt/core.h>
+#include <iostream>
 
 #include <bx/bx.h>
 #include <bgfx/bgfx.h>
@@ -8,15 +9,14 @@
 #include <imgui/backends/imgui_impl_bgfx.h>
 #include <imgui/backends/imgui_impl_glfw.h>
 
-#include "logo.h"
 #include "window.h"
 
-static bool s_showStats = false;
+static bool show_stats = true;
 
 int main(int argc, char** argv)
 {
 	// Initialize window
-	rn::Window window = rn::Window("Engine Window Test!", 1600, 900, false, false);
+	rn::Window window = rn::Window("Engine Window Test!", 1600, 900, true, true);
 
 	// Call bgfx::renderFrame before bgfx::init to signal to bgfx not to create a render thread.
 	// Most graphics APIs must be used on the same thread that created the window.
@@ -31,7 +31,7 @@ int main(int argc, char** argv)
 	init.platformData.nwh = window.getNativeHandle();
 	init.resolution.width = (uint32_t)windowWidth;
 	init.resolution.height = (uint32_t)windowHeight;
-	init.resolution.reset = BGFX_RESET_NONE;
+	init.resolution.reset = BGFX_RESET_VSYNC;
 
 	if (!bgfx::init(init))
 		return 1;
@@ -41,53 +41,51 @@ int main(int argc, char** argv)
 	bgfx::setViewClear(view, BGFX_CLEAR_COLOR);
 	bgfx::setViewRect(view, 0, 0, bgfx::BackbufferRatio::Equal);
 
+	// Handle window resize (bgfx)
+	window.setResizeCallback([](int width, int height) { 
+		bgfx::reset((uint32_t)width, (uint32_t)height, BGFX_RESET_VSYNC);
+		bgfx::setViewRect(view, 0, 0, bgfx::BackbufferRatio::Equal);
+	});
+
 	// Initialize imgui
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; 
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;    
+	io.IniFilename = NULL;
 
 	ImGui_Implbgfx_Init(view);
-	ImGui_ImplGlfw_InitForOther(window.getHandle(), true);
+	ImGui_ImplGlfw_InitForOther(window.getGlfwHandle(), true);
 
 	while (!window.getShouldClose()) {
 		window.pollEvents();
 
-		// Handle window resize.
-		//int oldWidth = windowWidth, oldHeight = windowHeight;
-		//glfwGetWindowSize(window, &windowWidth, &windowHeight);
-		//if (windowWidth != oldWidth || windowHeight != oldHeight) {
-		//	bgfx::reset((uint32_t)windowWidth, (uint32_t)windowHeight, BGFX_RESET_VSYNC);
-		//	bgfx::setViewRect(kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
-		//}
-
 		// This dummy draw call is here to make sure that view 0 is cleared if no other draw calls are submitted to view 0.
 		bgfx::touch(view);
 
-		// imgui start frame
+		// ImGui start frame
 		ImGui_Implbgfx_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
-		ImGui::ShowDemoWindow();
 
-		// Use debug font to print information about this example.
-		bgfx::dbgTextClear();
-
-		bgfx::dbgTextImage(bx::max<uint16_t>(uint16_t(windowWidth / 2 / 8), 20) - 20, bx::max<uint16_t>(uint16_t(windowHeight / 2 / 16), 6) - 6, 40, 12, s_logo, 160);
-
-		bgfx::dbgTextPrintf(0, 0, 0x0f, "Press F1 to toggle stats.");
-		bgfx::dbgTextPrintf(0, 1, 0x0f, "Color can be changed with ANSI \x1b[9;me\x1b[10;ms\x1b[11;mc\x1b[12;ma\x1b[13;mp\x1b[14;me\x1b[0m code too.");
-		bgfx::dbgTextPrintf(80, 1, 0x0f, "\x1b[;0m    \x1b[;1m    \x1b[; 2m    \x1b[; 3m    \x1b[; 4m    \x1b[; 5m    \x1b[; 6m    \x1b[; 7m    \x1b[0m");
-		bgfx::dbgTextPrintf(80, 2, 0x0f, "\x1b[;8m    \x1b[;9m    \x1b[;10m    \x1b[;11m    \x1b[;12m    \x1b[;13m    \x1b[;14m    \x1b[;15m    \x1b[0m");
-
+		// ImGui application stats
 		const bgfx::Stats* stats = bgfx::getStats();
-		bgfx::dbgTextPrintf(0, 2, 0x0f, "Backbuffer %dW x %dH in pixels, debug text %dW x %dH in characters.", stats->width, stats->height, stats->textWidth, stats->textHeight);
 
-		// Enable stats or debug text.
-		bgfx::setDebug(s_showStats ? BGFX_DEBUG_STATS : BGFX_DEBUG_TEXT);
+		ImGui::SetNextWindowSize(ImVec2(240, 180));
+		ImGui::SetNextWindowPos(ImVec2(0, 0));
 
-		// imgui end frame
+		ImGui::Begin("Statistics", &show_stats, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+		ImGui::Text(fmt::format("FPS {} ", 1 / (static_cast<double>(stats->cpuTimeFrame) / static_cast<double>(stats->cpuTimerFreq))).c_str());
+		ImGui::Text(fmt::format("Cpu time: {:.7f} ", static_cast<double>(stats->cpuTimeFrame) / static_cast<double>(stats->cpuTimerFreq)).c_str());
+		ImGui::Text(fmt::format("Gpu time: {:.7f} ", static_cast<double>(stats->gpuTimeEnd - stats->gpuTimeBegin) / static_cast<double>(stats->gpuTimerFreq)).c_str());
+		ImGui::Text(fmt::format("Gpu mem: {:.0f} MB / {:.0f} MB ", static_cast<double>(stats->gpuMemoryUsed) / 1000000, static_cast<double>(stats->gpuMemoryMax) / 1000000).c_str());
+		ImGui::Spacing();
+		ImGui::SeparatorText("Graphics");
+		ImGui::Text(fmt::format("NumberDraw calls: {} ", static_cast<double>(stats->numDraw)).c_str());
+		ImGui::End();
+
+		// ImGui end frame
 		ImGui::Render();
 		ImGui_Implbgfx_RenderDrawLists(ImGui::GetDrawData());
 
@@ -95,10 +93,12 @@ int main(int argc, char** argv)
 		bgfx::frame();
 	}
 
+	// Shutdown imgui
 	ImGui_Implbgfx_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
+
 	bgfx::shutdown();
-	glfwTerminate();
+	//glfwTerminate();
 	return 0;
 }
