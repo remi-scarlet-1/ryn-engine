@@ -28,9 +28,9 @@ void inputMouseScroll(GLFWwindow* win, double xoffset, double yoffset) {
 }
 #pragma endregion
 
-int rn::Window::windowCount = 0;
+int ryn::Window::windowCount = 0;
 
-rn::Window::Window(const char* title, int resX, int resY, bool resizable, bool vsync) : window(nullptr) {
+ryn::Window::Window(const char* title, int resX, int resY, bool resizable, bool vsync) : window(nullptr) {
 	glfwSetErrorCallback([](int error, const char* description) {
 		std::fprintf(stderr, "GLFW error %d: %s\n", error, description);
 	});
@@ -71,17 +71,17 @@ rn::Window::Window(const char* title, int resX, int resY, bool resizable, bool v
 	glfwSetScrollCallback(window, inputMouseScroll);
 }
 
-rn::Window::~Window() {
+ryn::Window::~Window() {
 	glfwDestroyWindow(window);
 	if (--windowCount == 0)
 		glfwTerminate();
 }
 
-void rn::Window::setResizeCallback(OnResize callback) {
+void ryn::Window::setResizeCallback(OnResize callback) {
 	onResizeCallback = callback;
 }
 
-void* rn::Window::getNativeHandle() {
+void* ryn::Window::getNativeHandle() {
 #ifdef GLFW_EXPOSE_NATIVE_WIN32
 	return glfwGetWin32Window(window);
 #elif GLFW_EXPOSE_NATIVE_COCOA
@@ -93,19 +93,19 @@ void* rn::Window::getNativeHandle() {
 #endif
 }
 
-GLFWwindow* rn::Window::getGlfwHandle() { 
+GLFWwindow* ryn::Window::getGlfwHandle() { 
 	return window; 
 }
 
-bool rn::Window::getShouldClose() {
+bool ryn::Window::getShouldClose() {
 	return glfwWindowShouldClose(window);
 }
 
-void rn::Window::getResolution(int* x, int* y) {
+void ryn::Window::getResolution(int* x, int* y) {
 	glfwGetWindowSize(window, x, y);
 }
 
-void rn::Window::pollEvents() {
+void ryn::Window::pollEvents() {
 	glfwPollEvents();
 	inputMousePosition(window);
 }

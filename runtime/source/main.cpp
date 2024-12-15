@@ -16,7 +16,7 @@ static bool show_stats = true;
 int main(int argc, char** argv)
 {
 	// Initialize window
-	rn::Window window = rn::Window("Engine Window Test!", 1600, 900, true, true);
+	ryn::Window window = ryn::Window("Ryn test window", 1600, 900, true, true);
 
 	// Call bgfx::renderFrame before bgfx::init to signal to bgfx not to create a render thread.
 	// Most graphics APIs must be used on the same thread that created the window.
@@ -69,7 +69,7 @@ int main(int argc, char** argv)
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		showStatisticsMenu(&show_stats);
+		ryn::debug::renderStatisticsMenu(&show_stats);
 
 		// ImGui end frame
 		ImGui::Render();

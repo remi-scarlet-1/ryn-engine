@@ -5,7 +5,8 @@
 // Forward declaration GLFW library.
 struct GLFWwindow;
 
-namespace rn {
+// Engine namespace
+namespace ryn {
 	// Manages a graphical window with GLFW integration.
 	class Window {
 	public:

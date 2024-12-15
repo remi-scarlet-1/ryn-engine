@@ -6,10 +6,11 @@
 - [x] cleanup code (finish window class etc.)
 - [x] list debug info
 - [x] cleanup imgui (backends & files)
----
 - [x] DOCS!!!!
-- [ ] cleanup build system (add deploy config; stripts imgui?)
+---
+- [ ] Engine namespace
 - [ ] Input system: keyboard and mouse input (hook window input fetching up, aka. glfw)
+- [ ] cleanup build system (add deploy config; stripts imgui?)
 
 # Future considerations
 - [ ] controller input
