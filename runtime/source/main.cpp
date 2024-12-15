@@ -1,5 +1,9 @@
-#include <fmt/core.h>
+#include "window.h"
+#include "debug_menus.h"
+
 #include <iostream>
+
+#include <fmt/core.h>
 
 #include <bx/bx.h>
 #include <bgfx/bgfx.h>
@@ -8,8 +12,6 @@
 #include <imgui/imgui.h>
 #include <imgui/backends/imgui_impl_bgfx.h>
 #include <imgui/backends/imgui_impl_glfw.h>
-
-#include "window.h"
 
 static bool show_stats = true;
 
@@ -69,21 +71,7 @@ int main(int argc, char** argv)
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		// ImGui application stats
-		const bgfx::Stats* stats = bgfx::getStats();
-
-		ImGui::SetNextWindowSize(ImVec2(240, 180));
-		ImGui::SetNextWindowPos(ImVec2(0, 0));
-
-		ImGui::Begin("Statistics", &show_stats, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
-		ImGui::Text(fmt::format("FPS {} ", 1 / (static_cast<double>(stats->cpuTimeFrame) / static_cast<double>(stats->cpuTimerFreq))).c_str());
-		ImGui::Text(fmt::format("Cpu time: {:.7f} ", static_cast<double>(stats->cpuTimeFrame) / static_cast<double>(stats->cpuTimerFreq)).c_str());
-		ImGui::Text(fmt::format("Gpu time: {:.7f} ", static_cast<double>(stats->gpuTimeEnd - stats->gpuTimeBegin) / static_cast<double>(stats->gpuTimerFreq)).c_str());
-		ImGui::Text(fmt::format("Gpu mem: {:.0f} MB / {:.0f} MB ", static_cast<double>(stats->gpuMemoryUsed) / 1000000, static_cast<double>(stats->gpuMemoryMax) / 1000000).c_str());
-		ImGui::Spacing();
-		ImGui::SeparatorText("Graphics");
-		ImGui::Text(fmt::format("NumberDraw calls: {} ", static_cast<double>(stats->numDraw)).c_str());
-		ImGui::End();
+		showStatisticsMenu(&show_stats);
 
 		// ImGui end frame
 		ImGui::Render();
@@ -99,6 +87,5 @@ int main(int argc, char** argv)
 	ImGui::DestroyContext();
 
 	bgfx::shutdown();
-	//glfwTerminate();
 	return 0;
 }
