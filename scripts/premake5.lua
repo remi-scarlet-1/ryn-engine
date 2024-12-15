@@ -32,35 +32,29 @@ workspace "Renderer"
         objdir "%{dir.runtimeBuild}/obj/%{cfg.buildcfg}"
 
         files { 
-            "%{dir.script}/premake5.lua",
-            "%{dir.runtime}/source/**.h",
-            "%{dir.runtime}/source/**.hpp",
-            "%{dir.runtime}/source/**.c",
-            "%{dir.runtime}/source/**.cpp",
-            -- Vendors:
-            "%{dir.runtime}/vendors/**.c",
-            "%{dir.runtime}/vendors/**.cpp",
-            "%{dir.runtime}/vendors/**.h",
-            "%{dir.runtime}/vendors/**.hpp",
+            "%{dir.runtime}/source/**.h", "%{dir.runtime}/source/**.hpp",
+            "%{dir.runtime}/source/**.c", "%{dir.runtime}/source/**.cpp",
+            "%{dir.runtime}/vendors/**.c", "%{dir.runtime}/vendors/**.cpp",
+            "%{dir.runtime}/vendors/**.h", "%{dir.runtime}/vendors/**.hpp",
+            "%{dir.script}/premake5.lua", "%{dir.root}/docs/**.*",
         }
 
         includedirs {
             "%{dir.runtime}/source",
-            -- Vendors:
             "%{dir.runtime}/vendors",
             "%{dir.vendorsInstall}/include",
         }
 
-        vpaths {
-            ["Build"] = { "**/premake5.lua" },
-            ["Headers"] = { "%{dir.runtime}/source/**.h", "%{dir.runtime}/source/**.hpp" },
-            ["Sources"] = { "%{dir.runtime}/source/**.c", "%{dir.runtime}/source/**.cpp" },
-            -- Vendors:
-            ["Vendors/*"] = { "%{dir.runtime}/vendors/**.h", "%{dir.runtime}/vendors/**.hpp", "%{dir.runtime}/vendors/**.c", "%{dir.runtime}/vendors/**.cpp" },
+        libdirs {
+            "%{dir.vendorsInstall}/lib",
         }
 
-        libdirs {
-            "%{dir.vendorsInstall}/lib"
+        vpaths {
+            ["Build"] = { "%{dir.script}/**.*" },
+            ["Docs"] = { "%{dir.root}/docs/**.*" },
+            ["Headers"] = { "%{dir.runtime}/source/**.h", "%{dir.runtime}/source/**.hpp" },
+            ["Sources"] = { "%{dir.runtime}/source/**.c", "%{dir.runtime}/source/**.cpp" },
+            ["Vendors/*"] = { "%{dir.runtime}/vendors/**.h", "%{dir.runtime}/vendors/**.hpp", "%{dir.runtime}/vendors/**.c", "%{dir.runtime}/vendors/**.cpp" },
         }
 
         defines {
@@ -78,7 +72,7 @@ workspace "Renderer"
                 "bimg_decode",
                 "bimg_encode",
                 "bx",
-                "glfw3"
+                "glfw3",
             }
 
         filter "configurations:Debug"
@@ -92,7 +86,7 @@ workspace "Renderer"
                 "bimg_decode_d",
                 "bimg_encode_d",
                 "bx_d",
-                "glfw3_d"
+                "glfw3_d",
             }
 
         -- windows (msvc)

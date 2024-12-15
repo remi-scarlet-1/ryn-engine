@@ -4,11 +4,9 @@
 #include <iostream>
 
 #include <fmt/core.h>
-
 #include <bx/bx.h>
 #include <bgfx/bgfx.h>
 #include <bgfx/platform.h>
-
 #include <imgui/imgui.h>
 #include <imgui/backends/imgui_impl_bgfx.h>
 #include <imgui/backends/imgui_impl_glfw.h>
