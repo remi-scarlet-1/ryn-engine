@@ -4,7 +4,7 @@
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
 
-#pragma region Input forwarding to input system
+#pragma region Input gathering
 void inputKey(GLFWwindow* win, int key, int scancode, int action, int mods) {
 	// TODO: Implement with input system
 	//std::cout << "Key: " << key << " code: " << scancode << " action: " << action << " mods: " << mods << std::endl;

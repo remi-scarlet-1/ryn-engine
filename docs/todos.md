@@ -7,8 +7,8 @@
 - [x] list debug info
 - [x] cleanup imgui (backends & files)
 - [x] DOCS!!!!
+- [x] Engine namespace
 ---
-- [ ] Engine namespace
 - [ ] Input system: keyboard and mouse input (hook window input fetching up, aka. glfw)
 - [ ] cleanup build system (add deploy config; stripts imgui?)
 
