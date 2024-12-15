@@ -20,8 +20,6 @@ namespace ryn {
 		// - resizable: Whether the window can be resized (default: true).
 		// - vsync: Whether vertical synchronization is enabled (default: true).
 		Window(const char* title, int resX = 1600, int resY = 900, bool resizable = true, bool vsync = true);
-
-		// Destructor: Cleans up the window and associated resources.
 		~Window();
 
 		// Sets a callback function to be triggered when the window is resized.
@@ -37,18 +35,20 @@ namespace ryn {
 		bool getShouldClose();
 
 		// Retrieves the current window resolution.
-		// Parameters:
-		// - x, y: Pointers to store the width and height of the window.
-		void getResolution(int* x, int* y);
+		void getResolution(int* width, int* height);
 
 		// Processes input and window events. Call this once per frame.
 		void pollEvents();
 
 	private:
 		static int windowCount; // Tracks the number of active windows.
-
 		GLFWwindow* window; // Pointer to the GLFW window.
-
 		OnResize onResizeCallback; // User-defined callback for window resizing.
+
+		// Callbacks for glfw inputs
+		static void inputKey(GLFWwindow* win, int key, int scancode, int action, int mods);
+		static void inputMouseButton(GLFWwindow* win, int button, int action, int mods);
+		static void inputMouseScroll(GLFWwindow* win, double xoffset, double yoffset);
+		static void inputMousePosition(GLFWwindow* win);
 	};
 }

@@ -1,32 +1,10 @@
-#include "Window.h"
+#include "window.h"
+
+#include "input.h"
 
 #include <iostream>
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
-
-#pragma region Input gathering
-void inputKey(GLFWwindow* win, int key, int scancode, int action, int mods) {
-	// TODO: Implement with input system
-	//std::cout << "Key: " << key << " code: " << scancode << " action: " << action << " mods: " << mods << std::endl;
-}
-
-void inputMousePosition(GLFWwindow* win) {
-	// TODO: Implement with input system
-	//double xpos, ypos;
-	//glfwGetCursorPos(win, &xpos, &ypos);
-	//std::cout << "Mouse position: (" << xpos << ", " << ypos << ")" << std::endl;
-}
-
-void inputMouseButton(GLFWwindow* win, int button, int action, int mods) {
-	// TODO: Implement with input system
-	//std::cout << "Mouse button: " << button << " action: " << action << " mods: " << mods << std::endl;
-}
-
-void inputMouseScroll(GLFWwindow* win, double xoffset, double yoffset) {
-	// TODO: Implement with input system
-	//std::cout << "Mouse scroll x: " << xoffset << " y: " << yoffset << std::endl;
-}
-#pragma endregion
 
 int ryn::Window::windowCount = 0;
 
@@ -101,11 +79,33 @@ bool ryn::Window::getShouldClose() {
 	return glfwWindowShouldClose(window);
 }
 
-void ryn::Window::getResolution(int* x, int* y) {
-	glfwGetWindowSize(window, x, y);
+void ryn::Window::getResolution(int* width, int* height) {
+	glfwGetWindowSize(window, width, height);
 }
 
 void ryn::Window::pollEvents() {
-	glfwPollEvents();
-	inputMousePosition(window);
+	glfwPollEvents(); // Invokes all set Key/Mouse/etc. callbacks
+	inputMousePosition(window); // Manual fetching of mouse position
+	
+	ryn::Input::update();
+}
+
+void ryn::Window::inputKey(GLFWwindow* win, int key, int scancode, int action, int mods) {
+	// TODO: Implement with input system
+
+}
+
+void ryn::Window::inputMouseButton(GLFWwindow* win, int button, int action, int mods) {
+	// TODO: Implement with input system
+
+}
+
+void ryn::Window::inputMouseScroll(GLFWwindow* win, double xoffset, double yoffset) {
+	// TODO: Implement with input system
+
+}
+
+void ryn::Window::inputMousePosition(GLFWwindow* win) {
+	// TODO: Implement with input system
+
 }

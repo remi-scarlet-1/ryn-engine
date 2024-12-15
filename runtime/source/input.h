@@ -9,6 +9,9 @@ namespace std {
 
 // Engine namespace
 namespace ryn {
+	// Forward declaration of ryn::Window class
+	class Window;
+	
 	// Modifier keys (Shift, Ctrl, Alt)
 	enum class Modifier {
 		None = 0x0,    // 0000 (no modifier)
@@ -51,7 +54,6 @@ namespace ryn {
 		static void getMouseScroll(double& xOffset, double& yOffset);
 
 	private:
-		class Window; // Forward declaration of ryn::Window class
 		friend class Window; // Allow window class to access update functions of Input API
 
 		// Internal state
