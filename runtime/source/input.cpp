@@ -3,13 +3,11 @@
 #include <bitset>
 
 // Initialize static members:
-uint8_t ryn::Input::modifierState = 0;
+std::bitset<static_cast<int>(ryn::Input::Key::Count)> ryn::Input::keyStates;
+std::bitset<static_cast<int>(ryn::Input::Key::Count)> ryn::Input::keyStatesLastFrame;
 
-std::bitset<static_cast<int>(ryn::Key::Count)> ryn::Input::keyStates;
-std::bitset<static_cast<int>(ryn::Key::Count)> ryn::Input::keyStatesLastFrame;
-
-std::bitset<static_cast<int>(ryn::MouseButton::Count)> ryn::Input::mouseButtonStates;
-std::bitset<static_cast<int>(ryn::MouseButton::Count)> ryn::Input::mouseButtonStatesLastFrame;
+std::bitset<static_cast<int>(ryn::Input::MouseButton::Count)> ryn::Input::mouseButtonStates;
+std::bitset<static_cast<int>(ryn::Input::MouseButton::Count)> ryn::Input::mouseButtonStatesLastFrame;
 
 double ryn::Input::mouseX = 0.0;
 double ryn::Input::mouseY = 0.0;
@@ -18,30 +16,27 @@ double ryn::Input::mouseScrollX = 0.0;
 double ryn::Input::mouseScrollY = 0.0;
 
 // Function implementations:
-bool ryn::Input::isKeyPressed(Key key, uint8_t modifiers) {
+bool ryn::Input::isKeyPressed(Key key) {
     int index = static_cast<int>(key);
     if (index < static_cast<int>(Key::Count)) // Ensure key index is valid
         if (keyStatesLastFrame.test(index) == false && keyStates.test(index) == true) // Check if pressed this frame
-            if ((modifierState & modifiers) == modifiers) // Check if required modifiers are set
-                return true;
+            return true;
     return false;
 }
 
-bool ryn::Input::isKeyReleased(Key key, uint8_t modifiers) {
+bool ryn::Input::isKeyReleased(Key key) {
     int index = static_cast<int>(key);
     if (index < static_cast<int>(Key::Count)) // Ensure key index is valid
         if (keyStatesLastFrame.test(index) == true && keyStates.test(index) == false) // Check if released this frame
-            if ((modifierState & modifiers) == modifiers) // Check if required modifiers are set
-                return true;
+            return true;
     return false;
 }
 
-bool ryn::Input::isKeyHeld(Key key, uint8_t modifiers) {
+bool ryn::Input::isKeyHeld(Key key) {
     int index = static_cast<int>(key);
     if (index < static_cast<int>(Key::Count)) // Ensure key index is valid
         if (keyStates.test(index) == true) // Check if key is held
-            if ((modifierState & modifiers) == modifiers) // Check if required modifiers are set
-                return true;
+            return true;
     return false;
 }
 
@@ -92,14 +87,6 @@ void ryn::Input::updateKeyState(Key key, bool pressed) {
     int index = static_cast<int>(key);
     if (index < static_cast<int>(Key::Count))
         keyStates.set(index, pressed);
-}
-
-void ryn::Input::updateModifierState(Modifier mod, bool pressed) {
-    uint8_t bit = static_cast<uint8_t>(mod);
-    if (pressed)
-        modifierState |= bit;
-    else
-        modifierState &= ~bit;
 }
 
 void ryn::Input::updateMouseButtonState(MouseButton button, bool pressed) {

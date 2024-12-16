@@ -9,9 +9,9 @@
 - [x] DOCS!!!!
 - [x] Engine namespace
 - [x] Input system: keyboard and mouse input (hook window input fetching up, aka. glfw)
+- [x] Input system: figure out what to do about modifier keys?
 ---
 - [ ] Input system: visualize internal state in imgui menu
-- [ ] Input system: figure out what to do about modifier keys?
 - [ ] cleanup build system (add deploy config; stripts imgui?)
 
 # Future considerations

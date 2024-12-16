@@ -91,45 +91,43 @@ void ryn::Window::pollEvents() {
 }
 
 void ryn::Window::inputKey(GLFWwindow* win, int key, int scancode, int action, int mods) {
-	// TODO: Implement support for modifier keys
-
 	// Map GLFW key codes to your Key enum
 	if (key >= GLFW_KEY_A && key <= GLFW_KEY_Z)
-		ryn::Input::updateKeyState(static_cast<ryn::Key>(key - GLFW_KEY_A), action != GLFW_RELEASE);
+		ryn::Input::updateKeyState(static_cast<ryn::Input::Key>(key - GLFW_KEY_A), action != GLFW_RELEASE);
 	else if (key >= GLFW_KEY_0 && key <= GLFW_KEY_9)
-		ryn::Input::updateKeyState(static_cast<ryn::Key>(key), action != GLFW_RELEASE);
+		ryn::Input::updateKeyState(static_cast<ryn::Input::Key>(key), action != GLFW_RELEASE);
 	else if (key >= GLFW_KEY_F1 && key <= GLFW_KEY_F12)
-		ryn::Input::updateKeyState(static_cast<ryn::Key>(key - GLFW_KEY_F1 + static_cast<int>(ryn::Key::F1)), action != GLFW_RELEASE);
+		ryn::Input::updateKeyState(static_cast<ryn::Input::Key>(key - GLFW_KEY_F1 + static_cast<int>(ryn::Input::Key::F1)), action != GLFW_RELEASE);
 	else {
 		switch (key) {
-		case GLFW_KEY_LEFT: ryn::Input::updateKeyState(ryn::Key::LeftArrow, action != GLFW_RELEASE); break;
-		case GLFW_KEY_RIGHT: ryn::Input::updateKeyState(ryn::Key::RightArrow, action != GLFW_RELEASE); break;
-		case GLFW_KEY_UP: ryn::Input::updateKeyState(ryn::Key::UpArrow, action != GLFW_RELEASE); break;
-		case GLFW_KEY_DOWN: ryn::Input::updateKeyState(ryn::Key::DownArrow, action != GLFW_RELEASE); break;
+		case GLFW_KEY_LEFT: ryn::Input::updateKeyState(ryn::Input::Key::LeftArrow, action != GLFW_RELEASE); break;
+		case GLFW_KEY_RIGHT: ryn::Input::updateKeyState(ryn::Input::Key::RightArrow, action != GLFW_RELEASE); break;
+		case GLFW_KEY_UP: ryn::Input::updateKeyState(ryn::Input::Key::UpArrow, action != GLFW_RELEASE); break;
+		case GLFW_KEY_DOWN: ryn::Input::updateKeyState(ryn::Input::Key::DownArrow, action != GLFW_RELEASE); break;
 
-		case GLFW_KEY_ENTER: ryn::Input::updateKeyState(ryn::Key::Enter, action != GLFW_RELEASE); break;
-		case GLFW_KEY_SPACE: ryn::Input::updateKeyState(ryn::Key::Space, action != GLFW_RELEASE); break;
-		case GLFW_KEY_TAB: ryn::Input::updateKeyState(ryn::Key::Tab, action != GLFW_RELEASE); break;
-		case GLFW_KEY_ESCAPE: ryn::Input::updateKeyState(ryn::Key::Escape, action != GLFW_RELEASE); break;
-		case GLFW_KEY_BACKSPACE: ryn::Input::updateKeyState(ryn::Key::Backspace, action != GLFW_RELEASE); break;
-		case GLFW_KEY_LEFT_SHIFT: ryn::Input::updateKeyState(ryn::Key::Shift, action != GLFW_RELEASE); break;
-		case GLFW_KEY_RIGHT_SHIFT: ryn::Input::updateKeyState(ryn::Key::Shift, action != GLFW_RELEASE); break;
-		case GLFW_KEY_LEFT_CONTROL: ryn::Input::updateKeyState(ryn::Key::Control, action != GLFW_RELEASE); break;
-		case GLFW_KEY_RIGHT_CONTROL: ryn::Input::updateKeyState(ryn::Key::Control, action != GLFW_RELEASE); break;
-		case GLFW_KEY_LEFT_ALT: ryn::Input::updateKeyState(ryn::Key::Alt, action != GLFW_RELEASE); break;
-		case GLFW_KEY_RIGHT_ALT: ryn::Input::updateKeyState(ryn::Key::Alt, action != GLFW_RELEASE); break;
-		case GLFW_KEY_CAPS_LOCK: ryn::Input::updateKeyState(ryn::Key::CapsLock, action != GLFW_RELEASE); break;
-		case GLFW_KEY_NUM_LOCK: ryn::Input::updateKeyState(ryn::Key::NumLock, action != GLFW_RELEASE); break;
-		case GLFW_KEY_SCROLL_LOCK: ryn::Input::updateKeyState(ryn::Key::ScrollLock, action != GLFW_RELEASE); break;
-		case GLFW_KEY_INSERT: ryn::Input::updateKeyState(ryn::Key::Insert, action != GLFW_RELEASE); break;
-		case GLFW_KEY_DELETE: ryn::Input::updateKeyState(ryn::Key::Delete, action != GLFW_RELEASE); break;
+		case GLFW_KEY_ENTER: ryn::Input::updateKeyState(ryn::Input::Key::Enter, action != GLFW_RELEASE); break;
+		case GLFW_KEY_SPACE: ryn::Input::updateKeyState(ryn::Input::Key::Space, action != GLFW_RELEASE); break;
+		case GLFW_KEY_TAB: ryn::Input::updateKeyState(ryn::Input::Key::Tab, action != GLFW_RELEASE); break;
+		case GLFW_KEY_ESCAPE: ryn::Input::updateKeyState(ryn::Input::Key::Escape, action != GLFW_RELEASE); break;
+		case GLFW_KEY_BACKSPACE: ryn::Input::updateKeyState(ryn::Input::Key::Backspace, action != GLFW_RELEASE); break;
+		case GLFW_KEY_LEFT_SHIFT: ryn::Input::updateKeyState(ryn::Input::Key::Shift, action != GLFW_RELEASE); break;
+		case GLFW_KEY_RIGHT_SHIFT: ryn::Input::updateKeyState(ryn::Input::Key::Shift, action != GLFW_RELEASE); break;
+		case GLFW_KEY_LEFT_CONTROL: ryn::Input::updateKeyState(ryn::Input::Key::Control, action != GLFW_RELEASE); break;
+		case GLFW_KEY_RIGHT_CONTROL: ryn::Input::updateKeyState(ryn::Input::Key::Control, action != GLFW_RELEASE); break;
+		case GLFW_KEY_LEFT_ALT: ryn::Input::updateKeyState(ryn::Input::Key::Alt, action != GLFW_RELEASE); break;
+		case GLFW_KEY_RIGHT_ALT: ryn::Input::updateKeyState(ryn::Input::Key::Alt, action != GLFW_RELEASE); break;
+		case GLFW_KEY_CAPS_LOCK: ryn::Input::updateKeyState(ryn::Input::Key::CapsLock, action != GLFW_RELEASE); break;
+		case GLFW_KEY_NUM_LOCK: ryn::Input::updateKeyState(ryn::Input::Key::NumLock, action != GLFW_RELEASE); break;
+		case GLFW_KEY_SCROLL_LOCK: ryn::Input::updateKeyState(ryn::Input::Key::ScrollLock, action != GLFW_RELEASE); break;
+		case GLFW_KEY_INSERT: ryn::Input::updateKeyState(ryn::Input::Key::Insert, action != GLFW_RELEASE); break;
+		case GLFW_KEY_DELETE: ryn::Input::updateKeyState(ryn::Input::Key::Delete, action != GLFW_RELEASE); break;
 		
-		case GLFW_KEY_HOME: ryn::Input::updateKeyState(ryn::Key::Home, action != GLFW_RELEASE); break;
-		case GLFW_KEY_END: ryn::Input::updateKeyState(ryn::Key::End, action != GLFW_RELEASE); break;
-		case GLFW_KEY_PAGE_UP: ryn::Input::updateKeyState(ryn::Key::PageUp, action != GLFW_RELEASE); break;
-		case GLFW_KEY_PAGE_DOWN: ryn::Input::updateKeyState(ryn::Key::PageDown, action != GLFW_RELEASE); break;
-		case GLFW_KEY_PAUSE: ryn::Input::updateKeyState(ryn::Key::Pause, action != GLFW_RELEASE); break;
-		case GLFW_KEY_PRINT_SCREEN: ryn::Input::updateKeyState(ryn::Key::PrintScreen, action != GLFW_RELEASE); break;
+		case GLFW_KEY_HOME: ryn::Input::updateKeyState(ryn::Input::Key::Home, action != GLFW_RELEASE); break;
+		case GLFW_KEY_END: ryn::Input::updateKeyState(ryn::Input::Key::End, action != GLFW_RELEASE); break;
+		case GLFW_KEY_PAGE_UP: ryn::Input::updateKeyState(ryn::Input::Key::PageUp, action != GLFW_RELEASE); break;
+		case GLFW_KEY_PAGE_DOWN: ryn::Input::updateKeyState(ryn::Input::Key::PageDown, action != GLFW_RELEASE); break;
+		case GLFW_KEY_PAUSE: ryn::Input::updateKeyState(ryn::Input::Key::Pause, action != GLFW_RELEASE); break;
+		case GLFW_KEY_PRINT_SCREEN: ryn::Input::updateKeyState(ryn::Input::Key::PrintScreen, action != GLFW_RELEASE); break;
 		
 		default: break;
 		}
@@ -137,11 +135,11 @@ void ryn::Window::inputKey(GLFWwindow* win, int key, int scancode, int action, i
 }
 
 void ryn::Window::inputMouseButton(GLFWwindow* win, int button, int action, int mods) {
-	ryn::MouseButton mappedButton;
+	ryn::Input::MouseButton mappedButton;
 	switch (button) {
-	case GLFW_MOUSE_BUTTON_LEFT: mappedButton = ryn::MouseButton::Left; break;
-	case GLFW_MOUSE_BUTTON_RIGHT: mappedButton = ryn::MouseButton::Right; break;
-	case GLFW_MOUSE_BUTTON_MIDDLE: mappedButton = ryn::MouseButton::Middle; break;
+	case GLFW_MOUSE_BUTTON_LEFT: mappedButton = ryn::Input::MouseButton::Left; break;
+	case GLFW_MOUSE_BUTTON_RIGHT: mappedButton = ryn::Input::MouseButton::Right; break;
+	case GLFW_MOUSE_BUTTON_MIDDLE: mappedButton = ryn::Input::MouseButton::Middle; break;
 	default: return;
 	}
 	ryn::Input::updateMouseButtonState(mappedButton, action != GLFW_RELEASE);
