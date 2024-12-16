@@ -28,3 +28,15 @@ void ryn::debug::renderStatisticsMenu(bool* open) {
 
 	ImGui::End();
 }
+
+void ryn::debug::renderInputDebugMenu(bool* open) {
+	// TODO: Gather relevant data
+
+	// Render menu
+	ImGui::SetNextWindowSize(ImVec2(240, 180), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowPos(ImVec2(0, ), ImGuiCond_FirstUseEver);
+
+	ImGui::Begin("Input Debug", open, ImGuiWindowFlags_NoResize);
+
+	ImGui::End();
+}

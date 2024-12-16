@@ -1,4 +1,5 @@
 #include "window.h"
+#include "input.h"
 #include "debug_menus.h"
 
 #include <iostream>
@@ -70,6 +71,7 @@ int main(int argc, char** argv)
 		ImGui::NewFrame();
 
 		ryn::debug::renderStatisticsMenu(&show_stats);
+		ryn::debug::renderInputDebugMenu(&show_stats);
 
 		// ImGui end frame
 		ImGui::Render();
