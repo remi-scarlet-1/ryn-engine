@@ -1,9 +1,6 @@
 #pragma once
 
-// Forward declaration of std::bitset with a specified size
-namespace std {
-	template <size_t N> class bitset;
-}
+#include <cstdint> // For uint64_t, uint16_t
 
 // Engine namespace
 namespace ryn {
@@ -16,13 +13,17 @@ namespace ryn {
 	public:
 		// Keyboard keys
 		enum class Key {
+			// Regular keys
 			A = 0, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z,
-			Zero = 48, One, Two, Three, Four, Five, Six, Seven, Eight, Nine,
+			Zero, One, Two, Three, Four, Five, Six, Seven, Eight, Nine,
 			F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12,
-			LeftArrow, RightArrow, UpArrow, DownArrow,
-			Enter, Space, Tab, Escape, Backspace, Shift, Control, Alt, CapsLock, NumLock, ScrollLock, Insert, Delete,
-			Home, End, PageUp, PageDown, Pause, PrintScreen,
-			Count // Placeholder for querying total number of keys
+			KeyCount = 63,
+
+			// Special keys
+			LeftArrow = 64, RightArrow, UpArrow, DownArrow,
+			Enter, Space, Tab, Escape, Backspace, Shift, Control, Alt, CapsLock, NumLock, ScrollLock,
+			Insert, Delete, Home, End, PageUp, PageDown, Pause, PrintScreen,
+			ExtendedKeyCount = 127
 		};
 
 		// Mouse buttons
@@ -30,7 +31,7 @@ namespace ryn {
 			Left = 0,
 			Right,
 			Middle,
-			Count // Placeholder for querying total mouse buttons
+			Count = 16 // Supports up to 16 mouse buttons
 		};
 
 		static bool isKeyPressed(Key key);
@@ -49,10 +50,13 @@ namespace ryn {
 		friend class Debug; // Allow debug class access to retrieve internal state of the Input API
 
 		// Internal state
-		static std::bitset<static_cast<int>(Key::Count)> keyStates;
-		static std::bitset<static_cast<int>(Key::Count)> keyStatesLastFrame;
-		static std::bitset<static_cast<int>(MouseButton::Count)> mouseButtonStates;
-		static std::bitset<static_cast<int>(MouseButton::Count)> mouseButtonStatesLastFrame;
+		static uint64_t regularKeyStates;
+		static uint64_t regularKeyStatesLastFrame;
+		static uint64_t specialKeyStates;
+		static uint64_t specialKeyStatesLastFrame;
+
+		static uint16_t mouseButtonStates;
+		static uint16_t mouseButtonStatesLastFrame;
 		static double mouseX, mouseY;
 		static double mouseScrollX, mouseScrollY;
 
@@ -60,10 +64,13 @@ namespace ryn {
 		
 		// Called at the start of a new frame. 
 		// Updates lastFrame states and prepares current states for new input.
-		static void update();
+		static void reset();
 		static void updateKeyState(Key key, bool pressed);
 		static void updateMouseButtonState(MouseButton button, bool pressed);
 		static void updateMousePosition(double xPos, double yPos);
 		static void updateMouseScroll(double xOffset, double yOffset);
+
+		// Only use this for debug purposes, gets the entire internal state of the Input API
+		// static void getState();
 	};
 }

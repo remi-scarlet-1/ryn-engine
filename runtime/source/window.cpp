@@ -84,10 +84,10 @@ void ryn::Window::getResolution(int* width, int* height) {
 }
 
 void ryn::Window::pollEvents() {
+	ryn::Input::reset();
+
 	glfwPollEvents(); // Invokes all set Key/Mouse/etc. callbacks
 	inputMousePosition(window); // Manual fetching of mouse position
-
-	ryn::Input::update();
 }
 
 void ryn::Window::inputKey(GLFWwindow* win, int key, int scancode, int action, int mods) {

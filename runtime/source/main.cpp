@@ -70,8 +70,8 @@ int main(int argc, char** argv)
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		ryn::Debug::renderStatisticsMenu(&show_stats);
-		ryn::Debug::renderInputDebugMenu(&show_stats);
+		ryn::Debug::showStatisticsMenu(&show_stats);
+		ryn::Debug::showInputVisualizerMenu(&show_stats);
 
 		// ImGui end frame
 		ImGui::Render();

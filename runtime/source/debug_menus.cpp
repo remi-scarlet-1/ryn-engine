@@ -4,7 +4,7 @@
 #include <fmt/core.h>
 #include <bgfx/bgfx.h>
 
-void ryn::Debug::renderStatisticsMenu(bool* open) {
+void ryn::Debug::showStatisticsMenu(bool* open) {
 	// Gather relevant data
 	const bgfx::Stats* stats = bgfx::getStats();
 	double cpuTime = static_cast<double>(stats->cpuTimeFrame) / static_cast<double>(stats->cpuTimerFreq);
@@ -29,7 +29,7 @@ void ryn::Debug::renderStatisticsMenu(bool* open) {
 	ImGui::End();
 }
 
-void ryn::Debug::renderInputDebugMenu(bool* open) {
+void ryn::Debug::showInputVisualizerMenu(bool* open) {
 	// TODO: Gather relevant data
 
 	// Render menu

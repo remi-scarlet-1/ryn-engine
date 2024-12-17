@@ -10,9 +10,11 @@
 - [x] Engine namespace
 - [x] Input system: keyboard and mouse input (hook window input fetching up, aka. glfw)
 - [x] Input system: figure out what to do about modifier keys?
+- [x] Input system: optimise with bitmasks
 ---
 - [ ] Input system: visualize internal state in imgui menu
 - [ ] cleanup build system (add deploy config; stripts imgui?)
+- [ ] fmt debug builded without correct '_d' postfix, investigate
 
 # Future considerations
 - [ ] controller input
