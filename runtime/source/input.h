@@ -23,14 +23,14 @@ namespace ryn {
 			LeftArrow = 64, RightArrow, UpArrow, DownArrow,
 			Enter, Space, Tab, Escape, Backspace, Shift, Control, Alt, CapsLock, NumLock, ScrollLock,
 			Insert, Delete, Home, End, PageUp, PageDown, Pause, PrintScreen,
+			Minus, Equal, LeftBracket, RightBracket, Backslash, Semicolon, Apostrophe, Comma, Period, Slash,
 			ExtendedKeyCount = 127
 		};
 
 		// Mouse buttons
 		enum class MouseButton {
-			Left = 0,
-			Right,
-			Middle,
+			Left = 0, Right, Middle,
+			Button4, Button5,
 			Count = 16 // Supports up to 16 mouse buttons
 		};
 

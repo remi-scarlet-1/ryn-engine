@@ -128,6 +128,19 @@ void ryn::Window::inputKey(GLFWwindow* win, int key, int scancode, int action, i
 		case GLFW_KEY_PAGE_DOWN: ryn::Input::updateKeyState(ryn::Input::Key::PageDown, action != GLFW_RELEASE); break;
 		case GLFW_KEY_PAUSE: ryn::Input::updateKeyState(ryn::Input::Key::Pause, action != GLFW_RELEASE); break;
 		case GLFW_KEY_PRINT_SCREEN: ryn::Input::updateKeyState(ryn::Input::Key::PrintScreen, action != GLFW_RELEASE); break;
+
+		case GLFW_KEY_MINUS: ryn::Input::updateKeyState(ryn::Input::Key::Minus, action != GLFW_RELEASE); break;
+		case GLFW_KEY_EQUAL: ryn::Input::updateKeyState(ryn::Input::Key::Equal, action != GLFW_RELEASE); break;
+		case GLFW_KEY_LEFT_BRACKET: ryn::Input::updateKeyState(ryn::Input::Key::LeftBracket, action != GLFW_RELEASE); break;
+		case GLFW_KEY_RIGHT_BRACKET: ryn::Input::updateKeyState(ryn::Input::Key::RightBracket, action != GLFW_RELEASE); break;
+		case GLFW_KEY_BACKSLASH: ryn::Input::updateKeyState(ryn::Input::Key::Backslash, action != GLFW_RELEASE); break;
+		case GLFW_KEY_SEMICOLON: ryn::Input::updateKeyState(ryn::Input::Key::Semicolon, action != GLFW_RELEASE); break;
+		case GLFW_KEY_APOSTROPHE: ryn::Input::updateKeyState(ryn::Input::Key::Apostrophe, action != GLFW_RELEASE); break;
+		case GLFW_KEY_COMMA: ryn::Input::updateKeyState(ryn::Input::Key::Comma, action != GLFW_RELEASE); break;
+		case GLFW_KEY_PERIOD: ryn::Input::updateKeyState(ryn::Input::Key::Period, action != GLFW_RELEASE); break;
+		case GLFW_KEY_SLASH: ryn::Input::updateKeyState(ryn::Input::Key::Slash, action != GLFW_RELEASE); break;
+
+		case GLFW_KEY_RIGHT_SUPER: ryn::Input::updateKeyState(ryn::Input::Key::Slash, action != GLFW_RELEASE); break;
 		
 		default: break;
 		}
@@ -140,6 +153,8 @@ void ryn::Window::inputMouseButton(GLFWwindow* win, int button, int action, int 
 	case GLFW_MOUSE_BUTTON_LEFT: mappedButton = ryn::Input::MouseButton::Left; break;
 	case GLFW_MOUSE_BUTTON_RIGHT: mappedButton = ryn::Input::MouseButton::Right; break;
 	case GLFW_MOUSE_BUTTON_MIDDLE: mappedButton = ryn::Input::MouseButton::Middle; break;
+	case GLFW_MOUSE_BUTTON_4: mappedButton = ryn::Input::MouseButton::Button4; break;
+	case GLFW_MOUSE_BUTTON_5: mappedButton = ryn::Input::MouseButton::Button5; break;
 	default: return;
 	}
 	ryn::Input::updateMouseButtonState(mappedButton, action != GLFW_RELEASE);
