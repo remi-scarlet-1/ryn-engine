@@ -13,6 +13,7 @@
 - [x] Input system: optimise with bitmasks
 - [x] Input system: visualize internal state in imgui menu
 ---
+- [ ] Input system: add mouse side buttons
 - [ ] Input system: add more special keys
 - [ ] cleanup all a bit
 - [ ] cleanup build system (add deploy config; stripts imgui?)

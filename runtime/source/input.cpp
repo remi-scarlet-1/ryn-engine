@@ -110,10 +110,12 @@ void Input::getMouseScroll(double& xOffset, double& yOffset) {
 }
 
 // Internal functions
-void Input::reset() { // TODO: FIX!!!!
+void Input::reset() {
     regularKeyStatesLastFrame = regularKeyStates;
     specialKeyStatesLastFrame = specialKeyStates;
     mouseButtonStatesLastFrame = mouseButtonStates;
+    mouseScrollX = 0;
+    mouseScrollY = 0;
 }
 
 void Input::updateKeyState(Key key, bool pressed) {
