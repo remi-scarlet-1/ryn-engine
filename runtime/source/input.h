@@ -9,6 +9,7 @@ namespace std {
 namespace ryn {
 	// Forward declarations
 	class Window;
+	class Debug;
 	
 	// Provides a static API for querying inputs
 	class Input {
@@ -44,7 +45,8 @@ namespace ryn {
 		static void getMouseScroll(double& xOffset, double& yOffset);
 
 	private:
-		friend class Window; // Allow window class to access update functions of Input API
+		friend class Window; // Allow window class access to update functions of Input API
+		friend class Debug; // Allow debug class access to retrieve internal state of the Input API
 
 		// Internal state
 		static std::bitset<static_cast<int>(Key::Count)> keyStates;
