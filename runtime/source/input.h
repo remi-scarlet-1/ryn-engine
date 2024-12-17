@@ -61,16 +61,14 @@ namespace ryn {
 		static double mouseScrollX, mouseScrollY;
 
 		// Update functions to be used be used by window class:
-		
-		// Called at the start of a new frame. 
-		// Updates lastFrame states and prepares current states for new input.
+
+		// Call this to the start of a new frame.
+		// Updates lastFrame state and prepares current states for new input.
+		// Note: this MUST be called before the windowing lib does any input polling.
 		static void reset();
 		static void updateKeyState(Key key, bool pressed);
 		static void updateMouseButtonState(MouseButton button, bool pressed);
 		static void updateMousePosition(double xPos, double yPos);
 		static void updateMouseScroll(double xOffset, double yOffset);
-
-		// Only use this for debug purposes, gets the entire internal state of the Input API
-		// static void getState();
 	};
 }

@@ -1,17 +1,19 @@
 #include "input.h"
 
-// Initialize static members:
-uint64_t ryn::Input::regularKeyStates = 0;
-uint64_t ryn::Input::regularKeyStatesLastFrame = 0;
-uint64_t ryn::Input::specialKeyStates = 0;
-uint64_t ryn::Input::specialKeyStatesLastFrame = 0;
+using namespace ryn;
 
-uint16_t ryn::Input::mouseButtonStates = 0;
-uint16_t ryn::Input::mouseButtonStatesLastFrame = 0;
-double ryn::Input::mouseX = 0.0;
-double ryn::Input::mouseY = 0.0;
-double ryn::Input::mouseScrollX = 0.0;
-double ryn::Input::mouseScrollY = 0.0;
+// Initialize static members:
+uint64_t Input::regularKeyStates = 0;
+uint64_t Input::regularKeyStatesLastFrame = 0;
+uint64_t Input::specialKeyStates = 0;
+uint64_t Input::specialKeyStatesLastFrame = 0;
+
+uint16_t Input::mouseButtonStates = 0;
+uint16_t Input::mouseButtonStatesLastFrame = 0;
+double Input::mouseX = 0.0;
+double Input::mouseY = 0.0;
+double Input::mouseScrollX = 0.0;
+double Input::mouseScrollY = 0.0;
 
 // Helper functions
 inline void setBit(uint64_t& word, int bit, bool value) {
@@ -37,7 +39,7 @@ inline constexpr bool inRange(int start, int end, int a) {
 }
 
 // Implementation
-bool ryn::Input::isKeyPressed(Key key) {
+bool Input::isKeyPressed(Key key) {
     int index = static_cast<int>(key);
 
     if (inRange(static_cast<int>(Key::A), static_cast<int>(Key::KeyCount), index))
@@ -50,7 +52,7 @@ bool ryn::Input::isKeyPressed(Key key) {
     return false;
 }
 
-bool ryn::Input::isKeyReleased(Key key) {
+bool Input::isKeyReleased(Key key) {
     int index = static_cast<int>(key);
 
     if (inRange(static_cast<int>(Key::A), static_cast<int>(Key::KeyCount), index))
@@ -63,7 +65,7 @@ bool ryn::Input::isKeyReleased(Key key) {
     return false;
 }
 
-bool ryn::Input::isKeyHeld(Key key) {
+bool Input::isKeyHeld(Key key) {
     int index = static_cast<int>(key);
 
     if (inRange(static_cast<int>(Key::A), static_cast<int>(Key::KeyCount), index))
@@ -76,45 +78,45 @@ bool ryn::Input::isKeyHeld(Key key) {
     return false;
 }
 
-bool ryn::Input::isMousePressed(MouseButton button) {
+bool Input::isMousePressed(MouseButton button) {
     int index = static_cast<int>(button);
     if (index < static_cast<int>(MouseButton::Count))
         return getBit(mouseButtonStates, index) && !getBit(mouseButtonStatesLastFrame, index);
     return false;
 }
 
-bool ryn::Input::isMouseReleased(MouseButton button) {
+bool Input::isMouseReleased(MouseButton button) {
     int index = static_cast<int>(button);
     if (index < static_cast<int>(MouseButton::Count))
         return !getBit(mouseButtonStates, index) && getBit(mouseButtonStatesLastFrame, index);
     return false;
 }
 
-bool ryn::Input::isMouseHeld(MouseButton button) {
+bool Input::isMouseHeld(MouseButton button) {
     int index = static_cast<int>(button);
     if (index < static_cast<int>(MouseButton::Count))
         return getBit(mouseButtonStates, index);
     return false;
 }
 
-void ryn::Input::getMousePosition(double& xPos, double& yPos) {
+void Input::getMousePosition(double& xPos, double& yPos) {
     xPos = mouseX;
     yPos = mouseY;
 }
 
-void ryn::Input::getMouseScroll(double& xOffset, double& yOffset) {
+void Input::getMouseScroll(double& xOffset, double& yOffset) {
     xOffset = mouseScrollX;
     yOffset = mouseScrollY;
 }
 
 // Internal functions
-void ryn::Input::reset() { // TODO: FIX!!!!
+void Input::reset() { // TODO: FIX!!!!
     regularKeyStatesLastFrame = regularKeyStates;
     specialKeyStatesLastFrame = specialKeyStates;
     mouseButtonStatesLastFrame = mouseButtonStates;
 }
 
-void ryn::Input::updateKeyState(Key key, bool pressed) {
+void Input::updateKeyState(Key key, bool pressed) {
     int index = static_cast<int>(key);
     if (inRange(static_cast<int>(Key::A), static_cast<int>(Key::KeyCount), index))
         return setBit(regularKeyStates, index, pressed);
@@ -124,18 +126,18 @@ void ryn::Input::updateKeyState(Key key, bool pressed) {
     }
 }
 
-void ryn::Input::updateMouseButtonState(MouseButton button, bool pressed) {
+void Input::updateMouseButtonState(MouseButton button, bool pressed) {
     int index = static_cast<int>(button);
     if (index < static_cast<int>(MouseButton::Count))
         setBit(mouseButtonStates, index, pressed);
 }
 
-void ryn::Input::updateMousePosition(double xPos, double yPos) {
+void Input::updateMousePosition(double xPos, double yPos) {
     mouseX = xPos;
     mouseY = yPos;
 }
 
-void ryn::Input::updateMouseScroll(double xOffset, double yOffset) {
+void Input::updateMouseScroll(double xOffset, double yOffset) {
     mouseScrollX = xOffset;
     mouseScrollY = yOffset;
 }
