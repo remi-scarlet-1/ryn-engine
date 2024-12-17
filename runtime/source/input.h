@@ -7,20 +7,12 @@ namespace std {
 
 // Engine namespace
 namespace ryn {
-	// Forward declaration of ryn::Window class
+	// Forward declarations
 	class Window;
 	
 	// Provides a static API for querying inputs
 	class Input {
 	public:
-		// Modifier keys (Shift, Ctrl, Alt)
-		enum class Modifier {
-			None = 0x0,    // 0000 (no modifier)
-			Shift = 0x1,   // 0001
-			Control = 0x2, // 0010
-			Alt = 0x4      // 0100
-		};
-
 		// Keyboard keys
 		enum class Key {
 			A = 0, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z,
