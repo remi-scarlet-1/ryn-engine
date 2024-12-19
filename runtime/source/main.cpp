@@ -57,13 +57,10 @@ int main(int argc, char** argv)
 		// This dummy draw call is here to make sure that view 0 is cleared if no other draw calls are submitted to view 0.
 		bgfx::touch(view);
 
-		// ImGui start frame
-		ryn::Debug::prepareImGuiFrame();
-
+		// Draw debug menus
+		ryn::Debug::beginImGuiFrame();
 		ryn::Debug::showRuntimeStatisticsMenu(&showStats);
 		ryn::Debug::showInputVisualizerMenu(&showStats);
-
-		// ImGui end frame
 		ryn::Debug::renderImGuiFrame();
 
 		// Advance to next frame. Process submitted rendering primitives.

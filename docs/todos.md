@@ -14,8 +14,14 @@
 - [x] Input system: visualize internal state in imgui menu
 - [x] Input system: add mouse side buttons
 - [x] Input system: add more special keys
+- [x] cleanup debug
+- [x] cleanup input
 ---
-- [ ] cleanup all a bit
+- [ ] cleanup window
+- [ ] cleanup main
+
+- [ ] map out dependencies (includes, to figure out what namespaces are accessible)
+
 - [ ] cleanup build system (add deploy config; stripts imgui?)
 - [ ] fmt debug builded without correct '_d' postfix, investigate
 

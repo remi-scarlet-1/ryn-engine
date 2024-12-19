@@ -2,7 +2,7 @@
 
 using namespace ryn;
 
-// Initialize static members:
+// Initialize static members
 uint64_t Input::regularKeyStates = 0;
 uint64_t Input::regularKeyStatesLastFrame = 0;
 uint64_t Input::specialKeyStates = 0;
@@ -16,6 +16,13 @@ double Input::mouseScrollX = 0.0;
 double Input::mouseScrollY = 0.0;
 
 // Helper functions
+/**
+ * @brief Sets or clears a specific bit in a 64-bit word.
+ *
+ * @param word The 64-bit word to modify.
+ * @param bit The bit index to set or clear (0-based).
+ * @param value If true, the bit is set to 1; if false, the bit is cleared to 0.
+ */
 inline void setBit(uint64_t& word, int bit, bool value) {
     if (value)
         word |= (1ULL << bit);
@@ -23,6 +30,13 @@ inline void setBit(uint64_t& word, int bit, bool value) {
         word &= ~(1ULL << bit);
 }
 
+/**
+ * @brief Sets or clears a specific bit in a 16-bit word.
+ *
+ * @param word The 16-bit word to modify.
+ * @param bit The bit index to set or clear (0-based).
+ * @param value If true, the bit is set to 1; if false, the bit is cleared to 0.
+ */
 inline void setBit(uint16_t& word, int bit, bool value) {
     if (value)
         word |= (1ULL << bit);
@@ -30,73 +44,64 @@ inline void setBit(uint16_t& word, int bit, bool value) {
         word &= ~(1ULL << bit);
 }
 
+/**
+ * @brief Checks whether a specific bit is set in a 64-bit word.
+ *
+ * @param word The 64-bit word to check.
+ * @param bit The bit index to check (0-based).
+ * @return true if the bit is set (1), false otherwise.
+ */
 inline constexpr bool getBit(const uint64_t& word, int bit) {
     return word & (1ULL << bit);
-}
-
-inline constexpr bool inRange(int start, int end, int a) {
-    return start <= a && a < end;
 }
 
 // Implementation
 bool Input::isKeyPressed(Key key) {
     int index = static_cast<int>(key);
 
-    if (inRange(static_cast<int>(Key::A), static_cast<int>(Key::KeyCount), index))
+    if (index < static_cast<int>(Key::KeyCount))
         return getBit(regularKeyStates, index) && !getBit(regularKeyStatesLastFrame, index);
-    else if (inRange(static_cast<int>(Key::LeftArrow), static_cast<int>(Key::ExtendedKeyCount), index)) {
+    else {
         int adjustedIndex = index - static_cast<int>(Key::LeftArrow);
         return getBit(specialKeyStates, adjustedIndex) && !getBit(specialKeyStatesLastFrame, adjustedIndex);
     }
-
-    return false;
 }
 
 bool Input::isKeyReleased(Key key) {
     int index = static_cast<int>(key);
 
-    if (inRange(static_cast<int>(Key::A), static_cast<int>(Key::KeyCount), index))
+    if (index < static_cast<int>(Key::KeyCount))
         return !getBit(regularKeyStates, index) && getBit(regularKeyStatesLastFrame, index);
-    else if (inRange(static_cast<int>(Key::LeftArrow), static_cast<int>(Key::ExtendedKeyCount), index)) {
+    else {
         int adjustedIndex = index - static_cast<int>(Key::LeftArrow);
         return !getBit(specialKeyStates, adjustedIndex) && getBit(specialKeyStatesLastFrame, adjustedIndex);
     }
-
-    return false;
 }
 
 bool Input::isKeyHeld(Key key) {
     int index = static_cast<int>(key);
 
-    if (inRange(static_cast<int>(Key::A), static_cast<int>(Key::KeyCount), index))
+    if (index < static_cast<int>(Key::KeyCount))
         return getBit(regularKeyStates, index);
-    else if (inRange(static_cast<int>(Key::LeftArrow), static_cast<int>(Key::ExtendedKeyCount), index)) {
+    else {
         int adjustedIndex = index - static_cast<int>(Key::LeftArrow);
         return getBit(specialKeyStates, adjustedIndex);
     }
-
-    return false;
 }
 
 bool Input::isMousePressed(MouseButton button) {
     int index = static_cast<int>(button);
-    if (index < static_cast<int>(MouseButton::Count))
-        return getBit(mouseButtonStates, index) && !getBit(mouseButtonStatesLastFrame, index);
-    return false;
+    return getBit(mouseButtonStates, index) && !getBit(mouseButtonStatesLastFrame, index);
 }
 
 bool Input::isMouseReleased(MouseButton button) {
     int index = static_cast<int>(button);
-    if (index < static_cast<int>(MouseButton::Count))
-        return !getBit(mouseButtonStates, index) && getBit(mouseButtonStatesLastFrame, index);
-    return false;
+    return !getBit(mouseButtonStates, index) && getBit(mouseButtonStatesLastFrame, index);
 }
 
 bool Input::isMouseHeld(MouseButton button) {
     int index = static_cast<int>(button);
-    if (index < static_cast<int>(MouseButton::Count))
-        return getBit(mouseButtonStates, index);
-    return false;
+    return getBit(mouseButtonStates, index);
 }
 
 void Input::getMousePosition(double& xPos, double& yPos) {
@@ -120,9 +125,9 @@ void Input::reset() {
 
 void Input::updateKeyState(Key key, bool pressed) {
     int index = static_cast<int>(key);
-    if (inRange(static_cast<int>(Key::A), static_cast<int>(Key::KeyCount), index))
+    if (index < static_cast<int>(Key::KeyCount))
         return setBit(regularKeyStates, index, pressed);
-    else if (inRange(static_cast<int>(Key::LeftArrow), static_cast<int>(Key::ExtendedKeyCount), index)) {
+    else {
         int adjustedIndex = index - static_cast<int>(Key::LeftArrow);
         return setBit(specialKeyStates, adjustedIndex, pressed);
     }

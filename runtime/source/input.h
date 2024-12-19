@@ -8,7 +8,8 @@ namespace ryn {
 	class Window;
 	class Debug;
 	
-	// Provides a static API for querying inputs
+	// Provides an interface for querying input states, including keyboard and mouse interactions.
+	// This API is designed to aggregate input updates over a frame, allowing consistent polling.
 	class Input {
 	public:
 		// Keyboard keys
@@ -29,8 +30,11 @@ namespace ryn {
 
 		// Mouse buttons
 		enum class MouseButton {
-			Left = 0, Right, Middle,
-			Button4, Button5,
+			Left = 0,  // Left mouse button
+			Right,     // Right mouse button
+			Middle,    // Middle mouse button (scroll wheel button)
+			Button4,   // Extra mouse button (commonly side button 1)
+			Button5,   // Extra mouse button (commonly side button 2)
 			Count = 16 // Supports up to 16 mouse buttons
 		};
 
@@ -60,11 +64,8 @@ namespace ryn {
 		static double mouseX, mouseY;
 		static double mouseScrollX, mouseScrollY;
 
-		// Update functions to be used be used by window class:
-
-		// Call this to the start of a new frame.
-		// Updates lastFrame state and prepares current states for new input.
-		// Note: this MUST be called before the windowing lib does any input polling.
+		// Call this at the start of each frame, before the windowing library polls input.
+		// Failing to do so may result in incorrect input states for the current frame.
 		static void reset();
 		static void updateKeyState(Key key, bool pressed);
 		static void updateMouseButtonState(MouseButton button, bool pressed);
