@@ -12,9 +12,9 @@
 - [x] Input system: figure out what to do about modifier keys?
 - [x] Input system: optimise with bitmasks
 - [x] Input system: visualize internal state in imgui menu
----
 - [x] Input system: add mouse side buttons
 - [x] Input system: add more special keys
+---
 - [ ] cleanup all a bit
 - [ ] cleanup build system (add deploy config; stripts imgui?)
 - [ ] fmt debug builded without correct '_d' postfix, investigate

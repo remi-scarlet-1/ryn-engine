@@ -1,12 +1,42 @@
-#include "debug_menus.h"
-
+#include "debug.h"
 #include "input.h"
 
-#include <imgui/imgui.h>
 #include <fmt/core.h>
 #include <bgfx/bgfx.h>
+#include <imgui/imgui.h>
+#include <imgui/backends/imgui_impl_bgfx.h>
+#include <imgui/backends/imgui_impl_glfw.h>
 
-void ryn::Debug::showStatisticsMenu(bool* open) {
+void ryn::Debug::initializeImGui(GLFWwindow* glfwWindow, const bgfx::ViewId bgfxViewId) {
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO();
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+	io.IniFilename = NULL;
+
+	ImGui_Implbgfx_Init(bgfxViewId);
+	ImGui_ImplGlfw_InitForOther(glfwWindow, true);
+}
+
+void ryn::Debug::beginImGuiFrame() {
+	ImGui_Implbgfx_NewFrame();
+	ImGui_ImplGlfw_NewFrame();
+	ImGui::NewFrame();
+}
+
+void ryn::Debug::renderImGuiFrame() {
+	ImGui::Render();
+	ImGui_Implbgfx_RenderDrawLists(ImGui::GetDrawData());
+}
+
+void ryn::Debug::shutdownImGui() {
+	ImGui_Implbgfx_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
+}
+
+void ryn::Debug::showRuntimeStatisticsMenu(bool* open) {
 	// Gather relevant data
 	const bgfx::Stats* stats = bgfx::getStats();
 	double cpuTime = static_cast<double>(stats->cpuTimeFrame) / static_cast<double>(stats->cpuTimerFreq);
