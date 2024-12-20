@@ -16,14 +16,14 @@
 - [x] Input system: add more special keys
 - [x] cleanup debug
 - [x] cleanup input
+- [x] cleanup window
 ---
-- [ ] cleanup window
+- [ ] move window resize (bgfx - glfw) logic out of main
 - [ ] cleanup main
-
-- [ ] map out dependencies (includes, to figure out what namespaces are accessible)
 
 - [ ] cleanup build system (add deploy config; stripts imgui?)
 - [ ] fmt debug builded without correct '_d' postfix, investigate
 
 # Future considerations
+- [ ] map out dependencies (includes, to figure out what namespaces are accessible)
 - [ ] controller input

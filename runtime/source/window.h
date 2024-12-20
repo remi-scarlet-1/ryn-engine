@@ -27,17 +27,10 @@ namespace ryn {
 
 		// Returns a native OS-specific handle for the window (e.g., HWND on Windows).
 		void* getNativeHandle();
-
-		// Returns the underlying GLFW handle for the window.
 		GLFWwindow* getGlfwHandle();
 
-		// Checks if the window should close (e.g., user clicked the close button).
 		bool getShouldClose();
-
-		// Retrieves the current window resolution.
 		void getResolution(int* width, int* height);
-
-		// Processes input and window events. Call this once per frame.
 		void pollEvents();
 
 	private:

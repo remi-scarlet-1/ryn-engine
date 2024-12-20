@@ -91,7 +91,7 @@ void ryn::Window::pollEvents() {
 }
 
 void ryn::Window::inputKey(GLFWwindow* win, int key, int scancode, int action, int mods) {
-	// Map GLFW key codes to your Key enum
+	// Map inputs to input system
 	if (key >= GLFW_KEY_A && key <= GLFW_KEY_Z)
 		ryn::Input::updateKeyState(static_cast<ryn::Input::Key>(key - GLFW_KEY_A), action != GLFW_RELEASE);
 	else if (key >= GLFW_KEY_0 && key <= GLFW_KEY_9)
