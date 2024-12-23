@@ -19,8 +19,8 @@
 - [x] cleanup window
 - [x] cleanup main
 - [x] upgrade debug tools (polish runtime statistics menu & input visualizer)
+- [x] fmt debug builded without correct '_d' postfix, investigate (remove fmt)
 ---
-- [ ] fmt debug builded without correct '_d' postfix, investigate (remove fmt)
 
 # Future considerations
 - [ ] cleanup build system (add deploy config; stripts imgui?)

@@ -57,16 +57,11 @@ workspace "Renderer"
             ["Vendors/*"] = { "%{dir.runtime}/vendors/**.h", "%{dir.runtime}/vendors/**.hpp", "%{dir.runtime}/vendors/**.c", "%{dir.runtime}/vendors/**.cpp" },
         }
 
-        defines {
-            "FMT_UNICODE=0",
-        }
-
         filter "configurations:Release"
             optimize "On"
             defines { "NDEBUG", "BX_CONFIG_DEBUG=0" }
 
             links {
-                "fmt",
                 "bgfx",
                 "bimg",
                 "bimg_decode",
@@ -80,7 +75,6 @@ workspace "Renderer"
             defines { "DEBUG", "BX_CONFIG_DEBUG=1" }
 
             links {
-                "fmt_d",
                 "bgfx_d",
                 "bimg_d",
                 "bimg_decode_d",
@@ -162,10 +156,6 @@ function buildVendors()
     -- Build GLFW
     cmakeGenerate(path.join(dir.vendors, "glfw"), path.join(dir.vendorsBuild, "glfw"), dir.vendorsInstall, generator, "-D GLFW_BUILD_EXAMPLES=OFF -D GLFW_BUILD_TESTS=OFF -D GLFW_BUILD_DOCS=OFF")
     cmakeBuildAndInstall(path.join(dir.vendorsBuild, "glfw"))
-
-    -- Build FMT
-    cmakeGenerate(path.join(dir.vendors, "fmt"), path.join(dir.vendorsBuild, "fmt"), dir.vendorsInstall, generator, "")
-    cmakeBuildAndInstall(path.join(dir.vendorsBuild, "fmt"))
 end
 
 -- Actions
