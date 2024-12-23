@@ -17,13 +17,13 @@
 - [x] cleanup debug
 - [x] cleanup input
 - [x] cleanup window
+- [x] cleanup main
+- [x] upgrade debug tools (polish runtime statistics menu & input visualizer)
 ---
-- [ ] move window resize (bgfx - glfw) logic out of main
-- [ ] cleanup main
-
-- [ ] cleanup build system (add deploy config; stripts imgui?)
-- [ ] fmt debug builded without correct '_d' postfix, investigate
+- [ ] fmt debug builded without correct '_d' postfix, investigate (remove fmt)
 
 # Future considerations
+- [ ] cleanup build system (add deploy config; stripts imgui?)
+
 - [ ] map out dependencies (includes, to figure out what namespaces are accessible)
 - [ ] controller input

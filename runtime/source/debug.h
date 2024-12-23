@@ -11,6 +11,7 @@ namespace bgfx {
 
 // Contains tools available in debug & release configurations
 namespace ryn {
+
 	class Debug {
 	public:
 		// Initialize ImGui for the application.
@@ -29,10 +30,25 @@ namespace ryn {
 		// This must be called once during application shutdown to free all ImGui resources.
 		static void shutdownImGui();
 
-		// Show a menu displaying runtime statistics.
-		static void showRuntimeStatisticsMenu(bool* open);
+		// Draws a main debug menu providing essential runtime statistics and access to different debugging tools.
+		static void drawDebugMenu(bool* open);
 
-		// Show a menu visualizing all current inputs.
-		static void showInputVisualizerMenu(bool* open);
+	private:
+		struct FpsTracker {
+			const double UPDATE_INTERVAL = 200;  // 200 milliseconds (0.2s)
+			int64_t lastTime = 0;
+			int frameCount = 0;
+			double averageFps = 0.0;
+
+			void update();
+			double getAverageFps() const;
+		};
+
+		static void drawStatsMenu();
+		static void drawInputVisualizerMenu();
+
+#pragma region Helper functions
+		static void TooltipMarker(const char* desc);
+#pragma endregion
 	};
 }

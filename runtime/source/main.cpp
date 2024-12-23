@@ -51,13 +51,16 @@ int main(int argc, char** argv)
 	while (!window.getShouldClose()) {
 		window.pollEvents();
 
+		if (ryn::Input::isKeyPressed(ryn::Input::Key::F11))
+			showStats = !showStats;
+
 		// This dummy draw call is here to make sure that view 0 is cleared if no other draw calls are submitted to view 0.
 		bgfx::touch(view);
 
 		// Draw debug menus
 		ryn::Debug::beginImGuiFrame();
-		ryn::Debug::showRuntimeStatisticsMenu(&showStats);
-		ryn::Debug::showInputVisualizerMenu(&showStats);
+		if (showStats)
+			ryn::Debug::drawDebugMenu(&showStats);
 		ryn::Debug::renderImGuiFrame();
 
 		// Advance to next frame. Process submitted rendering primitives.
