@@ -5,10 +5,11 @@
 int main(int argc, char** argv) {
 	std::cout << "Hello, World!" << std::endl;
 	
-	ryn::Window window = ryn::Window("Ryn user test window!", 1600, 900, true, true);
+	ryn::WindowSettings windowSettings("Ryn Engine!", 1600, 900, true, true);
+	ryn::Window window = ryn::Window(windowSettings);
 
 	while (!window.getShouldClose()) {
-		window.pollEvents();
+		ryn::Window::pollEvents();
 
 		if (ryn::Input::isKeyPressed(ryn::Input::Key::Space))
 			std::cout << "SPACE WAS PRESSED!" << std::endl;

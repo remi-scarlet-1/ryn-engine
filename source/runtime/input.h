@@ -1,11 +1,11 @@
 #pragma once
 
 #include "public/defines.h"
+#include "window.h"
+
+struct GLFWwindow;
 
 namespace ryn {
-	class Window;
-	class Debug;
-	
 	class Input {
 	public:
 		enum class Key {
@@ -30,6 +30,9 @@ namespace ryn {
 			Count = 16
 		};
 
+		static void reset();
+		RYN_API static void registerWindow(Window window);
+
 		RYN_API static bool isKeyPressed(Key key);
 		RYN_API static bool isKeyReleased(Key key);
 		RYN_API static bool isKeyHeld(Key key);
@@ -42,9 +45,6 @@ namespace ryn {
 		RYN_API static void getMouseScroll(double& xOffset, double& yOffset);
 
 	private:
-		friend class Window;
-		friend class Debug; 
-
 		static uint64_t regularKeyStates;
 		static uint64_t regularKeyStatesLastFrame;
 		static uint64_t specialKeyStates;
@@ -55,10 +55,14 @@ namespace ryn {
 		static double mouseX, mouseY;
 		static double mouseScrollX, mouseScrollY;
 
-		static void reset();
 		static void updateKeyState(Key key, bool pressed);
 		static void updateMouseButtonState(MouseButton button, bool pressed);
 		static void updateMousePosition(double xPos, double yPos);
 		static void updateMouseScroll(double xOffset, double yOffset);
+
+		static void onKey(GLFWwindow* win, int key, int scancode, int action, int mods);
+		static void onMouseButton(GLFWwindow* win, int button, int action, int mods);
+		static void onMouseScroll(GLFWwindow* win, double xOffset, double yOffset);
+		static void onMousePosition(GLFWwindow* window, double xPos, double yPos);
 	};
 }

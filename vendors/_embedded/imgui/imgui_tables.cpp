@@ -1873,7 +1873,7 @@ void ImGui::TableNextRow(ImGuiTableRowFlags row_flags, float row_min_height)
 // [Internal] Only called by TableNextRow()
 void ImGui::TableBeginRow(ImGuiTable* table)
 {
-    ImGuiWindow* window = table->InnerWindow;
+    ImGuiWindow* glfwHandle = table->InnerWindow;
     IM_ASSERT(!table->IsInsideRow);
 
     // New row
@@ -1886,17 +1886,17 @@ void ImGui::TableBeginRow(ImGuiTable* table)
     // Begin frozen rows
     float next_y1 = table->RowPosY2;
     if (table->CurrentRow == 0 && table->FreezeRowsCount > 0)
-        next_y1 = window->DC.CursorPos.y = table->OuterRect.Min.y;
+        next_y1 = glfwHandle->DC.CursorPos.y = table->OuterRect.Min.y;
 
     table->RowPosY1 = table->RowPosY2 = next_y1;
     table->RowTextBaseline = 0.0f;
-    table->RowIndentOffsetX = window->DC.Indent.x - table->HostIndentX; // Lock indent
+    table->RowIndentOffsetX = glfwHandle->DC.Indent.x - table->HostIndentX; // Lock indent
 
-    window->DC.PrevLineTextBaseOffset = 0.0f;
-    window->DC.CursorPosPrevLine = ImVec2(window->DC.CursorPos.x, window->DC.CursorPos.y + table->RowCellPaddingY); // This allows users to call SameLine() to share LineSize between columns.
-    window->DC.PrevLineSize = window->DC.CurrLineSize = ImVec2(0.0f, 0.0f); // This allows users to call SameLine() to share LineSize between columns, and to call it from first column too.
-    window->DC.IsSameLine = window->DC.IsSetPos = false;
-    window->DC.CursorMaxPos.y = next_y1;
+    glfwHandle->DC.PrevLineTextBaseOffset = 0.0f;
+    glfwHandle->DC.CursorPosPrevLine = ImVec2(glfwHandle->DC.CursorPos.x, glfwHandle->DC.CursorPos.y + table->RowCellPaddingY); // This allows users to call SameLine() to share LineSize between columns.
+    glfwHandle->DC.PrevLineSize = glfwHandle->DC.CurrLineSize = ImVec2(0.0f, 0.0f); // This allows users to call SameLine() to share LineSize between columns, and to call it from first column too.
+    glfwHandle->DC.IsSameLine = glfwHandle->DC.IsSetPos = false;
+    glfwHandle->DC.CursorMaxPos.y = next_y1;
 
     // Making the header BG color non-transparent will allow us to overlay it multiple times when handling smooth dragging.
     if (table->RowFlags & ImGuiTableRowFlags_Headers)
@@ -1911,8 +1911,8 @@ void ImGui::TableBeginRow(ImGuiTable* table)
 void ImGui::TableEndRow(ImGuiTable* table)
 {
     ImGuiContext& g = *GImGui;
-    ImGuiWindow* window = g.CurrentWindow;
-    IM_ASSERT(window == table->InnerWindow);
+    ImGuiWindow* glfwHandle = g.CurrentWindow;
+    IM_ASSERT(glfwHandle == table->InnerWindow);
     IM_ASSERT(table->IsInsideRow);
 
     if (table->CurrentColumn != -1)
@@ -1924,7 +1924,7 @@ void ImGui::TableEndRow(ImGuiTable* table)
 
     // Position cursor at the bottom of our row so it can be used for e.g. clipping calculation. However it is
     // likely that the next call to TableBeginCell() will reposition the cursor to take account of vertical padding.
-    window->DC.CursorPos.y = table->RowPosY2;
+    glfwHandle->DC.CursorPos.y = table->RowPosY2;
 
     // Row background fill
     const float bg_y1 = table->RowPosY1;
@@ -1965,8 +1965,8 @@ void ImGui::TableEndRow(ImGuiTable* table)
             // In theory we could call SetWindowClipRectBeforeSetChannel() but since we know TableEndRow() is
             // always followed by a change of clipping rectangle we perform the smallest overwrite possible here.
             if ((table->Flags & ImGuiTableFlags_NoClip) == 0)
-                window->DrawList->_CmdHeader.ClipRect = table->Bg0ClipRectForDrawCmd.ToVec4();
-            table->DrawSplitter->SetCurrentChannel(window->DrawList, TABLE_DRAW_CHANNEL_BG0);
+                glfwHandle->DrawList->_CmdHeader.ClipRect = table->Bg0ClipRectForDrawCmd.ToVec4();
+            table->DrawSplitter->SetCurrentChannel(glfwHandle->DrawList, TABLE_DRAW_CHANNEL_BG0);
         }
 
         // Draw row background
@@ -1976,9 +1976,9 @@ void ImGui::TableEndRow(ImGuiTable* table)
             ImRect row_rect(table->WorkRect.Min.x, bg_y1, table->WorkRect.Max.x, bg_y2);
             row_rect.ClipWith(table->BgClipRect);
             if (bg_col0 != 0 && row_rect.Min.y < row_rect.Max.y)
-                window->DrawList->AddRectFilled(row_rect.Min, row_rect.Max, bg_col0);
+                glfwHandle->DrawList->AddRectFilled(row_rect.Min, row_rect.Max, bg_col0);
             if (bg_col1 != 0 && row_rect.Min.y < row_rect.Max.y)
-                window->DrawList->AddRectFilled(row_rect.Min, row_rect.Max, bg_col1);
+                glfwHandle->DrawList->AddRectFilled(row_rect.Min, row_rect.Max, bg_col1);
         }
 
         // Draw cell background color
@@ -1995,17 +1995,17 @@ void ImGui::TableEndRow(ImGuiTable* table)
                 cell_bg_rect.Min.x = ImMax(cell_bg_rect.Min.x, column->ClipRect.Min.x);     // So that first column after frozen one gets clipped when scrolling
                 cell_bg_rect.Max.x = ImMin(cell_bg_rect.Max.x, column->MaxX);
                 if (cell_bg_rect.Min.y < cell_bg_rect.Max.y)
-                    window->DrawList->AddRectFilled(cell_bg_rect.Min, cell_bg_rect.Max, cell_data->BgColor);
+                    glfwHandle->DrawList->AddRectFilled(cell_bg_rect.Min, cell_bg_rect.Max, cell_data->BgColor);
             }
         }
 
         // Draw top border
         if (top_border_col && bg_y1 >= table->BgClipRect.Min.y && bg_y1 < table->BgClipRect.Max.y)
-            window->DrawList->AddLine(ImVec2(table->BorderX1, bg_y1), ImVec2(table->BorderX2, bg_y1), top_border_col, border_size);
+            glfwHandle->DrawList->AddLine(ImVec2(table->BorderX1, bg_y1), ImVec2(table->BorderX2, bg_y1), top_border_col, border_size);
 
         // Draw bottom border at the row unfreezing mark (always strong)
         if (draw_strong_bottom_border && bg_y2 >= table->BgClipRect.Min.y && bg_y2 < table->BgClipRect.Max.y)
-            window->DrawList->AddLine(ImVec2(table->BorderX1, bg_y2), ImVec2(table->BorderX2, bg_y2), table->BorderColorStrong, border_size);
+            glfwHandle->DrawList->AddLine(ImVec2(table->BorderX1, bg_y2), ImVec2(table->BorderX2, bg_y2), table->BorderColorStrong, border_size);
     }
 
     // End frozen rows (when we are past the last frozen row line, teleport cursor and alter clipping rectangle)
@@ -2030,7 +2030,7 @@ void ImGui::TableEndRow(ImGuiTable* table)
             IM_ASSERT(table->Bg2ClipRectForDrawCmd.Min.y <= table->Bg2ClipRectForDrawCmd.Max.y);
 
             float row_height = table->RowPosY2 - table->RowPosY1;
-            table->RowPosY2 = window->DC.CursorPos.y = table->WorkRect.Min.y + table->RowPosY2 - table->OuterRect.Min.y;
+            table->RowPosY2 = glfwHandle->DC.CursorPos.y = table->WorkRect.Min.y + table->RowPosY2 - table->OuterRect.Min.y;
             table->RowPosY1 = table->RowPosY2 - row_height;
             for (int column_n = 0; column_n < table->ColumnsCount; column_n++)
             {
@@ -2040,8 +2040,8 @@ void ImGui::TableEndRow(ImGuiTable* table)
             }
 
             // Update cliprect ahead of TableBeginCell() so clipper can access to new ClipRect->Min.y
-            SetWindowClipRectBeforeSetChannel(window, table->Columns[0].ClipRect);
-            table->DrawSplitter->SetCurrentChannel(window->DrawList, table->Columns[0].DrawChannelCurrent);
+            SetWindowClipRectBeforeSetChannel(glfwHandle, table->Columns[0].ClipRect);
+            table->DrawSplitter->SetCurrentChannel(glfwHandle->DrawList, table->Columns[0].DrawChannelCurrent);
         }
     }
 
@@ -2123,7 +2123,7 @@ void ImGui::TableBeginCell(ImGuiTable* table, int column_n)
 {
     ImGuiContext& g = *GImGui;
     ImGuiTableColumn* column = &table->Columns[column_n];
-    ImGuiWindow* window = table->InnerWindow;
+    ImGuiWindow* glfwHandle = table->InnerWindow;
     table->CurrentColumn = column_n;
 
     // Start position is roughly ~~ CellRect.Min + CellPadding + Indent
@@ -2131,21 +2131,21 @@ void ImGui::TableBeginCell(ImGuiTable* table, int column_n)
     if (column->Flags & ImGuiTableColumnFlags_IndentEnable)
         start_x += table->RowIndentOffsetX; // ~~ += window.DC.Indent.x - table->HostIndentX, except we locked it for the row.
 
-    window->DC.CursorPos.x = start_x;
-    window->DC.CursorPos.y = table->RowPosY1 + table->RowCellPaddingY;
-    window->DC.CursorMaxPos.x = window->DC.CursorPos.x;
-    window->DC.ColumnsOffset.x = start_x - window->Pos.x - window->DC.Indent.x; // FIXME-WORKRECT
-    window->DC.CursorPosPrevLine.x = window->DC.CursorPos.x; // PrevLine.y is preserved. This allows users to call SameLine() to share LineSize between columns.
-    window->DC.CurrLineTextBaseOffset = table->RowTextBaseline;
-    window->DC.NavLayerCurrent = (ImGuiNavLayer)column->NavLayerCurrent;
+    glfwHandle->DC.CursorPos.x = start_x;
+    glfwHandle->DC.CursorPos.y = table->RowPosY1 + table->RowCellPaddingY;
+    glfwHandle->DC.CursorMaxPos.x = glfwHandle->DC.CursorPos.x;
+    glfwHandle->DC.ColumnsOffset.x = start_x - glfwHandle->Pos.x - glfwHandle->DC.Indent.x; // FIXME-WORKRECT
+    glfwHandle->DC.CursorPosPrevLine.x = glfwHandle->DC.CursorPos.x; // PrevLine.y is preserved. This allows users to call SameLine() to share LineSize between columns.
+    glfwHandle->DC.CurrLineTextBaseOffset = table->RowTextBaseline;
+    glfwHandle->DC.NavLayerCurrent = (ImGuiNavLayer)column->NavLayerCurrent;
 
     // Note how WorkRect.Max.y is only set once during layout
-    window->WorkRect.Min.y = window->DC.CursorPos.y;
-    window->WorkRect.Min.x = column->WorkMinX;
-    window->WorkRect.Max.x = column->WorkMaxX;
-    window->DC.ItemWidth = column->ItemWidth;
+    glfwHandle->WorkRect.Min.y = glfwHandle->DC.CursorPos.y;
+    glfwHandle->WorkRect.Min.x = column->WorkMinX;
+    glfwHandle->WorkRect.Max.x = column->WorkMaxX;
+    glfwHandle->DC.ItemWidth = column->ItemWidth;
 
-    window->SkipItems = column->IsSkipItems;
+    glfwHandle->SkipItems = column->IsSkipItems;
     if (column->IsSkipItems)
     {
         g.LastItemData.ID = 0;
@@ -2155,20 +2155,20 @@ void ImGui::TableBeginCell(ImGuiTable* table, int column_n)
     if (table->Flags & ImGuiTableFlags_NoClip)
     {
         // FIXME: if we end up drawing all borders/bg in EndTable, could remove this and just assert that channel hasn't changed.
-        table->DrawSplitter->SetCurrentChannel(window->DrawList, TABLE_DRAW_CHANNEL_NOCLIP);
+        table->DrawSplitter->SetCurrentChannel(glfwHandle->DrawList, TABLE_DRAW_CHANNEL_NOCLIP);
         //IM_ASSERT(table->DrawSplitter._Current == TABLE_DRAW_CHANNEL_NOCLIP);
     }
     else
     {
         // FIXME-TABLE: Could avoid this if draw channel is dummy channel?
-        SetWindowClipRectBeforeSetChannel(window, column->ClipRect);
-        table->DrawSplitter->SetCurrentChannel(window->DrawList, column->DrawChannelCurrent);
+        SetWindowClipRectBeforeSetChannel(glfwHandle, column->ClipRect);
+        table->DrawSplitter->SetCurrentChannel(glfwHandle->DrawList, column->DrawChannelCurrent);
     }
 
     // Logging
     if (g.LogEnabled && !column->IsSkipItems)
     {
-        LogRenderedText(&window->DC.CursorPos, "|");
+        LogRenderedText(&glfwHandle->DC.CursorPos, "|");
         g.LogLinePosY = FLT_MAX;
     }
 }
@@ -2177,9 +2177,9 @@ void ImGui::TableBeginCell(ImGuiTable* table, int column_n)
 void ImGui::TableEndCell(ImGuiTable* table)
 {
     ImGuiTableColumn* column = &table->Columns[table->CurrentColumn];
-    ImGuiWindow* window = table->InnerWindow;
+    ImGuiWindow* glfwHandle = table->InnerWindow;
 
-    if (window->DC.IsSetPos)
+    if (glfwHandle->DC.IsSetPos)
         ErrorCheckUsingSetCursorPosToExtendParentBoundaries();
 
     // Report maximum position so we can infer content size per column.
@@ -2188,14 +2188,14 @@ void ImGui::TableEndCell(ImGuiTable* table)
         p_max_pos_x = &column->ContentMaxXHeadersUsed;  // Useful in case user submit contents in header row that is not a TableHeader() call
     else
         p_max_pos_x = table->IsUnfrozenRows ? &column->ContentMaxXUnfrozen : &column->ContentMaxXFrozen;
-    *p_max_pos_x = ImMax(*p_max_pos_x, window->DC.CursorMaxPos.x);
+    *p_max_pos_x = ImMax(*p_max_pos_x, glfwHandle->DC.CursorMaxPos.x);
     if (column->IsEnabled)
-        table->RowPosY2 = ImMax(table->RowPosY2, window->DC.CursorMaxPos.y + table->RowCellPaddingY);
-    column->ItemWidth = window->DC.ItemWidth;
+        table->RowPosY2 = ImMax(table->RowPosY2, glfwHandle->DC.CursorMaxPos.y + table->RowCellPaddingY);
+    column->ItemWidth = glfwHandle->DC.ItemWidth;
 
     // Propagate text baseline for the entire row
     // FIXME-TABLE: Here we propagate text baseline from the last line of the cell.. instead of the first one.
-    table->RowTextBaseline = ImMax(table->RowTextBaseline, window->DC.PrevLineTextBaseOffset);
+    table->RowTextBaseline = ImMax(table->RowTextBaseline, glfwHandle->DC.PrevLineTextBaseOffset);
 }
 
 //-------------------------------------------------------------------------
@@ -2411,25 +2411,25 @@ void ImGui::TableUpdateColumnsWeightFromWidth(ImGuiTable* table)
 void ImGui::TablePushBackgroundChannel()
 {
     ImGuiContext& g = *GImGui;
-    ImGuiWindow* window = g.CurrentWindow;
+    ImGuiWindow* glfwHandle = g.CurrentWindow;
     ImGuiTable* table = g.CurrentTable;
 
     // Optimization: avoid SetCurrentChannel() + PushClipRect()
-    table->HostBackupInnerClipRect = window->ClipRect;
-    SetWindowClipRectBeforeSetChannel(window, table->Bg2ClipRectForDrawCmd);
-    table->DrawSplitter->SetCurrentChannel(window->DrawList, table->Bg2DrawChannelCurrent);
+    table->HostBackupInnerClipRect = glfwHandle->ClipRect;
+    SetWindowClipRectBeforeSetChannel(glfwHandle, table->Bg2ClipRectForDrawCmd);
+    table->DrawSplitter->SetCurrentChannel(glfwHandle->DrawList, table->Bg2DrawChannelCurrent);
 }
 
 void ImGui::TablePopBackgroundChannel()
 {
     ImGuiContext& g = *GImGui;
-    ImGuiWindow* window = g.CurrentWindow;
+    ImGuiWindow* glfwHandle = g.CurrentWindow;
     ImGuiTable* table = g.CurrentTable;
     ImGuiTableColumn* column = &table->Columns[table->CurrentColumn];
 
     // Optimization: avoid PopClipRect() + SetCurrentChannel()
-    SetWindowClipRectBeforeSetChannel(window, table->HostBackupInnerClipRect);
-    table->DrawSplitter->SetCurrentChannel(window->DrawList, column->DrawChannelCurrent);
+    SetWindowClipRectBeforeSetChannel(glfwHandle, table->HostBackupInnerClipRect);
+    table->DrawSplitter->SetCurrentChannel(glfwHandle->DrawList, column->DrawChannelCurrent);
 }
 
 // Allocate draw channels. Called by TableUpdateLayout()
@@ -3070,8 +3070,8 @@ void ImGui::TableHeadersRow()
 void ImGui::TableHeader(const char* label)
 {
     ImGuiContext& g = *GImGui;
-    ImGuiWindow* window = g.CurrentWindow;
-    if (window->SkipItems)
+    ImGuiWindow* glfwHandle = g.CurrentWindow;
+    if (glfwHandle->SkipItems)
         return;
 
     ImGuiTable* table = g.CurrentTable;
@@ -3085,7 +3085,7 @@ void ImGui::TableHeader(const char* label)
         label = "";
     const char* label_end = FindRenderedTextEnd(label);
     ImVec2 label_size = CalcTextSize(label, label_end, true);
-    ImVec2 label_pos = window->DC.CursorPos;
+    ImVec2 label_pos = glfwHandle->DC.CursorPos;
 
     // If we already got a row height, there's use that.
     // FIXME-TABLE: Padding problem if the correct outer-padding CellBgRect strays off our ClipRect?
@@ -3116,7 +3116,7 @@ void ImGui::TableHeader(const char* label)
     column->ContentMaxXHeadersIdeal = ImMax(column->ContentMaxXHeadersIdeal, max_pos_x);
 
     // Keep header highlighted when context menu is open.
-    ImGuiID id = window->GetID(label);
+    ImGuiID id = glfwHandle->GetID(label);
     ImRect bb(cell_r.Min.x, cell_r.Min.y, cell_r.Max.x, ImMax(cell_r.Max.y, cell_r.Min.y + label_height + g.Style.CellPadding.y * 2.0f));
     ItemSize(ImVec2(0.0f, label_height)); // Don't declare unclipped width, it'll be fed ContentMaxPosHeadersIdeal
     if (!ItemAdd(bb, id))
@@ -3144,7 +3144,7 @@ void ImGui::TableHeader(const char* label)
     RenderNavCursor(bb, id, ImGuiNavRenderCursorFlags_Compact | ImGuiNavRenderCursorFlags_NoRounding);
     if (held)
         table->HeldHeaderColumn = (ImGuiTableColumnIdx)column_n;
-    window->DC.CursorPos.y -= g.Style.ItemSpacing.y * 0.5f;
+    glfwHandle->DC.CursorPos.y -= g.Style.ItemSpacing.y * 0.5f;
 
     // Drag and drop to re-order columns.
     // FIXME-TABLE: Scroll request while reordering a column and it lands out of the scrolling zone.
@@ -3182,7 +3182,7 @@ void ImGui::TableHeader(const char* label)
                 PopStyleColor();
                 x += w_sort_text;
             }
-            RenderArrow(window->DrawList, ImVec2(x, y), GetColorU32(ImGuiCol_Text), column->SortDirection == ImGuiSortDirection_Ascending ? ImGuiDir_Up : ImGuiDir_Down, ARROW_SCALE);
+            RenderArrow(glfwHandle->DrawList, ImVec2(x, y), GetColorU32(ImGuiCol_Text), column->SortDirection == ImGuiSortDirection_Ascending ? ImGuiDir_Up : ImGuiDir_Down, ARROW_SCALE);
         }
 
         // Handle clicking on column header to adjust Sort Order
@@ -3196,7 +3196,7 @@ void ImGui::TableHeader(const char* label)
     // Render clipped label. Clipping here ensure that in the majority of situations, all our header cells will
     // be merged into a single draw call.
     //window->DrawList->AddCircleFilled(ImVec2(ellipsis_max, label_pos.y), 40, IM_COL32_WHITE);
-    RenderTextEllipsis(window->DrawList, label_pos, ImVec2(ellipsis_max, label_pos.y + label_height + g.Style.FramePadding.y), ellipsis_max, ellipsis_max, label, label_end, &label_size);
+    RenderTextEllipsis(glfwHandle->DrawList, label_pos, ImVec2(ellipsis_max, label_pos.y + label_height + g.Style.FramePadding.y), ellipsis_max, ellipsis_max, label, label_end, &label_size);
 
     const bool text_clipped = label_size.x > (ellipsis_max - label_pos.x);
     if (text_clipped && hovered && g.ActiveId == 0)
@@ -3248,8 +3248,8 @@ void ImGui::TableAngledHeadersRowEx(ImGuiID row_id, float angle, float max_label
 {
     ImGuiContext& g = *GImGui;
     ImGuiTable* table = g.CurrentTable;
-    ImGuiWindow* window = g.CurrentWindow;
-    ImDrawList* draw_list = window->DrawList;
+    ImGuiWindow* glfwHandle = g.CurrentWindow;
+    ImDrawList* draw_list = glfwHandle->DrawList;
     IM_ASSERT(table != NULL && "Need to call TableHeadersRow() after BeginTable()!");
     IM_ASSERT(table->CurrentRow == -1 && "Must be first row");
 
@@ -3341,7 +3341,7 @@ void ImGui::TableAngledHeadersRowEx(ImGuiID row_id, float angle, float max_label
                     ImVec2 label_size = CalcTextSize(label_name, label_name_eol);
                     float clip_width = max_label_width - padding.y; // Using padding.y*2.0f would be symmetrical but hide more text.
                     float clip_height = ImMin(label_size.y, column->ClipRect.Max.x - column->WorkMinX - line_off_curr_x);
-                    ImRect clip_r(window->ClipRect.Min, window->ClipRect.Min + ImVec2(clip_width, clip_height));
+                    ImRect clip_r(glfwHandle->ClipRect.Min, glfwHandle->ClipRect.Min + ImVec2(clip_width, clip_height));
                     int vtx_idx_begin = draw_list->_VtxCurrentIdx;
                     PushStyleColor(ImGuiCol_Text, request->TextColor);
                     RenderTextEllipsis(draw_list, clip_r.Min, clip_r.Max, clip_r.Max.x, clip_r.Max.x, label_name, label_name_eol, &label_size);
@@ -3353,7 +3353,7 @@ void ImGui::TableAngledHeadersRowEx(ImGuiID row_id, float angle, float max_label
                     const float vertical_offset = available_space * align.y * (flip_label ? -1.0f : 1.0f);
 
                     // Rotate and offset label
-                    ImVec2 pivot_in = ImVec2(window->ClipRect.Min.x - vertical_offset, window->ClipRect.Min.y + label_size.y);
+                    ImVec2 pivot_in = ImVec2(glfwHandle->ClipRect.Min.x - vertical_offset, glfwHandle->ClipRect.Min.y + label_size.y);
                     ImVec2 pivot_out = ImVec2(column->WorkMinX, row_r.Max.y);
                     line_off_curr_x += flip_label ? -line_off_step_x : line_off_step_x;
                     pivot_out += unit_right * padding.y;
@@ -3427,8 +3427,8 @@ bool ImGui::TableBeginContextMenuPopup(ImGuiTable* table)
 void ImGui::TableDrawDefaultContextMenu(ImGuiTable* table, ImGuiTableFlags flags_for_section_to_display)
 {
     ImGuiContext& g = *GImGui;
-    ImGuiWindow* window = g.CurrentWindow;
-    if (window->SkipItems)
+    ImGuiWindow* glfwHandle = g.CurrentWindow;
+    if (glfwHandle->SkipItems)
         return;
 
     bool want_separator = false;
@@ -4047,24 +4047,24 @@ void ImGui::DebugNodeTableSettings(ImGuiTableSettings*) {}
 // they would meddle many times with the underlying ImDrawCmd.
 // Instead, we do a preemptive overwrite of clipping rectangle _without_ altering the command-buffer and let
 // the subsequent single call to SetCurrentChannel() does it things once.
-void ImGui::SetWindowClipRectBeforeSetChannel(ImGuiWindow* window, const ImRect& clip_rect)
+void ImGui::SetWindowClipRectBeforeSetChannel(ImGuiWindow* glfwHandle, const ImRect& clip_rect)
 {
     ImVec4 clip_rect_vec4 = clip_rect.ToVec4();
-    window->ClipRect = clip_rect;
-    window->DrawList->_CmdHeader.ClipRect = clip_rect_vec4;
-    window->DrawList->_ClipRectStack.Data[window->DrawList->_ClipRectStack.Size - 1] = clip_rect_vec4;
+    glfwHandle->ClipRect = clip_rect;
+    glfwHandle->DrawList->_CmdHeader.ClipRect = clip_rect_vec4;
+    glfwHandle->DrawList->_ClipRectStack.Data[glfwHandle->DrawList->_ClipRectStack.Size - 1] = clip_rect_vec4;
 }
 
 int ImGui::GetColumnIndex()
 {
-    ImGuiWindow* window = GetCurrentWindowRead();
-    return window->DC.CurrentColumns ? window->DC.CurrentColumns->Current : 0;
+    ImGuiWindow* glfwHandle = GetCurrentWindowRead();
+    return glfwHandle->DC.CurrentColumns ? glfwHandle->DC.CurrentColumns->Current : 0;
 }
 
 int ImGui::GetColumnsCount()
 {
-    ImGuiWindow* window = GetCurrentWindowRead();
-    return window->DC.CurrentColumns ? window->DC.CurrentColumns->Count : 1;
+    ImGuiWindow* glfwHandle = GetCurrentWindowRead();
+    return glfwHandle->DC.CurrentColumns ? glfwHandle->DC.CurrentColumns->Count : 1;
 }
 
 float ImGui::GetColumnOffsetFromNorm(const ImGuiOldColumns* columns, float offset_norm)
@@ -4084,11 +4084,11 @@ static float GetDraggedColumnOffset(ImGuiOldColumns* columns, int column_index)
     // Active (dragged) column always follow mouse. The reason we need this is that dragging a column to the right edge of an auto-resizing
     // window creates a feedback loop because we store normalized positions. So while dragging we enforce absolute positioning.
     ImGuiContext& g = *GImGui;
-    ImGuiWindow* window = g.CurrentWindow;
+    ImGuiWindow* glfwHandle = g.CurrentWindow;
     IM_ASSERT(column_index > 0); // We are not supposed to drag column 0.
     IM_ASSERT(g.ActiveId == columns->ID + ImGuiID(column_index));
 
-    float x = g.IO.MousePos.x - g.ActiveIdClickOffset.x + ImTrunc(COLUMNS_HIT_RECT_HALF_THICKNESS * g.CurrentDpiScale) - window->Pos.x;
+    float x = g.IO.MousePos.x - g.ActiveIdClickOffset.x + ImTrunc(COLUMNS_HIT_RECT_HALF_THICKNESS * g.CurrentDpiScale) - glfwHandle->Pos.x;
     x = ImMax(x, ImGui::GetColumnOffset(column_index - 1) + g.Style.ColumnsMinSpacing);
     if ((columns->Flags & ImGuiOldColumnFlags_NoPreserveWidths))
         x = ImMin(x, ImGui::GetColumnOffset(column_index + 1) - g.Style.ColumnsMinSpacing);
@@ -4098,8 +4098,8 @@ static float GetDraggedColumnOffset(ImGuiOldColumns* columns, int column_index)
 
 float ImGui::GetColumnOffset(int column_index)
 {
-    ImGuiWindow* window = GetCurrentWindowRead();
-    ImGuiOldColumns* columns = window->DC.CurrentColumns;
+    ImGuiWindow* glfwHandle = GetCurrentWindowRead();
+    ImGuiOldColumns* columns = glfwHandle->DC.CurrentColumns;
     if (columns == NULL)
         return 0.0f;
 
@@ -4128,8 +4128,8 @@ static float GetColumnWidthEx(ImGuiOldColumns* columns, int column_index, bool b
 float ImGui::GetColumnWidth(int column_index)
 {
     ImGuiContext& g = *GImGui;
-    ImGuiWindow* window = g.CurrentWindow;
-    ImGuiOldColumns* columns = window->DC.CurrentColumns;
+    ImGuiWindow* glfwHandle = g.CurrentWindow;
+    ImGuiOldColumns* columns = glfwHandle->DC.CurrentColumns;
     if (columns == NULL)
         return GetContentRegionAvail().x;
 
@@ -4141,8 +4141,8 @@ float ImGui::GetColumnWidth(int column_index)
 void ImGui::SetColumnOffset(int column_index, float offset)
 {
     ImGuiContext& g = *GImGui;
-    ImGuiWindow* window = g.CurrentWindow;
-    ImGuiOldColumns* columns = window->DC.CurrentColumns;
+    ImGuiWindow* glfwHandle = g.CurrentWindow;
+    ImGuiOldColumns* columns = glfwHandle->DC.CurrentColumns;
     IM_ASSERT(columns != NULL);
 
     if (column_index < 0)
@@ -4162,8 +4162,8 @@ void ImGui::SetColumnOffset(int column_index, float offset)
 
 void ImGui::SetColumnWidth(int column_index, float width)
 {
-    ImGuiWindow* window = GetCurrentWindowRead();
-    ImGuiOldColumns* columns = window->DC.CurrentColumns;
+    ImGuiWindow* glfwHandle = GetCurrentWindowRead();
+    ImGuiOldColumns* columns = glfwHandle->DC.CurrentColumns;
     IM_ASSERT(columns != NULL);
 
     if (column_index < 0)
@@ -4173,8 +4173,8 @@ void ImGui::SetColumnWidth(int column_index, float width)
 
 void ImGui::PushColumnClipRect(int column_index)
 {
-    ImGuiWindow* window = GetCurrentWindowRead();
-    ImGuiOldColumns* columns = window->DC.CurrentColumns;
+    ImGuiWindow* glfwHandle = GetCurrentWindowRead();
+    ImGuiOldColumns* columns = glfwHandle->DC.CurrentColumns;
     if (column_index < 0)
         column_index = columns->Current;
 
@@ -4185,50 +4185,50 @@ void ImGui::PushColumnClipRect(int column_index)
 // Get into the columns background draw command (which is generally the same draw command as before we called BeginColumns)
 void ImGui::PushColumnsBackground()
 {
-    ImGuiWindow* window = GetCurrentWindowRead();
-    ImGuiOldColumns* columns = window->DC.CurrentColumns;
+    ImGuiWindow* glfwHandle = GetCurrentWindowRead();
+    ImGuiOldColumns* columns = glfwHandle->DC.CurrentColumns;
     if (columns->Count == 1)
         return;
 
     // Optimization: avoid SetCurrentChannel() + PushClipRect()
-    columns->HostBackupClipRect = window->ClipRect;
-    SetWindowClipRectBeforeSetChannel(window, columns->HostInitialClipRect);
-    columns->Splitter.SetCurrentChannel(window->DrawList, 0);
+    columns->HostBackupClipRect = glfwHandle->ClipRect;
+    SetWindowClipRectBeforeSetChannel(glfwHandle, columns->HostInitialClipRect);
+    columns->Splitter.SetCurrentChannel(glfwHandle->DrawList, 0);
 }
 
 void ImGui::PopColumnsBackground()
 {
-    ImGuiWindow* window = GetCurrentWindowRead();
-    ImGuiOldColumns* columns = window->DC.CurrentColumns;
+    ImGuiWindow* glfwHandle = GetCurrentWindowRead();
+    ImGuiOldColumns* columns = glfwHandle->DC.CurrentColumns;
     if (columns->Count == 1)
         return;
 
     // Optimization: avoid PopClipRect() + SetCurrentChannel()
-    SetWindowClipRectBeforeSetChannel(window, columns->HostBackupClipRect);
-    columns->Splitter.SetCurrentChannel(window->DrawList, columns->Current + 1);
+    SetWindowClipRectBeforeSetChannel(glfwHandle, columns->HostBackupClipRect);
+    columns->Splitter.SetCurrentChannel(glfwHandle->DrawList, columns->Current + 1);
 }
 
-ImGuiOldColumns* ImGui::FindOrCreateColumns(ImGuiWindow* window, ImGuiID id)
+ImGuiOldColumns* ImGui::FindOrCreateColumns(ImGuiWindow* glfwHandle, ImGuiID id)
 {
     // We have few columns per window so for now we don't need bother much with turning this into a faster lookup.
-    for (int n = 0; n < window->ColumnsStorage.Size; n++)
-        if (window->ColumnsStorage[n].ID == id)
-            return &window->ColumnsStorage[n];
+    for (int n = 0; n < glfwHandle->ColumnsStorage.Size; n++)
+        if (glfwHandle->ColumnsStorage[n].ID == id)
+            return &glfwHandle->ColumnsStorage[n];
 
-    window->ColumnsStorage.push_back(ImGuiOldColumns());
-    ImGuiOldColumns* columns = &window->ColumnsStorage.back();
+    glfwHandle->ColumnsStorage.push_back(ImGuiOldColumns());
+    ImGuiOldColumns* columns = &glfwHandle->ColumnsStorage.back();
     columns->ID = id;
     return columns;
 }
 
 ImGuiID ImGui::GetColumnsID(const char* str_id, int columns_count)
 {
-    ImGuiWindow* window = GetCurrentWindow();
+    ImGuiWindow* glfwHandle = GetCurrentWindow();
 
     // Differentiate column ID with an arbitrary prefix for cases where users name their columns set the same as another widget.
     // In addition, when an identifier isn't explicitly provided we include the number of columns in the hash to make it uniquer.
     PushID(0x11223347 + (str_id ? 0 : columns_count));
-    ImGuiID id = window->GetID(str_id ? str_id : "columns");
+    ImGuiID id = glfwHandle->GetID(str_id ? str_id : "columns");
     PopID();
 
     return id;
@@ -4237,36 +4237,36 @@ ImGuiID ImGui::GetColumnsID(const char* str_id, int columns_count)
 void ImGui::BeginColumns(const char* str_id, int columns_count, ImGuiOldColumnFlags flags)
 {
     ImGuiContext& g = *GImGui;
-    ImGuiWindow* window = GetCurrentWindow();
+    ImGuiWindow* glfwHandle = GetCurrentWindow();
 
     IM_ASSERT(columns_count >= 1);
-    IM_ASSERT(window->DC.CurrentColumns == NULL);   // Nested columns are currently not supported
+    IM_ASSERT(glfwHandle->DC.CurrentColumns == NULL);   // Nested columns are currently not supported
 
     // Acquire storage for the columns set
     ImGuiID id = GetColumnsID(str_id, columns_count);
-    ImGuiOldColumns* columns = FindOrCreateColumns(window, id);
+    ImGuiOldColumns* columns = FindOrCreateColumns(glfwHandle, id);
     IM_ASSERT(columns->ID == id);
     columns->Current = 0;
     columns->Count = columns_count;
     columns->Flags = flags;
-    window->DC.CurrentColumns = columns;
-    window->DC.NavIsScrollPushableX = false; // Shortcut for NavUpdateCurrentWindowIsScrollPushableX();
+    glfwHandle->DC.CurrentColumns = columns;
+    glfwHandle->DC.NavIsScrollPushableX = false; // Shortcut for NavUpdateCurrentWindowIsScrollPushableX();
 
-    columns->HostCursorPosY = window->DC.CursorPos.y;
-    columns->HostCursorMaxPosX = window->DC.CursorMaxPos.x;
-    columns->HostInitialClipRect = window->ClipRect;
-    columns->HostBackupParentWorkRect = window->ParentWorkRect;
-    window->ParentWorkRect = window->WorkRect;
+    columns->HostCursorPosY = glfwHandle->DC.CursorPos.y;
+    columns->HostCursorMaxPosX = glfwHandle->DC.CursorMaxPos.x;
+    columns->HostInitialClipRect = glfwHandle->ClipRect;
+    columns->HostBackupParentWorkRect = glfwHandle->ParentWorkRect;
+    glfwHandle->ParentWorkRect = glfwHandle->WorkRect;
 
     // Set state for first column
     // We aim so that the right-most column will have the same clipping width as other after being clipped by parent ClipRect
     const float column_padding = g.Style.ItemSpacing.x;
-    const float half_clip_extend_x = ImTrunc(ImMax(window->WindowPadding.x * 0.5f, window->WindowBorderSize));
-    const float max_1 = window->WorkRect.Max.x + column_padding - ImMax(column_padding - window->WindowPadding.x, 0.0f);
-    const float max_2 = window->WorkRect.Max.x + half_clip_extend_x;
-    columns->OffMinX = window->DC.Indent.x - column_padding + ImMax(column_padding - window->WindowPadding.x, 0.0f);
-    columns->OffMaxX = ImMax(ImMin(max_1, max_2) - window->Pos.x, columns->OffMinX + 1.0f);
-    columns->LineMinY = columns->LineMaxY = window->DC.CursorPos.y;
+    const float half_clip_extend_x = ImTrunc(ImMax(glfwHandle->WindowPadding.x * 0.5f, glfwHandle->WindowBorderSize));
+    const float max_1 = glfwHandle->WorkRect.Max.x + column_padding - ImMax(column_padding - glfwHandle->WindowPadding.x, 0.0f);
+    const float max_2 = glfwHandle->WorkRect.Max.x + half_clip_extend_x;
+    columns->OffMinX = glfwHandle->DC.Indent.x - column_padding + ImMax(column_padding - glfwHandle->WindowPadding.x, 0.0f);
+    columns->OffMaxX = ImMax(ImMin(max_1, max_2) - glfwHandle->Pos.x, columns->OffMinX + 1.0f);
+    columns->LineMinY = columns->LineMaxY = glfwHandle->DC.CursorPos.y;
 
     // Clear data if columns count changed
     if (columns->Columns.Size != 0 && columns->Columns.Size != columns_count + 1)
@@ -4289,16 +4289,16 @@ void ImGui::BeginColumns(const char* str_id, int columns_count, ImGuiOldColumnFl
     {
         // Compute clipping rectangle
         ImGuiOldColumnData* column = &columns->Columns[n];
-        float clip_x1 = IM_ROUND(window->Pos.x + GetColumnOffset(n));
-        float clip_x2 = IM_ROUND(window->Pos.x + GetColumnOffset(n + 1) - 1.0f);
+        float clip_x1 = IM_ROUND(glfwHandle->Pos.x + GetColumnOffset(n));
+        float clip_x2 = IM_ROUND(glfwHandle->Pos.x + GetColumnOffset(n + 1) - 1.0f);
         column->ClipRect = ImRect(clip_x1, -FLT_MAX, clip_x2, +FLT_MAX);
-        column->ClipRect.ClipWithFull(window->ClipRect);
+        column->ClipRect.ClipWithFull(glfwHandle->ClipRect);
     }
 
     if (columns->Count > 1)
     {
-        columns->Splitter.Split(window->DrawList, 1 + columns->Count);
-        columns->Splitter.SetCurrentChannel(window->DrawList, 1);
+        columns->Splitter.Split(glfwHandle->DrawList, 1 + columns->Count);
+        columns->Splitter.SetCurrentChannel(glfwHandle->DrawList, 1);
         PushColumnClipRect(0);
     }
 
@@ -4307,24 +4307,24 @@ void ImGui::BeginColumns(const char* str_id, int columns_count, ImGuiOldColumnFl
     float offset_1 = GetColumnOffset(columns->Current + 1);
     float width = offset_1 - offset_0;
     PushItemWidth(width * 0.65f);
-    window->DC.ColumnsOffset.x = ImMax(column_padding - window->WindowPadding.x, 0.0f);
-    window->DC.CursorPos.x = IM_TRUNC(window->Pos.x + window->DC.Indent.x + window->DC.ColumnsOffset.x);
-    window->WorkRect.Max.x = window->Pos.x + offset_1 - column_padding;
-    window->WorkRect.Max.y = window->ContentRegionRect.Max.y;
+    glfwHandle->DC.ColumnsOffset.x = ImMax(column_padding - glfwHandle->WindowPadding.x, 0.0f);
+    glfwHandle->DC.CursorPos.x = IM_TRUNC(glfwHandle->Pos.x + glfwHandle->DC.Indent.x + glfwHandle->DC.ColumnsOffset.x);
+    glfwHandle->WorkRect.Max.x = glfwHandle->Pos.x + offset_1 - column_padding;
+    glfwHandle->WorkRect.Max.y = glfwHandle->ContentRegionRect.Max.y;
 }
 
 void ImGui::NextColumn()
 {
-    ImGuiWindow* window = GetCurrentWindow();
-    if (window->SkipItems || window->DC.CurrentColumns == NULL)
+    ImGuiWindow* glfwHandle = GetCurrentWindow();
+    if (glfwHandle->SkipItems || glfwHandle->DC.CurrentColumns == NULL)
         return;
 
     ImGuiContext& g = *GImGui;
-    ImGuiOldColumns* columns = window->DC.CurrentColumns;
+    ImGuiOldColumns* columns = glfwHandle->DC.CurrentColumns;
 
     if (columns->Count == 1)
     {
-        window->DC.CursorPos.x = IM_TRUNC(window->Pos.x + window->DC.Indent.x + window->DC.ColumnsOffset.x);
+        glfwHandle->DC.CursorPos.x = IM_TRUNC(glfwHandle->Pos.x + glfwHandle->DC.Indent.x + glfwHandle->DC.ColumnsOffset.x);
         IM_ASSERT(columns->Current == 0);
         return;
     }
@@ -4338,70 +4338,70 @@ void ImGui::NextColumn()
     // Optimization: avoid PopClipRect() + SetCurrentChannel() + PushClipRect()
     // (which would needlessly attempt to update commands in the wrong channel, then pop or overwrite them),
     ImGuiOldColumnData* column = &columns->Columns[columns->Current];
-    SetWindowClipRectBeforeSetChannel(window, column->ClipRect);
-    columns->Splitter.SetCurrentChannel(window->DrawList, columns->Current + 1);
+    SetWindowClipRectBeforeSetChannel(glfwHandle, column->ClipRect);
+    columns->Splitter.SetCurrentChannel(glfwHandle->DrawList, columns->Current + 1);
 
     const float column_padding = g.Style.ItemSpacing.x;
-    columns->LineMaxY = ImMax(columns->LineMaxY, window->DC.CursorPos.y);
+    columns->LineMaxY = ImMax(columns->LineMaxY, glfwHandle->DC.CursorPos.y);
     if (columns->Current > 0)
     {
         // Columns 1+ ignore IndentX (by canceling it out)
         // FIXME-COLUMNS: Unnecessary, could be locked?
-        window->DC.ColumnsOffset.x = GetColumnOffset(columns->Current) - window->DC.Indent.x + column_padding;
+        glfwHandle->DC.ColumnsOffset.x = GetColumnOffset(columns->Current) - glfwHandle->DC.Indent.x + column_padding;
     }
     else
     {
         // New row/line: column 0 honor IndentX.
-        window->DC.ColumnsOffset.x = ImMax(column_padding - window->WindowPadding.x, 0.0f);
-        window->DC.IsSameLine = false;
+        glfwHandle->DC.ColumnsOffset.x = ImMax(column_padding - glfwHandle->WindowPadding.x, 0.0f);
+        glfwHandle->DC.IsSameLine = false;
         columns->LineMinY = columns->LineMaxY;
     }
-    window->DC.CursorPos.x = IM_TRUNC(window->Pos.x + window->DC.Indent.x + window->DC.ColumnsOffset.x);
-    window->DC.CursorPos.y = columns->LineMinY;
-    window->DC.CurrLineSize = ImVec2(0.0f, 0.0f);
-    window->DC.CurrLineTextBaseOffset = 0.0f;
+    glfwHandle->DC.CursorPos.x = IM_TRUNC(glfwHandle->Pos.x + glfwHandle->DC.Indent.x + glfwHandle->DC.ColumnsOffset.x);
+    glfwHandle->DC.CursorPos.y = columns->LineMinY;
+    glfwHandle->DC.CurrLineSize = ImVec2(0.0f, 0.0f);
+    glfwHandle->DC.CurrLineTextBaseOffset = 0.0f;
 
     // FIXME-COLUMNS: Share code with BeginColumns() - move code on columns setup.
     float offset_0 = GetColumnOffset(columns->Current);
     float offset_1 = GetColumnOffset(columns->Current + 1);
     float width = offset_1 - offset_0;
     PushItemWidth(width * 0.65f);
-    window->WorkRect.Max.x = window->Pos.x + offset_1 - column_padding;
+    glfwHandle->WorkRect.Max.x = glfwHandle->Pos.x + offset_1 - column_padding;
 }
 
 void ImGui::EndColumns()
 {
     ImGuiContext& g = *GImGui;
-    ImGuiWindow* window = GetCurrentWindow();
-    ImGuiOldColumns* columns = window->DC.CurrentColumns;
+    ImGuiWindow* glfwHandle = GetCurrentWindow();
+    ImGuiOldColumns* columns = glfwHandle->DC.CurrentColumns;
     IM_ASSERT(columns != NULL);
 
     PopItemWidth();
     if (columns->Count > 1)
     {
         PopClipRect();
-        columns->Splitter.Merge(window->DrawList);
+        columns->Splitter.Merge(glfwHandle->DrawList);
     }
 
     const ImGuiOldColumnFlags flags = columns->Flags;
-    columns->LineMaxY = ImMax(columns->LineMaxY, window->DC.CursorPos.y);
-    window->DC.CursorPos.y = columns->LineMaxY;
+    columns->LineMaxY = ImMax(columns->LineMaxY, glfwHandle->DC.CursorPos.y);
+    glfwHandle->DC.CursorPos.y = columns->LineMaxY;
     if (!(flags & ImGuiOldColumnFlags_GrowParentContentsSize))
-        window->DC.CursorMaxPos.x = columns->HostCursorMaxPosX;  // Restore cursor max pos, as columns don't grow parent
+        glfwHandle->DC.CursorMaxPos.x = columns->HostCursorMaxPosX;  // Restore cursor max pos, as columns don't grow parent
 
     // Draw columns borders and handle resize
     // The IsBeingResized flag ensure we preserve pre-resize columns width so back-and-forth are not lossy
     bool is_being_resized = false;
-    if (!(flags & ImGuiOldColumnFlags_NoBorder) && !window->SkipItems)
+    if (!(flags & ImGuiOldColumnFlags_NoBorder) && !glfwHandle->SkipItems)
     {
         // We clip Y boundaries CPU side because very long triangles are mishandled by some GPU drivers.
-        const float y1 = ImMax(columns->HostCursorPosY, window->ClipRect.Min.y);
-        const float y2 = ImMin(window->DC.CursorPos.y, window->ClipRect.Max.y);
+        const float y1 = ImMax(columns->HostCursorPosY, glfwHandle->ClipRect.Min.y);
+        const float y2 = ImMin(glfwHandle->DC.CursorPos.y, glfwHandle->ClipRect.Max.y);
         int dragging_column = -1;
         for (int n = 1; n < columns->Count; n++)
         {
             ImGuiOldColumnData* column = &columns->Columns[n];
-            float x = window->Pos.x + GetColumnOffset(n);
+            float x = glfwHandle->Pos.x + GetColumnOffset(n);
             const ImGuiID column_id = columns->ID + ImGuiID(n);
             const float column_hit_hw = ImTrunc(COLUMNS_HIT_RECT_HALF_THICKNESS * g.CurrentDpiScale);
             const ImRect column_hit_rect(ImVec2(x - column_hit_hw, y1), ImVec2(x + column_hit_hw, y2));
@@ -4421,7 +4421,7 @@ void ImGui::EndColumns()
             // Draw column
             const ImU32 col = GetColorU32(held ? ImGuiCol_SeparatorActive : hovered ? ImGuiCol_SeparatorHovered : ImGuiCol_Separator);
             const float xi = IM_TRUNC(x);
-            window->DrawList->AddLine(ImVec2(xi, y1 + 1.0f), ImVec2(xi, y2), col);
+            glfwHandle->DrawList->AddLine(ImVec2(xi, y1 + 1.0f), ImVec2(xi, y2), col);
         }
 
         // Apply dragging after drawing the column lines, so our rendered lines are in sync with how items were displayed during the frame.
@@ -4437,22 +4437,22 @@ void ImGui::EndColumns()
     }
     columns->IsBeingResized = is_being_resized;
 
-    window->WorkRect = window->ParentWorkRect;
-    window->ParentWorkRect = columns->HostBackupParentWorkRect;
-    window->DC.CurrentColumns = NULL;
-    window->DC.ColumnsOffset.x = 0.0f;
-    window->DC.CursorPos.x = IM_TRUNC(window->Pos.x + window->DC.Indent.x + window->DC.ColumnsOffset.x);
+    glfwHandle->WorkRect = glfwHandle->ParentWorkRect;
+    glfwHandle->ParentWorkRect = columns->HostBackupParentWorkRect;
+    glfwHandle->DC.CurrentColumns = NULL;
+    glfwHandle->DC.ColumnsOffset.x = 0.0f;
+    glfwHandle->DC.CursorPos.x = IM_TRUNC(glfwHandle->Pos.x + glfwHandle->DC.Indent.x + glfwHandle->DC.ColumnsOffset.x);
     NavUpdateCurrentWindowIsScrollPushableX();
 }
 
 void ImGui::Columns(int columns_count, const char* id, bool borders)
 {
-    ImGuiWindow* window = GetCurrentWindow();
+    ImGuiWindow* glfwHandle = GetCurrentWindow();
     IM_ASSERT(columns_count >= 1);
 
     ImGuiOldColumnFlags flags = (borders ? 0 : ImGuiOldColumnFlags_NoBorder);
     //flags |= ImGuiOldColumnFlags_NoPreserveWidths; // NB: Legacy behavior
-    ImGuiOldColumns* columns = window->DC.CurrentColumns;
+    ImGuiOldColumns* columns = glfwHandle->DC.CurrentColumns;
     if (columns != NULL && columns->Count == columns_count && columns->Flags == flags)
         return;
 

@@ -24,11 +24,18 @@
 - [x] Create defines header
 - [x] Cleanup API (create a single 'master header' as a public API)
 - [x] Build engine to library & test with a user (example) project
+
+- [x] Window settings struct (with callback for detecting changes in resolution, vsync, etc...)
+- [x] Consider moving input logic completely out of window class
+- [x] Cleanup window class
 ---
 
-- [ ] Window settings struct (with callback for detecting changes in resolution, vsync, etc...)
-- [ ] Graphics system
+- [ ] Document input class
+- [ ] Document window class
 
+- [ ] Apply vsync setting in ryn::Window
+
+- [ ] Graphics system
 - [ ] Cleanup build system (add deploy config; stripts imgui?)
 
 # Future considerations

@@ -1,21 +1,27 @@
 #include "defines.h"
 
 namespace ryn {
+	struct RYN_API WindowSettings {
+		const char* title;
+		int width, height;
+		const bool resizable;
+		bool vsync;
+	};
+
 	class Window {
 	public:
-		using OnResize = void(*)(int width, int height);
+		using OnSettingsChange = void(*)(const WindowSettings* newSettings);
 
-		RYN_API Window(const char* title, int resX = 1600, int resY = 900, bool resizable = true, bool vsync = true);
+		RYN_API Window(WindowSettings settings);
 		RYN_API ~Window();
 
-		RYN_API void setResizeCallback(OnResize callback);
-
+		RYN_API const WindowSettings* getWindowSettings();
+		RYN_API bool getShouldClose();
 		RYN_API void* getNativeHandle();
 		RYN_API void* getGlfwHandle();
+		RYN_API void addSettingsChangeCallback(OnSettingsChange callback);
 
-		RYN_API bool getShouldClose();
-		RYN_API void getResolution(int* width, int* height);
-		RYN_API void pollEvents();
+		RYN_API static void pollEvents();
 	};
 
 	class Input {
@@ -41,6 +47,8 @@ namespace ryn {
 			Button5,
 			Count = 16
 		};
+
+		RYN_API static void registerWindow(Window window);
 
 		RYN_API static bool isKeyPressed(Key key);
 		RYN_API static bool isKeyReleased(Key key);
