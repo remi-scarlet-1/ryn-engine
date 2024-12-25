@@ -56,7 +56,7 @@ inline constexpr bool getBit(const uint64_t& word, int bit) {
 }
 
 // Implementation
-bool Input::isKeyPressed(Key key) {
+RYN_API bool Input::isKeyPressed(Key key) {
     int index = static_cast<int>(key);
 
     if (index < static_cast<int>(Key::KeyCount))
@@ -67,7 +67,7 @@ bool Input::isKeyPressed(Key key) {
     }
 }
 
-bool Input::isKeyReleased(Key key) {
+RYN_API bool Input::isKeyReleased(Key key) {
     int index = static_cast<int>(key);
 
     if (index < static_cast<int>(Key::KeyCount))
@@ -78,7 +78,7 @@ bool Input::isKeyReleased(Key key) {
     }
 }
 
-bool Input::isKeyHeld(Key key) {
+RYN_API bool Input::isKeyHeld(Key key) {
     int index = static_cast<int>(key);
 
     if (index < static_cast<int>(Key::KeyCount))
@@ -89,27 +89,27 @@ bool Input::isKeyHeld(Key key) {
     }
 }
 
-bool Input::isMousePressed(MouseButton button) {
+RYN_API bool Input::isMousePressed(MouseButton button) {
     int index = static_cast<int>(button);
     return getBit(mouseButtonStates, index) && !getBit(mouseButtonStatesLastFrame, index);
 }
 
-bool Input::isMouseReleased(MouseButton button) {
+RYN_API bool Input::isMouseReleased(MouseButton button) {
     int index = static_cast<int>(button);
     return !getBit(mouseButtonStates, index) && getBit(mouseButtonStatesLastFrame, index);
 }
 
-bool Input::isMouseHeld(MouseButton button) {
+RYN_API bool Input::isMouseHeld(MouseButton button) {
     int index = static_cast<int>(button);
     return getBit(mouseButtonStates, index);
 }
 
-void Input::getMousePosition(double& xPos, double& yPos) {
+RYN_API void Input::getMousePosition(double& xPos, double& yPos) {
     xPos = mouseX;
     yPos = mouseY;
 }
 
-void Input::getMouseScroll(double& xOffset, double& yOffset) {
+RYN_API void Input::getMouseScroll(double& xOffset, double& yOffset) {
     xOffset = mouseScrollX;
     yOffset = mouseScrollY;
 }

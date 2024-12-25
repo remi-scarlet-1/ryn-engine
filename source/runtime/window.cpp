@@ -8,7 +8,7 @@
 
 int ryn::Window::windowCount = 0;
 
-ryn::Window::Window(const char* title, int resX, int resY, bool resizable, bool vsync) : window(nullptr) {
+ryn::Window::Window(const char* title, int resX, int resY, bool resizable, bool vsync) : window(nullptr), onResizeCallback(nullptr) {
 	glfwSetErrorCallback([](int error, const char* description) {
 		std::fprintf(stderr, "GLFW error %d: %s\n", error, description);
 	});
@@ -71,8 +71,8 @@ void* ryn::Window::getNativeHandle() {
 #endif
 }
 
-GLFWwindow* ryn::Window::getGlfwHandle() { 
-	return window; 
+void* ryn::Window::getGlfwHandle() {
+	return static_cast<void*>(window); 
 }
 
 bool ryn::Window::getShouldClose() {

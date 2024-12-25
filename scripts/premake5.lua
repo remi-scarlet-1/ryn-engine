@@ -7,8 +7,11 @@ dir.script = dir.script:match("(.*)/$") or dir.script -- Remove trailing slash (
 dir.root = path.getabsolute(path.join(dir.script, ".."))
 dir.generate = path.join(dir.root, "generated")
 
-dir.runtime = path.join(dir.root, "runtime")
+dir.runtime = path.join(dir.root, "source", "runtime")
 dir.runtimeBuild = path.join(dir.generate, "build")
+
+dir.user = path.join(dir.root, "source", "user")
+dir.userBuild = path.join(dir.generate, "Build")
 
 dir.vendors = path.join(dir.root, "vendors")
 dir.vendorsBuild = path.join(dir.generate, "vendor_projects")
@@ -17,13 +20,13 @@ dir.vendorsInstall = path.join(dir.generate, "vendor_install")
 -- Setup workspace
 os.chdir(dir.root)
 
-workspace "Renderer"  
+workspace "RynEngine"  
     configurations { "Debug", "Release" }
     platforms { "x64" }
     location "%{dir.generate}"
 
-    project "renderer"
-        kind "ConsoleApp"
+    project "runtime"
+        kind "SharedLib"
         language "C++"
         cppdialect "C++20"
         architecture "x64"
@@ -32,16 +35,16 @@ workspace "Renderer"
         objdir "%{dir.runtimeBuild}/obj/%{cfg.buildcfg}"
 
         files { 
-            "%{dir.runtime}/source/**.h", "%{dir.runtime}/source/**.hpp",
-            "%{dir.runtime}/source/**.c", "%{dir.runtime}/source/**.cpp",
-            "%{dir.runtime}/vendors/**.c", "%{dir.runtime}/vendors/**.cpp",
-            "%{dir.runtime}/vendors/**.h", "%{dir.runtime}/vendors/**.hpp",
+            "%{dir.runtime}/**.h", "%{dir.runtime}/**.hpp",
+            "%{dir.runtime}/**.c", "%{dir.runtime}/**.cpp",
+            "%{dir.vendors}/_embedded/**.c", "%{dir.vendors}/_embedded/**.cpp", -- Include source of some vendors
+            "%{dir.vendors}/_embedded/**.h", "%{dir.vendors}/_embedded/**.hpp",
             "%{dir.script}/premake5.lua", "%{dir.root}/docs/**.*",
         }
 
         includedirs {
-            "%{dir.runtime}/source",
-            "%{dir.runtime}/vendors",
+            "%{dir.runtime}",
+            "%{dir.vendors}/_embedded", -- Include headers of embedded vendors
             "%{dir.vendorsInstall}/include",
         }
 
@@ -52,14 +55,21 @@ workspace "Renderer"
         vpaths {
             ["Build"] = { "%{dir.script}/**.*" },
             ["Docs"] = { "%{dir.root}/docs/**.*" },
-            ["Headers"] = { "%{dir.runtime}/source/**.h", "%{dir.runtime}/source/**.hpp" },
-            ["Sources"] = { "%{dir.runtime}/source/**.c", "%{dir.runtime}/source/**.cpp" },
-            ["Vendors/*"] = { "%{dir.runtime}/vendors/**.h", "%{dir.runtime}/vendors/**.hpp", "%{dir.runtime}/vendors/**.c", "%{dir.runtime}/vendors/**.cpp" },
+            ["Headers/*"] = { "%{dir.runtime}/**.h", "%{dir.runtime}/**.hpp" },
+            ["Sources"] = { "%{dir.runtime}/**.c", "%{dir.runtime}/**.cpp" },
+            ["Vendors (embedded)/*"] = { "%{dir.vendors}/_embedded/**.h", "%{dir.vendors}/_embedded/**.hpp", "%{dir.vendors}/_embedded/**.c", "%{dir.vendors}/_embedded/**.cpp" },
+        }
+
+        defines {
+            "RYN_EXPORT",
         }
 
         filter "configurations:Release"
             optimize "On"
-            defines { "NDEBUG", "BX_CONFIG_DEBUG=0" }
+            defines { 
+                "RYN_CONFIG_RELEASE", 
+                "BX_CONFIG_DEBUG=0" 
+            }
 
             links {
                 "bgfx",
@@ -72,7 +82,10 @@ workspace "Renderer"
 
         filter "configurations:Debug"
             symbols "On"
-            defines { "DEBUG", "BX_CONFIG_DEBUG=1" }
+            defines { 
+                "RYN_CONFIG_DEBUG", 
+                "BX_CONFIG_DEBUG=1" 
+            }
 
             links {
                 "bgfx_d",
@@ -93,6 +106,7 @@ workspace "Renderer"
             }
 
             defines {
+                "RYN_PLATFORM_WIN",
                 "GLFW_EXPOSE_NATIVE_WIN32", -- required for glfw (windows)
             }
 
@@ -100,6 +114,48 @@ workspace "Renderer"
                 "/Zc:__cplusplus", -- required for bgfx (msvc)
                 "/Zc:preprocessor", -- required for bgfx (msvc)
             }
+
+    project "user"
+        kind "ConsoleApp"
+        language "C++"
+        cppdialect "C++20"
+        architecture "x64"
+
+        targetdir "%{dir.userBuild}/bin/%{cfg.buildcfg}"
+        objdir "%{dir.userBuild}/obj/%{cfg.buildcfg}"
+
+        files { 
+            "%{dir.user}/**.h", "%{dir.user}/**.hpp",
+            "%{dir.user}/**.c", "%{dir.user}/**.cpp",
+        }
+
+        includedirs {
+            "%{dir.runtime}",
+            "%{dir.runtime}/public", -- public engine headers
+        }
+
+        libdirs {
+            "%{dir.runtimeBuild}/bin/%{cfg.buildcfg}", -- Where the runtime .lib is output
+            "%{dir.vendorsInstall}/lib",
+        }
+
+        links {
+            "runtime", -- Link against the runtime shared library
+        }
+
+        filter "configurations:Release"
+            optimize "On"
+            defines { "RYN_CONFIG_RELEASE" }
+
+        filter "configurations:Debug"
+            symbols "On"
+            defines { "RYN_CONFIG_DEBUG" }
+
+        -- windows (msvc)
+        filter { "system:windows", "action:vs*" }
+            system "windows"
+            toolset "msc"
+            defines { "RYN_PLATFORM_WIN" }
         
 -- Helper functions
 local function touchDir(dir)
