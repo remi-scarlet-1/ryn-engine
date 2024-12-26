@@ -38,6 +38,8 @@
 - [ ] Graphics system
 - [ ] Cleanup build system (add deploy config; stripts imgui?)
 
+- [ ] Intellisense hovering shows wrong documentation??? (Input::Key & Input::MouseButton)
+
 # Future considerations
 
 - [ ] map out dependencies (includes, to figure out what namespaces are accessible)
