@@ -28,9 +28,11 @@
 - [x] Window settings struct (with callback for detecting changes in resolution, vsync, etc...)
 - [x] Consider moving input logic completely out of window class
 - [x] Cleanup window class
+
+- [x] Document input class
+- [x] Intellisense hovering shows wrong documentation??? (Input::Key & Input::MouseButton)
 ---
 
-- [ ] Document input class
 - [ ] Document window class
 
 - [ ] Apply vsync setting in ryn::Window
@@ -38,7 +40,6 @@
 - [ ] Graphics system
 - [ ] Cleanup build system (add deploy config; stripts imgui?)
 
-- [ ] Intellisense hovering shows wrong documentation??? (Input::Key & Input::MouseButton)
 
 # Future considerations
 

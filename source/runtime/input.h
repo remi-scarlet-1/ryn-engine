@@ -9,6 +9,46 @@ struct GLFWwindow;
 
 namespace ryn {
     /**
+    * @enum Input::Key
+    * @brief Represents all possible keys on the keyboard.
+    *
+    * Defines all keys that can be monitored by the input system.
+    * It includes standard alphanumeric keys (A-Z, 0-9), function keys (F1-F12), arrow keys,
+    * and special keys such as Enter, Escape, Shift, etc.
+    *
+    * @note The enum values are internally mapped to GLFW key codes.
+    */
+    enum class Key {
+        A = 0, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z,
+        Zero, One, Two, Three, Four, Five, Six, Seven, Eight, Nine,
+        F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12,
+        KeyCount = 63,
+
+        LeftArrow = 64, RightArrow, UpArrow, DownArrow,
+        Enter, Space, Tab, Escape, Backspace, Shift, Control, Alt, CapsLock, NumLock, ScrollLock,
+        Insert, Delete, Home, End, PageUp, PageDown, Pause, PrintScreen,
+        Minus, Equal, LeftBracket, RightBracket, Backslash, Semicolon, Apostrophe, Comma, Period, Slash,
+        ExtendedKeyCount = 127
+    };
+
+    /**
+    * @enum Input::MouseButton
+    * @brief Represents all buttons on the mouse.
+    *
+    * Defines all buttons on the mouse that can be monitored by the input system.
+    * It includes typical mouse buttons like left, right, middle (scroll wheel), and additional
+    * buttons such as Button4 and Button5 commonly found on gaming mice (side buttons).
+    */
+    enum class MouseButton {
+        Left = 0,
+        Right,
+        Middle,
+        Button4,
+        Button5,
+        Count = 16
+    };
+
+    /**
     * @class Input
     * @brief Provides a static API for handling keyboard and mouse input.
     *
@@ -24,47 +64,6 @@ namespace ryn {
     */
     class Input {
     public:
-
-        /**
-        * @enum Input::Key
-        * @brief Represents all possible keys on the keyboard.
-        *
-        * Defines all keys that can be monitored by the input system.
-        * It includes standard alphanumeric keys (A-Z, 0-9), function keys (F1-F12), arrow keys,
-        * and special keys such as Enter, Escape, Shift, etc.
-        *
-        * @note The enum values are internally mapped to GLFW key codes.
-        */
-        enum class Key {
-            A = 0, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z,
-            Zero, One, Two, Three, Four, Five, Six, Seven, Eight, Nine,
-            F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12,
-            KeyCount = 63,
-
-            LeftArrow = 64, RightArrow, UpArrow, DownArrow,
-            Enter, Space, Tab, Escape, Backspace, Shift, Control, Alt, CapsLock, NumLock, ScrollLock,
-            Insert, Delete, Home, End, PageUp, PageDown, Pause, PrintScreen,
-            Minus, Equal, LeftBracket, RightBracket, Backslash, Semicolon, Apostrophe, Comma, Period, Slash,
-            ExtendedKeyCount = 127
-        };
-
-        /**
-        * @enum Input::MouseButton
-        * @brief Represents all buttons on the mouse.
-        *
-        * Defines all buttons on the mouse that can be monitored by the input system.
-        * It includes typical mouse buttons like left, right, middle (scroll wheel), and additional
-        * buttons such as Button4 and Button5 commonly found on gaming mice (side buttons).
-        */
-        enum class MouseButton {
-            Left = 0,
-            Right,
-            Middle,
-            Button4,
-            Button5,
-            Count = 16
-        };
-
         /**
         * @brief Prepares the input system for a new frame by resetting its state.
         *

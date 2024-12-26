@@ -5,19 +5,24 @@
 int main(int argc, char** argv) {
 	std::cout << "Hello, World!" << std::endl;
 	
+	// Create window
 	ryn::WindowSettings windowSettings("Ryn Engine!", 1600, 900, true, true);
 	ryn::Window window = ryn::Window(windowSettings);
 
+	// Hook up input system to window
+	ryn::Input::registerWindow(window);
+
+	// Main loop
 	while (!window.getShouldClose()) {
 		ryn::Window::pollEvents();
 
-		if (ryn::Input::isKeyPressed(ryn::Input::Key::Space))
+		if (ryn::Input::isKeyPressed(ryn::Key::Space))
 			std::cout << "SPACE WAS PRESSED!" << std::endl;
 
-		if (ryn::Input::isKeyHeld(ryn::Input::Key::Enter))
+		if (ryn::Input::isKeyHeld(ryn::Key::Enter))
 			std::cout << "ENTER IS HELD!" << std::endl;
 
-		if (ryn::Input::isMouseReleased(ryn::Input::MouseButton::Left))
+		if (ryn::Input::isMouseReleased(ryn::MouseButton::Left))
 			std::cout << "LEFT MOUSE BUTTON WAS RELEASED!" << std::endl;
 	}
 
