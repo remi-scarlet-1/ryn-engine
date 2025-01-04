@@ -8,7 +8,16 @@
 
 int ryn::Window::windowCount = 0;
 
-RYN_API ryn::Window::Window(WindowSettings settings) : settings(settings), glfwHandle(nullptr) {
+RYN_API ryn::Window* ryn::Window::createWindow(WindowSettings windowSettings) {
+	return new Window(windowSettings);
+}
+
+RYN_API void ryn::Window::destroyWindow(Window* window) {
+	if (window)
+		delete window;
+}
+
+ryn::Window::Window(WindowSettings settings) : settings(settings), glfwHandle(nullptr) {
 	// Set glfw error callback
 	glfwSetErrorCallback([](int error, const char* description) {
 		std::fprintf(stderr, "GLFW error %d: %s\n", error, description);
@@ -45,7 +54,7 @@ RYN_API ryn::Window::Window(WindowSettings settings) : settings(settings), glfwH
 	});
 }
 
-RYN_API ryn::Window::~Window() {
+ryn::Window::~Window() {
 	// Destroy the current window
 	glfwDestroyWindow(glfwHandle);
 
@@ -64,7 +73,15 @@ RYN_API void ryn::Window::pollEvents() {
 	glfwPollEvents();
 }
 
-RYN_API void* ryn::Window::getNativeHandle() {
+RYN_API bool ryn::Window::getShouldClose() {
+	return glfwWindowShouldClose(glfwHandle);
+}
+
+RYN_API const ryn::WindowSettings* ryn::Window::getWindowSettings() {
+	return &settings;
+}
+
+void* ryn::Window::getNativeHandle() {
 #ifdef GLFW_EXPOSE_NATIVE_WIN32
 	return glfwGetWin32Window(glfwHandle);
 #elif GLFW_EXPOSE_NATIVE_COCOA
@@ -76,16 +93,8 @@ RYN_API void* ryn::Window::getNativeHandle() {
 #endif
 }
 
-RYN_API void* ryn::Window::getGlfwHandle() {
-	return static_cast<void*>(glfwHandle); 
-}
-
-RYN_API bool ryn::Window::getShouldClose() {
-	return glfwWindowShouldClose(glfwHandle);
-}
-
-RYN_API const ryn::WindowSettings* ryn::Window::getWindowSettings() {
-	return &settings;
+GLFWwindow* ryn::Window::getGlfwHandle() {
+	return glfwHandle; 
 }
 
 void ryn::Window::notifySettingsChange() {

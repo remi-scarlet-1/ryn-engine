@@ -3,8 +3,8 @@
 namespace ryn {
 	struct RYN_API WindowSettings {
 		const char* title;
-		int width, height;
 		const bool resizable;
+		int width, height;
 		bool vsync;
 	};
 
@@ -12,15 +12,12 @@ namespace ryn {
 	public:
 		using OnSettingsChange = void(*)(const WindowSettings* newSettings);
 
-		RYN_API Window(WindowSettings settings);
-		RYN_API ~Window();
+		RYN_API static Window* createWindow(WindowSettings windowSettings);
+		RYN_API static void destroyWindow(Window* window);
 
 		RYN_API const WindowSettings* getWindowSettings();
 		RYN_API bool getShouldClose();
-		RYN_API void* getNativeHandle();
-		RYN_API void* getGlfwHandle();
 		RYN_API void addSettingsChangeCallback(OnSettingsChange callback);
-
 		RYN_API static void pollEvents();
 	};
 
@@ -88,7 +85,7 @@ namespace ryn {
 		*
 		* @param window The window to be registered.
 		*/
-		RYN_API static void registerWindow(Window window);
+		RYN_API static void registerWindow(Window* window);
 
 		RYN_API static bool isKeyPressed(Key key);
 		RYN_API static bool isKeyReleased(Key key);
