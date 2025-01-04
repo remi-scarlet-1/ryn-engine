@@ -6,7 +6,7 @@
 struct GLFWwindow;
 
 namespace ryn {
-	struct RYN_API WindowSettings {
+	struct WindowSettings {
 		const char* title;
 		const bool resizable;
 		int width, height;
@@ -17,13 +17,13 @@ namespace ryn {
 	public:
 		using OnSettingsChange = void(*)(const WindowSettings* newSettings);
 
-		RYN_API static Window* createWindow(WindowSettings windowSettings);
-		RYN_API static void destroyWindow(Window* window);
+		Window(WindowSettings settings);
+		~Window();
 
-		RYN_API const WindowSettings* getWindowSettings();
-		RYN_API bool getShouldClose();
-		RYN_API void addSettingsChangeCallback(OnSettingsChange callback);
-		RYN_API static void pollEvents();
+		const WindowSettings* getWindowSettings();
+		bool getShouldClose();
+		void addSettingsChangeCallback(OnSettingsChange callback);
+		static void pollEvents();
 
 		void* getNativeHandle();
 		GLFWwindow* getGlfwHandle();
@@ -34,8 +34,6 @@ namespace ryn {
 		GLFWwindow* glfwHandle;
 		std::vector<OnSettingsChange> onSettingsChangeCallbacks;
 
-		explicit Window(WindowSettings settings);
-		~Window();
 
 		void notifySettingsChange();
 		void onWindowResize(int width, int height);

@@ -61,6 +61,7 @@ workspace "RynEngine"
         }
 
         defines {
+            "RYN_ENGINE",
             "RYN_EXPORT",
         }
 

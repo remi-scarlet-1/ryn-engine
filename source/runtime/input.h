@@ -83,7 +83,7 @@ namespace ryn {
         * 
         * @param window The window to be registered.
         */
-		RYN_API static void registerWindow(Window* window);
+		static void registerWindow(Window window);
 
 		RYN_API static bool isKeyPressed(Key key);
 		RYN_API static bool isKeyReleased(Key key);

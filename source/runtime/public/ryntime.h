@@ -1,26 +1,8 @@
+#pragma once
+
 #include "defines.h"
 
 namespace ryn {
-	struct RYN_API WindowSettings {
-		const char* title;
-		const bool resizable;
-		int width, height;
-		bool vsync;
-	};
-
-	class Window {
-	public:
-		using OnSettingsChange = void(*)(const WindowSettings* newSettings);
-
-		RYN_API static Window* createWindow(WindowSettings windowSettings);
-		RYN_API static void destroyWindow(Window* window);
-
-		RYN_API const WindowSettings* getWindowSettings();
-		RYN_API bool getShouldClose();
-		RYN_API void addSettingsChangeCallback(OnSettingsChange callback);
-		RYN_API static void pollEvents();
-	};
-
 	/**
 	* @enum Input::Key
 	* @brief Represents all possible keys on the keyboard.
@@ -77,16 +59,6 @@ namespace ryn {
 	*/
 	class Input {
 	public:
-		/**
-		* @brief Register a window to listen for input events.
-		*
-		* Associates the given window with the input system, allowing it to process keyboard and mouse events.
-		* This registration is required to enable input tracking for the specified window.
-		*
-		* @param window The window to be registered.
-		*/
-		RYN_API static void registerWindow(Window* window);
-
 		RYN_API static bool isKeyPressed(Key key);
 		RYN_API static bool isKeyReleased(Key key);
 		RYN_API static bool isKeyHeld(Key key);

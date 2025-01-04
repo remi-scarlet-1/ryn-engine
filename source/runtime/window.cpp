@@ -8,15 +8,6 @@
 
 int ryn::Window::windowCount = 0;
 
-RYN_API ryn::Window* ryn::Window::createWindow(WindowSettings windowSettings) {
-	return new Window(windowSettings);
-}
-
-RYN_API void ryn::Window::destroyWindow(Window* window) {
-	if (window)
-		delete window;
-}
-
 ryn::Window::Window(WindowSettings settings) : settings(settings), glfwHandle(nullptr) {
 	// Set glfw error callback
 	glfwSetErrorCallback([](int error, const char* description) {
@@ -63,21 +54,21 @@ ryn::Window::~Window() {
 		glfwTerminate();
 }
 
-RYN_API void ryn::Window::addSettingsChangeCallback(OnSettingsChange callback) {
+void ryn::Window::addSettingsChangeCallback(OnSettingsChange callback) {
 	// Add callback receiver to the onettingsChangeCallbacks vector
 	onSettingsChangeCallbacks.push_back(callback);
 }
 
-RYN_API void ryn::Window::pollEvents() {
+void ryn::Window::pollEvents() {
 	ryn::Input::reset();
 	glfwPollEvents();
 }
 
-RYN_API bool ryn::Window::getShouldClose() {
+bool ryn::Window::getShouldClose() {
 	return glfwWindowShouldClose(glfwHandle);
 }
 
-RYN_API const ryn::WindowSettings* ryn::Window::getWindowSettings() {
+const ryn::WindowSettings* ryn::Window::getWindowSettings() {
 	return &settings;
 }
 
