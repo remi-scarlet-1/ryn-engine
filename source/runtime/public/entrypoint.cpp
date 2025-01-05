@@ -1,18 +1,15 @@
 #include "entrypoint.h"
+
 #include "window.h"
 #include "input.h"
-#include <iostream>
-#include <GLFW/glfw3.h>
 
 RYN_API void ryn::run(Game* game) {
-    std::cout << "Hello, World!" << std::endl;
-
     // Create window
     ryn::WindowSettings windowSettings("Ryn Engine!", true, 1600, 900, true);
     ryn::Window window = ryn::Window(windowSettings);
 
     // Hookup input system to window
-    ryn::Input::registerWindow(window);
+    ryn::Input::registerWindow(&window);
 
     // Signal to user code that setup is complete
     game->onStarted();

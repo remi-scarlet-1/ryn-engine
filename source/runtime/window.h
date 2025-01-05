@@ -1,7 +1,6 @@
 #pragma once
 
 #include "public/defines.h"
-#include <vector>
 
 struct GLFWwindow;
 
@@ -15,27 +14,19 @@ namespace ryn {
 
 	class Window {
 	public:
-		using OnSettingsChange = void(*)(const WindowSettings* newSettings);
-
 		Window(WindowSettings settings);
 		~Window();
 
-		const WindowSettings* getWindowSettings();
-		bool getShouldClose();
-		void addSettingsChangeCallback(OnSettingsChange callback);
-		static void pollEvents();
+		// Hack: disable copying of windows, so the destructor isn't accidentaly called
+		Window(const Window&) = delete;            // Disable copy constructor
+		Window& operator=(const Window&) = delete; // Disable copy assignment
 
-		void* getNativeHandle();
+		static void pollEvents();
 		GLFWwindow* getGlfwHandle();
+		void* getNativeHandle();
+		bool getShouldClose();
 
 	private:
-		static int windowCount;
-		WindowSettings settings;
 		GLFWwindow* glfwHandle;
-		std::vector<OnSettingsChange> onSettingsChangeCallbacks;
-
-
-		void notifySettingsChange();
-		void onWindowResize(int width, int height);
 	};
 }
