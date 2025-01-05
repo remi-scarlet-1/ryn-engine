@@ -55,8 +55,8 @@ inline constexpr bool getBit(const uint64_t& word, int bit) {
 }
 #pragma endregion
 
-void ryn::Input::registerWindow(Window window) {
-    GLFWwindow* glfwWindow = window.getGlfwHandle();
+void ryn::Input::registerWindow(Window* window) {
+    GLFWwindow* glfwWindow = window->getGlfwHandle();
     glfwSetKeyCallback(glfwWindow, onKey);
     glfwSetMouseButtonCallback(glfwWindow, onMouseButton);
     glfwSetScrollCallback(glfwWindow, onMouseScroll);

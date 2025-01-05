@@ -1,10 +1,8 @@
 #pragma once
 
-// Includes:
 #include "public/defines.h"
 #include "window.h"
 
-// Forward declarations:
 struct GLFWwindow;
 
 namespace ryn {
@@ -83,7 +81,7 @@ namespace ryn {
         * 
         * @param window The window to be registered.
         */
-		static void registerWindow(Window window);
+		static void registerWindow(Window* window);
 
 		RYN_API static bool isKeyPressed(Key key);
 		RYN_API static bool isKeyReleased(Key key);
