@@ -37,3 +37,17 @@ Use doxygen-like documentation. Start comments with ```/** */``` and make use of
 - **@ingroup**: Groups related functions or classes.
 - **@author**: Specifies the author.
 - **@version**: Specifies the version of the code.
+
+# File Header Comments
+Every file should start with a brief header comment using Doxygen-style comments to describe its purpose and relevant metadata.  
+  
+Format:
+```
+/**
+ * @file <filename>
+ * @brief <Short description of the file's purpose>
+ * @author <Your Name>
+ * @version <Version number (MAJOR, MINOR, PATCH)>
+ * @date <Date of creation or last modification>
+ */
+ ```
