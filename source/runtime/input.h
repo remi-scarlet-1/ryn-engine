@@ -1,3 +1,12 @@
+/**
+* @file    input.h
+* @brief   Provides a static inteface for input handling of devices such as keyboards and mice. 
+*          This file allows users to query input states, track mouse movements and scroll.
+* @author  Konstantinos Lampros
+* @version 1.0.0
+* @date    2025-01-12
+*/
+
 #pragma once
 
 #include "public/defines.h"
