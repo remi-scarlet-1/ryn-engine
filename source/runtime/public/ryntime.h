@@ -3,6 +3,15 @@
 #include "defines.h"
 
 namespace ryn {
+	class RYN_API Game {
+	public:
+		virtual ~Game() = default;
+
+		virtual void onStarted() = 0;
+		virtual void onUpdate() = 0;
+		virtual void onShutdown() = 0;
+	};
+
 	/**
 	* @enum Input::Key
 	* @brief Represents all possible keys on the keyboard.

@@ -1,5 +1,6 @@
 #include "entrypoint.h"
 
+#include "game.h"
 #include "window.h"
 #include "input.h"
 

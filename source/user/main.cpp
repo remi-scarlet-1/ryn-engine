@@ -1,8 +1,6 @@
 #include "entrypoint.h"
 #include "ryntime.h"
 
-#include <iostream>
-
 class MyGame : public ryn::Game {
 public:
     void onStarted() override { }

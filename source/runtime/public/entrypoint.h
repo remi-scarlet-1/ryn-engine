@@ -4,14 +4,8 @@
 #include <stdexcept>
 
 namespace ryn {
-	class RYN_API Game {
-	public:
-		virtual ~Game() = default;
-
-		virtual void onStarted() = 0;
-		virtual void onUpdate() = 0;
-		virtual void onShutdown() = 0;
-	};
+	// Forward declare Game, because classes should only be defined for the user in ryntime.h
+	class RYN_API Game;
 
 	extern Game* createGame();
 	RYN_API void run(Game* game);
