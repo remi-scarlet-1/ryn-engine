@@ -11,6 +11,7 @@
 
 #include "public/defines.h"
 
+// Forward declarations
 struct GLFWwindow;
 
 namespace ryn {
