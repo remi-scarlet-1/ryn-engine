@@ -40,7 +40,7 @@ namespace ryn {
 	RYN_API void run(Game* game);
 }
 
-#ifndef RYN_ENGINE
+#ifndef RYN_EXPORT
 /**
  * @brief The entry point for the user's project and engine setup.
  *        This function calls the user-defined 'createGame' function to create a game instance,
@@ -64,4 +64,4 @@ int main(int argc, char** argv) {
 	ryn::run(game);
 	return 0;
 }
-#endif // !RYN_ENGINE
+#endif // !RYN_EXPORT
