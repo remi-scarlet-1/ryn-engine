@@ -1,21 +1,19 @@
 -- Construct paths
-dir = {
-    script = debug.getinfo(1, "S").source:sub(2):match("(.*/)") -- Get path of script directory
-}
+dir = { script = debug.getinfo(1, "S").source:sub(2):match("(.*/)") } -- Get path of script directory & save into new 'dir' table
 
-dir.script = dir.script:match("(.*)/$") or dir.script -- Remove trailing slash (if any)
-dir.root = path.getabsolute(path.join(dir.script, ".."))
-dir.generate = path.join(dir.root, "generated")
+dir.script          = dir.script:match("(.*)/$") or dir.script -- Remove trailing slash (if any) from dir.script
+dir.root            = path.getabsolute(path.join(dir.script, ".."))
+dir.generate        = path.join(dir.root, "generated")
 
-dir.runtime = path.join(dir.root, "source", "runtime")
-dir.runtimeBuild = path.join(dir.generate, "build")
+dir.runtime         = path.join(dir.root, "source", "runtime")
+dir.runtimeBuild    = path.join(dir.generate, "build")
 
-dir.user = path.join(dir.root, "source", "user")
-dir.userBuild = path.join(dir.generate, "Build")
+dir.user            = path.join(dir.root, "source", "user")
+dir.userBuild       = path.join(dir.generate, "Build")
 
-dir.vendors = path.join(dir.root, "vendors")
-dir.vendorsBuild = path.join(dir.generate, "vendor_projects")
-dir.vendorsInstall = path.join(dir.generate, "vendor_install")
+dir.vendors         = path.join(dir.root, "vendors")
+dir.vendorsBuild    = path.join(dir.generate, "vendor_projects")
+dir.vendorsInstall  = path.join(dir.generate, "vendor_install")
 
 -- Setup workspace
 os.chdir(dir.root)
@@ -39,13 +37,13 @@ workspace "RynEngine"
             "%{dir.runtime}/**.c", "%{dir.runtime}/**.cpp",
             "%{dir.vendors}/_embedded/**.c", "%{dir.vendors}/_embedded/**.cpp", -- Include source of some vendors
             "%{dir.vendors}/_embedded/**.h", "%{dir.vendors}/_embedded/**.hpp",
-            "%{dir.script}/premake5.lua", "%{dir.root}/docs/**.*",
+            "%{dir.script}/premake5.lua", "%{dir.root}/docs/**.*", -- Include build scripts & documentation (make viewable in solution explorer)
         }
 
         includedirs {
             "%{dir.runtime}",
             "%{dir.vendors}/_embedded", -- Include headers of embedded vendors
-            "%{dir.vendorsInstall}/include",
+            "%{dir.vendorsInstall}/include", -- Include headers of linked vendors
         }
 
         libdirs {
