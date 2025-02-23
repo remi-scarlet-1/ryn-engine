@@ -2,8 +2,8 @@
 * @file		defines.h
 * @brief	Common macro definitions, platform-specific configurations and utility headers for the engine.
 * @author	Konstantinos Lampros
-* @version	1.0.0
-* @date		2025-01-12
+* @version	1.0.1
+* @date		2025-02-23
 */
 
 #pragma once
@@ -26,5 +26,5 @@
 	* @brief Error message when the platform is unsupported.
 	* @warning Only Windows platform is currently supported.
 	*/
-	#error "RYN_API is only supported on Windows. Please define RYN_PLATFORM_WIN to use the API. Support for other platforms has not been implemented yet."
+	#error "RYN_API (shared library symbol export/import) is currently only supported on Windows. Please define RYN_PLATFORM_WIN or implement support for other platforms."
 #endif // RYN_PLATFORM_WIN
