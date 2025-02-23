@@ -10,9 +10,12 @@
 #pragma once
 
 #include "public/defines.h"
-#include "window.h"
 
 struct GLFWwindow;
+
+namespace ryn {
+    class Window;
+}
 
 namespace ryn {
     /**

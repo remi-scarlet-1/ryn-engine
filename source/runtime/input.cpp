@@ -1,5 +1,6 @@
 #include "input.h"
 
+#include "window.h"
 #include <GLFW/glfw3.h>
 
 uint64_t ryn::Input::regularKeyStates = 0;
