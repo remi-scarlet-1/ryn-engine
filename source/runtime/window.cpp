@@ -53,7 +53,7 @@ void* ryn::Window::getNativeHandle() {
 #elif GLFW_EXPOSE_NATIVE_X11
 	return glfwGetX11Window(window);
 #else
-#error "You must define the GLFW_EXPOSE_NATIVE_* for your platform"
+#error "Couldn't find platform specific implementation for Window::getNativeHandle(). Please define the appropriate GLFW_EXPOSE_NATIVE_[...] macro for your platform."
 #endif
 }
 
