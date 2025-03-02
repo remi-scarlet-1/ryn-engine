@@ -1,4 +1,4 @@
-#include "entrypoint.h"
+#include "public/entrypoint.h"
 
 #include "game.h"
 #include "window.h"
