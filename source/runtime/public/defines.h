@@ -9,6 +9,8 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
+using string = std::string;
 
 /**
 * @brief Define the RYN_API macro for different platforms.
