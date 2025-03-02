@@ -32,6 +32,10 @@ workspace "RynEngine"
         targetdir "%{dir.runtimeBuild}/bin/%{cfg.buildcfg}"
         objdir "%{dir.runtimeBuild}/obj/%{cfg.buildcfg}"
 
+        defines {
+            "RYN_EXPORT",
+        }
+
         files { 
             "%{dir.runtime}/**.h", "%{dir.runtime}/**.hpp",
             "%{dir.runtime}/**.c", "%{dir.runtime}/**.cpp",
@@ -58,9 +62,6 @@ workspace "RynEngine"
             ["Vendors (embedded)/*"] = { "%{dir.vendors}/_embedded/**.h", "%{dir.vendors}/_embedded/**.hpp", "%{dir.vendors}/_embedded/**.c", "%{dir.vendors}/_embedded/**.cpp" },
         }
 
-        defines {
-            "RYN_EXPORT",
-        }
 
         filter "configurations:Release"
             optimize "On"
@@ -99,10 +100,6 @@ workspace "RynEngine"
             system "windows"
             toolset "msc"
 
-            includedirs { 
-                "%{dir.vendorsInstall}/include/bx/compat/msvc",  -- required for bgfx (msvc)
-            }
-
             defines {
                 "RYN_PLATFORM_WIN",
                 "GLFW_EXPOSE_NATIVE_WIN32", -- required for glfw (windows)
@@ -112,6 +109,15 @@ workspace "RynEngine"
                 "/Zc:__cplusplus", -- required for bgfx (msvc)
                 "/Zc:preprocessor", -- required for bgfx (msvc)
             }
+
+            includedirs { 
+                "%{dir.vendorsInstall}/include/bx/compat/msvc",  -- required for bgfx (msvc)
+            }
+
+            links {
+                "Ws2_32",
+            }
+
 
     project "user"
         kind "ConsoleApp"
