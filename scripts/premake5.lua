@@ -9,7 +9,7 @@ dir.runtime         = path.join(dir.root, "source", "runtime")
 dir.runtimeBuild    = path.join(dir.generate, "build")
 
 dir.user            = path.join(dir.root, "source", "user")
-dir.userBuild       = path.join(dir.generate, "Build")
+dir.userBuild       = path.join(dir.generate, "build")
 
 dir.vendors         = path.join(dir.root, "vendors")
 dir.vendorsBuild    = path.join(dir.generate, "vendor_projects")
@@ -29,8 +29,8 @@ workspace "RynEngine"
         cppdialect "C++20"
         architecture "x64"
 
-        targetdir "%{dir.runtimeBuild}/bin/%{cfg.buildcfg}"
-        objdir "%{dir.runtimeBuild}/obj/%{cfg.buildcfg}"
+        targetdir "%{dir.runtimeBuild}/bin/%{cfg.platform}/%{cfg.buildcfg}"
+        objdir "%{dir.runtimeBuild}/obj/%{cfg.platform}/%{cfg.buildcfg}"
 
         defines {
             "RYN_EXPORT",
@@ -132,8 +132,8 @@ workspace "RynEngine"
         cppdialect "C++20"
         architecture "x64"
 
-        targetdir "%{dir.userBuild}/bin/%{cfg.buildcfg}"
-        objdir "%{dir.userBuild}/obj/%{cfg.buildcfg}"
+        targetdir "%{dir.userBuild}/bin/%{cfg.platform}/%{cfg.buildcfg}"
+        objdir "%{dir.userBuild}/obj/%{cfg.platform}/%{cfg.buildcfg}"
 
         files { 
             "%{dir.user}/**.h", "%{dir.user}/**.hpp",
