@@ -19,8 +19,8 @@ dir.vendorsInstall  = path.join(dir.generate, "vendor_install")
 os.chdir(dir.root)
 
 workspace "RynEngine"  
-    configurations { "Debug", "Release" }
-    platforms { "x64" }
+    configurations { "Release", "Debug" }
+    platforms { "ClientX64", "ServerX64" }
     location "%{dir.generate}"
 
     project "runtime"
@@ -62,7 +62,14 @@ workspace "RynEngine"
             ["Vendors (embedded)/*"] = { "%{dir.vendors}/_embedded/**.h", "%{dir.vendors}/_embedded/**.hpp", "%{dir.vendors}/_embedded/**.c", "%{dir.vendors}/_embedded/**.cpp" },
         }
 
+        ----- Platforms filters -----
+        filter "platforms:ClientX64"
+            defines { "RYN_NET_CLIENT" }
 
+        filter "platforms:ServerX64"
+            defines { "RYN_NET_SERVER" }
+
+        ----- Configuration filters -----
         filter "configurations:Release"
             optimize "On"
             defines { 
@@ -95,8 +102,8 @@ workspace "RynEngine"
                 "glfw3_d",
             }
 
-        -- windows (msvc)
-        filter { "system:windows", "action:vs*" }
+        ----- System filters -----
+        filter { "system:windows", "action:vs*" } -- windows (msvc)
             system "windows"
             toolset "msc"
 
@@ -147,6 +154,7 @@ workspace "RynEngine"
             "runtime", -- Link against the runtime shared library
         }
 
+        ----- Configuration filters -----
         filter "configurations:Release"
             optimize "On"
             defines { "RYN_CONFIG_RELEASE" }
@@ -155,8 +163,8 @@ workspace "RynEngine"
             symbols "On"
             defines { "RYN_CONFIG_DEBUG" }
 
-        -- windows (msvc)
-        filter { "system:windows", "action:vs*" }
+        ----- System filters -----
+        filter { "system:windows", "action:vs*" } -- windows (msvc)
             system "windows"
             toolset "msc"
             defines { "RYN_PLATFORM_WIN" }
