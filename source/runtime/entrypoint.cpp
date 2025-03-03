@@ -3,14 +3,14 @@
 #include "game.h"
 #include "window.h"
 #include "input.h"
+#include "network.h"
 
 RYN_API void ryn::run(Game* game) {
-    // Create window
+    // Initialize
     ryn::WindowSettings windowSettings("Ryn Engine!", true, 1600, 900, true);
     ryn::Window window = ryn::Window(windowSettings);
-
-    // Hookup input system to window
     ryn::Input::registerWindow(&window);
+    ryn::net::initialize();
 
     // Signal to user code that setup is complete
     game->onStarted();
@@ -18,10 +18,11 @@ RYN_API void ryn::run(Game* game) {
     // Main loop
     while (!window.getShouldClose()) {
         ryn::Window::pollEvents();
-
-        // Signal to user code that a frame update is in process
-        game->onUpdate();
+        game->onUpdate(); // Signal to user code that a frame update is in process
     }
+
+    // Cleanup
+    ryn::net::cleanup();
 
     // Signal to user code that the engine is shutting down
     game->onShutdown();
