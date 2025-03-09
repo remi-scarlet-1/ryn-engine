@@ -21,6 +21,7 @@ Use doxygen-like documentation. Start comments with ```/** */``` and make use of
 
 - **@brief**: Short description of a function, class, or variable.
 - **@param**: Describes a function parameter.
+- **@throws**: Describes potential exceptions.
 - **@return**: Describes the return value of a function.  
 
 - **@struct**: For struct documentation.
