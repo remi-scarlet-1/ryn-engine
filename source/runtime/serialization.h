@@ -27,15 +27,13 @@
 *			@endcode
 *
 * @author	Konstantinos Lampros
-* @version	1.0.0
-* @date		2025-03-09
+* @version	1.0.1
+* @date		2025-03-13
 */
 
 #pragma once
 
 #include "public/defines.h"
-
-#include <cstring>
 #include <type_traits>
 
 namespace ryn::serialization {
@@ -131,17 +129,17 @@ namespace ryn::serialization {
 	*						objects derived from `AutoSerializable` types by bypassing
 	*						the trivially copyable check.
 	*
-	* @warning				Ensure the correct `bufferSize` is provided to avoid buffer overflows
-	*						or memory corruption.
+	* @warning				Ensure `bufferSize` is sufficient to accommodate the serialized data.
+	*						Passing an insufficient buffer will result in no data being written.
 	*
+	* @error				Returns `0` if the buffer is too small or `bufferOffset` is out of bounds.
+	* 
 	* @param buffer			Pointer to the destination buffer.
 	* @param bufferSize		Total size of the destination buffer in bytes.
 	* @param bufferOffset	Offset within the destination buffer where serialization should begin.
 	* @param value			The object to serialize, passed by reference.
 	* @param valuePtrOffset	(Optional) Offset within the object's memory to begin copying (defaults to 0).
-	* @return				Number of bytes written to the destination buffer.
-	*
-	* @throws				std::overflow_error If the destination buffer cannot hold the data.
+	* @return				Number of bytes written to the destination buffer, or `0` on failure.
 	*/
 	template <typename T>
 	size_t serializeToBuffer(uint8_t* buffer, size_t bufferSize, size_t bufferOffset, const T& value, size_t valuePtrOffset = 0) {
@@ -152,7 +150,7 @@ namespace ryn::serialization {
 		// Ensure buffer can hold the serialized data
 		size_t byteCount = sizeof(T) - valuePtrOffset;
 		if (bufferOffset + byteCount > bufferSize)
-			throw std::overflow_error("Buffer is too small for serialization.");
+			return 0;
 
 		// Copy the data starting from the specified offset within value
 		memcpy(buffer + bufferOffset, reinterpret_cast<const uint8_t*>(&value) + valuePtrOffset, byteCount);
@@ -166,17 +164,17 @@ namespace ryn::serialization {
 	*						byte buffer, starting at a specified offset. It also handles objects
 	*						derived from `AutoSerializable` types by bypassing the trivially copyable check.
 	*
-	* @warning				Ensure the correct `bufferSize` is provided to avoid buffer overflows
-	*						or memory corruption.
-	*
+	* @warning				Ensure `bufferSize` is sufficient to accommodate the deserialized data.
+	*						Passing an insufficiently small buffer will result in no data being read.
+	* 
+	* @error				Returns `0` if the buffer is too small or `bufferOffset` is out of bounds.
+	* 
 	* @param buffer			Pointer to the source buffer.
 	* @param bufferSize		Total size of the source buffer in bytes.
 	* @param bufferOffset	Offset within the source buffer from where deserialization should begin.
 	* @param value			Reference to the object into which we deserialized.
 	* @param valuePtrOffset	(Optional) Offset within the object's memory where pasting should begin (defaults to 0).
-	* @return				Number of bytes read from the source buffer.
-	*
-	* @throws				std::overflow_error If the source buffer does not contain enough data.
+	* @return				Number of bytes read from the source buffer, or `0` on failure.
 	*/
 	template <typename T>
 	size_t deserializeFromBuffer(const uint8_t* buffer, size_t bufferSize, size_t bufferOffset, T& value, size_t valuePtrOffset = 0) {
@@ -187,7 +185,7 @@ namespace ryn::serialization {
 		// Ensure buffer has enough data for deserialization
 		size_t byteCount = sizeof(T) - valuePtrOffset;
 		if (bufferOffset + byteCount > bufferSize)
-			throw std::overflow_error("Buffer is too small to deserialize object.");
+			return 0;
 
 		// Copy the data into value starting from the specified offset
 		memcpy(reinterpret_cast<uint8_t*>(&value) + valuePtrOffset, buffer + bufferOffset, byteCount);
