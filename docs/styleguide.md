@@ -19,20 +19,22 @@ Example:
 # Documentation
 Use doxygen-like documentation. Start comments with ```/** */``` and make use of the following tags:  
 
-- **@brief**: Short description of a function, class, or variable.
-- **@param**: Describes a function parameter.
-- **@throws**: Describes potential exceptions.
-- **@return**: Describes the return value of a function.  
-
 - **@struct**: For struct documentation.
 - **@class**: For class documentation.
 - **@enum**: For enum documentation.
+
+- **@brief**: Short description of a function, class, or variable.
+- **@param**: Describes a function parameter.
+- **@return**: Describes the return value of a function.  
+
+- **@warning**: Describes potential issues or warnings.
+- **@error**: Describes potential error behaviour.
+- **@throws**: Describes potential exceptions.
 
 - **@todo**: Marks something to be done in the future.
 - **@deprecated**: Marks a function or class as deprecated.
 - **@example**: Provides example usage.
 - **@see**: Links to related functions or classes.
-- **@warning**: Used to highlight potential issues or warnings.
 - **@file**: Describes the overall file.
 - **@namespace**: Describes a namespace.
 - **@ingroup**: Groups related functions or classes.
