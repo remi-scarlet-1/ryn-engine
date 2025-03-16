@@ -39,14 +39,14 @@ workspace "RynEngine"
         files { 
             "%{dir.runtime}/**.h", "%{dir.runtime}/**.hpp",
             "%{dir.runtime}/**.c", "%{dir.runtime}/**.cpp",
-            "%{dir.vendors}/_embedded/**.c", "%{dir.vendors}/_embedded/**.cpp", -- Include source of some vendors
-            "%{dir.vendors}/_embedded/**.h", "%{dir.vendors}/_embedded/**.hpp",
+            "%{dir.vendors}/_header-only/**.c", "%{dir.vendors}/_header-only/**.cpp", -- Include source of some vendors
+            "%{dir.vendors}/_header-only/**.h", "%{dir.vendors}/_header-only/**.hpp",
             "%{dir.script}/premake5.lua", "%{dir.root}/docs/**.*", -- Include build scripts & documentation (make viewable in solution explorer)
         }
 
         includedirs {
             "%{dir.runtime}",
-            "%{dir.vendors}/_embedded", -- Include headers of embedded vendors
+            "%{dir.vendors}/_header-only", -- Include headers of header-only vendors
             "%{dir.vendorsInstall}/include", -- Include headers of linked vendors
         }
 
@@ -59,7 +59,7 @@ workspace "RynEngine"
             ["Docs"] = { "%{dir.root}/docs/**.*" },
             ["Headers/*"] = { "%{dir.runtime}/**.h", "%{dir.runtime}/**.hpp" },
             ["Sources"] = { "%{dir.runtime}/**.c", "%{dir.runtime}/**.cpp" },
-            ["Vendors (embedded)/*"] = { "%{dir.vendors}/_embedded/**.h", "%{dir.vendors}/_embedded/**.hpp", "%{dir.vendors}/_embedded/**.c", "%{dir.vendors}/_embedded/**.cpp" },
+            ["Vendors (header-only)/*"] = { "%{dir.vendors}/_header-only/**.h", "%{dir.vendors}/_header-only/**.hpp", "%{dir.vendors}/_header-only/**.c", "%{dir.vendors}/_header-only/**.cpp" },
         }
 
         ----- Platforms filters -----
