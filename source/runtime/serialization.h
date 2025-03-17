@@ -27,8 +27,8 @@
 *			@endcode
 *
 * @author	Konstantinos Lampros
-* @version	1.0.1
-* @date		2025-03-13
+* @version	1.0.2
+* @date		2025-03-17
 */
 
 #pragma once
