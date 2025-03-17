@@ -84,6 +84,9 @@ namespace ryn::serialization {
 
 	* @warning		This class **must not** be used with non-trivially copyable types, as doing so
 	*				risks **undefined behavior** or, in extreme cases, **arbitrary code execution**.
+	*				Additionally, you **should not** use `sizeof()` on an `AutoSerializable` type
+	*				to determine buffer size, as it includes the virtual table pointer, leading to
+	*				unexpected results. Use `Derived::getByteSize()` instead.
 	*/
 	template <typename Derived>
 	class AutoSerializable : public ISerializable {
@@ -118,6 +121,22 @@ namespace ryn::serialization {
 			// Offset by the size of ISerializable to exclude vtable pointer
 			return deserializeFromBuffer(buffer, bufferSize, bufferOffset, 
 				*static_cast<Derived*>(this), sizeof(ISerializable));
+		}
+
+		/**
+		* @brief		Returns the actual size of the serializable portion of the object.
+		*
+		*				This function provides a compile-time way to determine the size of
+		*				the object's data excluding the virtual table pointer (`vtable`).
+		*				It ensures that users allocate the correct buffer size for serialization.
+		*
+		* @warning		Do **not** use `sizeof(Derived)` directly, as it includes the vtable pointer.
+		*				Instead, use this function to obtain the correct byte size for serialization.
+		*
+		* @return		Size of the object's serializable data in bytes.
+		*/
+		static constexpr size_t getByteSize() {
+			return sizeof(Derived) - sizeof(ISerializable);
 		}
 	};
 
