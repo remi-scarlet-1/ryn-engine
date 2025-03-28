@@ -71,7 +71,18 @@ void NetServer::handleInboundPackets() {
 			inBackHead += bytesReceived;
 
 			// TODO: Potentially index package. Keep a sorted table of each clients packages as pointers to buffer.
+			// TODO: When do HMAC verification and other security checks happen?
 		}
+	}
+}
+
+void ryn::net::NetServer::handleOutboundPackets() {
+	while (!shutdownIOThreads) {
+		// Ensure main thread doesn't attempt modifying back buffer state during this iteration
+		std::unique_lock<std::mutex> lock(outMutex);
+
+		// TODO: Wait if buffer has been worked off
+		// TODO: Send off all pending outbound messages from 'outBackBuffer'
 	}
 }
 
