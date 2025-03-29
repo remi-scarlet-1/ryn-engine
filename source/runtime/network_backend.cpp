@@ -1,57 +1,74 @@
 #include "network_backend.h"
+#include <format>
 
 #ifdef RYN_PLATFORM_WIN
 #define WIN32_LEAN_AND_MEAN  // Exclude rarely used Windows stuff
 #define _WINSOCKAPI_         // Prevent winsock.h from being included
 #include <winsock2.h>
 #include <WS2tcpip.h>
-#endif // RYN_PLATFORM_WIN
+#endif
 
 using namespace ryn::net::backend;
 
 void ryn::net::backend::initialize() {
 #ifdef RYN_PLATFORM_WIN
+    // Startup WSA (Windows)
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
         throw std::exception("Failed to initialize WinSock\n");
-#endif // RYN_PLATFORM_WIN
+#endif
 }
 
 void ryn::net::backend::cleanup() {
 #ifdef RYN_PLATFORM_WIN
+    // Shutdown WSA (Windows)
     WSACleanup();
-#endif // RYN_PLATFORM_WIN
+#endif
 }
 
-NetAddress::NetAddress(const char* ipv4, uint16_t port)
-    : netIPv4([ipv4] {
-    uint32_t addr;
-    inet_pton(AF_INET, ipv4, &addr);
-    return addr;
-        }()),
-    netPort(htons(port)) {
+NetAddress::NetAddress(const char* ipv4, uint16_t port) {
+    family = AF_INET; // Indicate IPv4
+    setIP(ipv4);
+    setPort(port);
 }
 
-string NetAddress::getIPHostRepresentation(bool includePort) const {
-    struct in_addr addr;
-    addr.s_addr = netIPv4;
+void NetAddress::setIP(const char* ip) {
+    if (inet_pton(family, ip, &addr) <= 0)
+        throw std::invalid_argument("Invalid IP address format.");
+}
 
-    // Convert address bytes to ip string
+void NetAddress::setPort(uint16_t port) { 
+    this->port = htons(port);
+}
+
+void NetAddress::setInternal(const sockaddr_in& address) {
+    family = address.sin_family;
+    port = address.sin_port;
+    addr = address.sin_addr.s_addr;
+}
+
+string NetAddress::getIP(bool includePort) const {
+    // Convert network byte order ip to string
     char ip[INET_ADDRSTRLEN];
     if (inet_ntop(AF_INET, &addr, ip, sizeof(ip)) == nullptr)
-        return string("Couldn't convert net IP to string.");
+        return std::string("Couldn't convert binary IP to string.");
 
-    string result = ip;
-
-    // Convert port bytes and append to string if requested
+    // Return ip (with port if requested)
     if (includePort)
-        result.append(":").append(std::to_string(ntohs(netPort)));
-
-    return result;
+        return std::format("{}:{}", ip, getPort());
+    return std::string(ip);
 }
 
-uint16_t NetAddress::getPortHostRepresentation() const {
-    return ntohs(netPort);
+uint16_t NetAddress::getPort() const {
+    return ntohs(port);
+}
+
+sockaddr_in NetAddress::getInternal() const {
+    sockaddr_in in;
+    in.sin_family = family;   
+    in.sin_port = port;       
+    in.sin_addr.s_addr = addr;
+    return in;
 }
 
 UDPSocket::UDPSocket(uint16_t portBinding, bool blockingMode) : socketHandle(INVALID_SOCKET_HANDLE) {
@@ -67,7 +84,7 @@ UDPSocket::UDPSocket(uint16_t portBinding, bool blockingMode) : socketHandle(INV
         if (ioctlsocket(socketHandle, FIONBIO, &mode) != 0)
             throw std::exception("Failed to set socket to non-blocking mode.");
     }
-#endif // RYN_PLATFORM_WIN
+#endif
 
     // Configure port binding
     sockaddr_in addr = {};
@@ -75,53 +92,50 @@ UDPSocket::UDPSocket(uint16_t portBinding, bool blockingMode) : socketHandle(INV
     addr.sin_addr.s_addr = INADDR_ANY;
     addr.sin_port = htons(portBinding);
 
-    if (bind(socketHandle, (sockaddr*)&addr, sizeof(addr))
 #ifdef RYN_PLATFORM_WIN
-        == SOCKET_ERROR
+    const int BIND_ERROR_CODE = SOCKET_ERROR;
 #endif
-        )
+
+    // Ensure creation of socket was successful
+    if (bind(socketHandle, (sockaddr*)&addr, sizeof(addr)) == BIND_ERROR_CODE)
         throw std::exception("Failed to bind UDP socket.");
 }
 
 UDPSocket::~UDPSocket() {
-    // Close UDP socket
     if (socketHandle != INVALID_SOCKET_HANDLE) {
 #ifdef RYN_PLATFORM_WIN
         closesocket(socketHandle);
-#endif // RYN_PLATFORM_WIN
+#endif
     }
 }
 
 int UDPSocket::send(const void* buffer, int32_t bufferSize, const NetAddress& toAddress) {
+    // Ensure valid socket and parameters
     if (socketHandle == INVALID_SOCKET_HANDLE || buffer == nullptr || bufferSize == 0)
-        return -1; // Invalid parameters or socket
+        return -1;
 
     // Send data
-    sockaddr_in toAddr = {};
-    toAddr.sin_family = AF_INET;
-    toAddr.sin_addr.s_addr = toAddress.netIPv4;
-    toAddr.sin_port = toAddress.netPort;
+    sockaddr_in toAddr = toAddress.getInternal();
     int bytesSent = sendto(socketHandle, static_cast<const char*>(buffer), bufferSize, 0, reinterpret_cast<sockaddr*>(&toAddr), sizeof(toAddr));
 
     // Check for errors
 #ifdef RYN_PLATFORM_WIN
     if (bytesSent == SOCKET_ERROR)
         switch (WSAGetLastError()) {
-        case WSAEWOULDBLOCK: return 0; // OS buffer is full, caller should retry later (sent 0 bytes).  
-        default: return -1; // Other error, indicate failure
+        case WSAEWOULDBLOCK: return 0;  // OS buffer full, retry later (sent 0 bytes)
+        default: return -1;             // Other error, indicate failure
         }
-#endif // RYN_PLATFORM_WIN
+#endif
 
-    // Return number of bytes actually sent
     return bytesSent;
 }
 
-// TODO: optionally return somehow sender information
-int UDPSocket::receive(void* buffer, int32_t bufferSize) {
+int UDPSocket::receive(void* buffer, int32_t bufferSize, NetAddress* fromAddress) {
+    // Ensure valid socket and parameters
     if (socketHandle == INVALID_SOCKET_HANDLE || buffer == nullptr || bufferSize == 0)
-        return -1; // Invalid parameters or socket
+        return -1;
 
-    // Receive data & sender information
+    // Receive data and sender information
     sockaddr_in fromAddr;
     int fromAddrSize = sizeof(fromAddr);
     int bytesReceived = recvfrom(socketHandle, static_cast<char*>(buffer), bufferSize, 0, reinterpret_cast<sockaddr*>(&fromAddr), &fromAddrSize);
@@ -130,11 +144,14 @@ int UDPSocket::receive(void* buffer, int32_t bufferSize) {
 #ifdef RYN_PLATFORM_WIN
     if (bytesReceived == SOCKET_ERROR)
         switch (WSAGetLastError()) {
-        case WSAEWOULDBLOCK: return 0; // No data available right now, caller should try again later (received 0 bytes)
-        default: return -1; // Other error, indicate failure
+        case WSAEWOULDBLOCK: return 0;  // OS buffer empty, retry later (received 0 bytes)
+        default: return -1;             // Other error, indicate failure
         }
-#endif // RYN_PLATFORM_WIN
+#endif
 
-    // Return number of bytes actually received
+    // If caller requested sender address, populate 'fromAddress' object
+    if (fromAddress != nullptr)
+        fromAddress->setInternal(fromAddr);
+
     return bytesReceived;
 }
