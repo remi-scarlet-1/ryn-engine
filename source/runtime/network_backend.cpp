@@ -32,6 +32,12 @@ NetAddress::NetAddress(const char* ipv4, uint16_t port) {
     setPort(port);
 }
 
+NetAddress::NetAddress() {
+    family = AF_INET; // Indicate IPv4
+    port = 0;
+    addr = 0;
+}
+
 void NetAddress::setIP(const char* ip) {
     if (inet_pton(family, ip, &addr) <= 0)
         throw std::invalid_argument("Invalid IP address format.");

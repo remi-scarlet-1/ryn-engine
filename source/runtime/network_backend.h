@@ -17,6 +17,7 @@ namespace ryn::net::backend {
 
 	struct NetAddress {
 		NetAddress(const char* ipv4, uint16_t port);
+		NetAddress();
 		~NetAddress() = default;
 
 		void setIP(const char* ipv4);
