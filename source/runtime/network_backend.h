@@ -28,8 +28,18 @@ namespace ryn::net::backend {
 		uint16_t getPort() const;
 		sockaddr_in getInternal() const;
 
+		// Implement comparison operator & hasher (allows usage of NetAddress as key in std containers)
+		bool operator==(const NetAddress& other) const {
+			return port == other.port && addr == other.addr;
+		}
+
+		struct Hasher {
+			size_t operator()(const backend::NetAddress& addr) const noexcept {
+				return std::hash<uint32_t>()(addr.addr) ^ (std::hash<uint16_t>()(addr.port) << 1);
+			}
+		};
+
 	private:
-		uint16_t family;
 		uint16_t port;
 		uint32_t addr;
 	};

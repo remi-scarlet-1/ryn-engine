@@ -10,6 +10,7 @@
 
 using namespace ryn::net::backend;
 
+
 void ryn::net::backend::initialize() {
 #ifdef RYN_PLATFORM_WIN
     // Startup WSA (Windows)
@@ -26,14 +27,13 @@ void ryn::net::backend::cleanup() {
 #endif
 }
 
+const uint16_t family = AF_INET; // Indicate IPv4 addresses
 NetAddress::NetAddress(const char* ipv4, uint16_t port) {
-    family = AF_INET; // Indicate IPv4
     setIP(ipv4);
     setPort(port);
 }
 
 NetAddress::NetAddress() {
-    family = AF_INET; // Indicate IPv4
     port = 0;
     addr = 0;
 }
@@ -48,7 +48,6 @@ void NetAddress::setPort(uint16_t port) {
 }
 
 void NetAddress::setInternal(const sockaddr_in& address) {
-    family = address.sin_family;
     port = address.sin_port;
     addr = address.sin_addr.s_addr;
 }
@@ -94,7 +93,7 @@ UDPSocket::UDPSocket(uint16_t portBinding, bool blockingMode) : socketHandle(INV
 
     // Configure port binding
     sockaddr_in addr = {};
-    addr.sin_family = AF_INET;
+    addr.sin_family = family;
     addr.sin_addr.s_addr = INADDR_ANY;
     addr.sin_port = htons(portBinding);
 
