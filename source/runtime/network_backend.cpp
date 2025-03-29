@@ -10,7 +10,6 @@
 
 using namespace ryn::net::backend;
 
-
 void ryn::net::backend::initialize() {
 #ifdef RYN_PLATFORM_WIN
     // Startup WSA (Windows)
@@ -27,7 +26,7 @@ void ryn::net::backend::cleanup() {
 #endif
 }
 
-const uint16_t family = AF_INET; // Indicate IPv4 addresses
+const uint16_t FAMILY = AF_INET; // Indicate IPv4 addresses
 NetAddress::NetAddress(const char* ipv4, uint16_t port) {
     setIP(ipv4);
     setPort(port);
@@ -39,7 +38,7 @@ NetAddress::NetAddress() {
 }
 
 void NetAddress::setIP(const char* ip) {
-    if (inet_pton(family, ip, &addr) <= 0)
+    if (inet_pton(FAMILY, ip, &addr) <= 0)
         throw std::invalid_argument("Invalid IP address format.");
 }
 
@@ -70,7 +69,7 @@ uint16_t NetAddress::getPort() const {
 
 sockaddr_in NetAddress::getInternal() const {
     sockaddr_in in;
-    in.sin_family = family;   
+    in.sin_family = FAMILY;   
     in.sin_port = port;       
     in.sin_addr.s_addr = addr;
     return in;
@@ -93,7 +92,7 @@ UDPSocket::UDPSocket(uint16_t portBinding, bool blockingMode) : socketHandle(INV
 
     // Configure port binding
     sockaddr_in addr = {};
-    addr.sin_family = family;
+    addr.sin_family = FAMILY;
     addr.sin_addr.s_addr = INADDR_ANY;
     addr.sin_port = htons(portBinding);
 
