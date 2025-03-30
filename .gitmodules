@@ -7,3 +7,9 @@
 [submodule "vendors/catch2"]
 	path = vendors/catch2
 	url = https://github.com/catchorg/Catch2.git
+[submodule "vendors/entt"]
+	path = vendors/entt
+	url = https://github.com/skypjack/entt.git
+[submodule "vendors/glfw"]
+	path = vendors/glfw
+	url = https://github.com/glfw/glfw.git
