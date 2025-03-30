@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2024 Branimir Karadzic. All rights reserved.
+ * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
  */
 
@@ -97,7 +97,7 @@ namespace bgfx
 			va_end(argListCopy);
 			if ( (int32_t)sizeof(temp) < total)
 			{
-				out = (char*)alloca(total+1);
+				out = (char*)BX_STACK_ALLOC(total+1);
 				bx::memCopy(out, temp, len);
 				bx::vsnprintf(out + len, total-len, _format, _argList);
 			}
@@ -136,7 +136,7 @@ namespace bgfx
 			BX_UNUSED(_filePath, _width, _height, _pitch, _data, _size, _yflip);
 
 			const int32_t len = bx::strLen(_filePath)+5;
-			char* filePath = (char*)alloca(len);
+			char* filePath = (char*)BX_STACK_ALLOC(len);
 			bx::strCopy(filePath, len, _filePath);
 			bx::strCat(filePath, len, ".tga");
 
@@ -447,7 +447,7 @@ namespace bgfx
 		int32_t len = bx::vsnprintf(out, sizeof(temp), _format, argList);
 		if ( (int32_t)sizeof(temp) < len)
 		{
-			out = (char*)alloca(len+1);
+			out = (char*)BX_STACK_ALLOC(len+1);
 			len = bx::vsnprintf(out, len, _format, argList);
 		}
 		out[len] = '\0';
@@ -642,7 +642,7 @@ namespace bgfx
 			va_list argListCopy;
 			va_copy(argListCopy, _argList);
 			uint32_t num = bx::vsnprintf(NULL, 0, _format, argListCopy) + 1;
-			char* temp = (char*)alloca(num);
+			char* temp = (char*)BX_STACK_ALLOC(num);
 			va_copy(argListCopy, _argList);
 			num = bx::vsnprintf(temp, num, _format, argListCopy);
 
@@ -1325,8 +1325,10 @@ namespace bgfx
 
 		m_draw.clear(_flags);
 		m_bind.clear(_flags);
-
-		m_uniformBegin = m_uniformEnd;
+		if (_flags & BGFX_DISCARD_STATE)
+		{
+			m_uniformBegin = m_uniformEnd;
+		}
 	}
 
 	void EncoderImpl::dispatch(ViewId _id, ProgramHandle _handle, uint32_t _numX, uint32_t _numY, uint32_t _numZ, uint8_t _flags)

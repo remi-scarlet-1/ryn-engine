@@ -1,5 +1,5 @@
 --
--- Copyright 2010-2024 Branimir Karadzic. All rights reserved.
+-- Copyright 2010-2025 Branimir Karadzic. All rights reserved.
 -- License: https://github.com/bkaradzic/bx/blob/master/LICENSE
 --
 
@@ -53,10 +53,6 @@ project "bx.test"
 		BX_THIRD_PARTY_DIR,
 	}
 
-	defines {
-		"CATCH_AMALGAMATED_CUSTOM_MAIN",
-	}
-
 	files {
 		path.join(BX_DIR, "3rdparty/catch/catch_amalgamated.cpp"),
 		path.join(BX_DIR, "tests/*_test.cpp"),
@@ -65,6 +61,10 @@ project "bx.test"
 	}
 
 	using_bx()
+
+	defines {
+		"CATCH_AMALGAMATED_CUSTOM_MAIN",
+	}
 
 	configuration { "vs* or mingw*" }
 		links {
@@ -80,6 +80,12 @@ project "bx.test"
 	configuration { "linux-*" }
 		links {
 			"pthread",
+		}
+
+	configuration { "ios*" }
+		linkoptions {
+			"-framework CoreFoundation",
+			"-framework Foundation",
 		}
 
 	configuration { "osx*" }
@@ -116,9 +122,7 @@ project "bx.bench"
 		path.join(BX_DIR, "tests/dbg.*"),
 	}
 
-	links {
-		"bx",
-	}
+	using_bx()
 
 	configuration { "vs* or mingw*" }
 		links {
@@ -139,16 +143,6 @@ project "bx.bench"
 	configuration { "osx*" }
 		links {
 			"Cocoa.framework",
-		}
-
-	configuration { "Debug" }
-		defines {
-			"BX_CONFIG_DEBUG=1",
-		}
-
-	configuration { "Release" }
-		defines {
-			"BX_CONFIG_DEBUG=0",
 		}
 
 	configuration {}

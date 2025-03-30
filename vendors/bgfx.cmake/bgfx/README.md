@@ -662,6 +662,16 @@ target="_blank"><img src="http://img.youtube.com/vi/q3XVl53Ajsk/0.jpg"
 alt="World Of Goo 2"
 width="640" height="480" border="0" /></a>
 
+## Off The Road 2
+
+Off The Road 2 is an upcoming sandbox driving game for the iOS and android.
+It features a huge game world to explore (~256km2), land, air, sea vehicles to drive, online multiplayer.
+
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=LHmQBo_7f84"
+target="_blank"><img src="http://img.youtube.com/vi/LHmQBo_7f84/0.jpg"
+alt="Off The Road 2"
+width="640" height="480" border="0" /></a>
+
 [License (BSD 2-clause)](https://bkaradzic.github.io/bgfx/license.html)
 -----------------------------------------------------------------------
 
@@ -669,7 +679,7 @@ width="640" height="480" border="0" /></a>
 <img align="right" src="https://opensource.org/wp-content/uploads/2022/10/osi-badge-dark.svg" width="100" height="137">
 </a>
 
-	Copyright 2010-2024 Branimir Karadzic
+	Copyright 2010-2025 Branimir Karadzic
 
 	Redistribution and use in source and binary forms, with or without modification,
 	are permitted provided that the following conditions are met:

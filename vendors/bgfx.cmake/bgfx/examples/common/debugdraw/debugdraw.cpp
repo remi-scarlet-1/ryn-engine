@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2024 Branimir Karadzic. All rights reserved.
+ * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
  */
 
@@ -1169,7 +1169,7 @@ struct DebugDrawEncoderImpl
 		}
 		else
 		{
-			mtx = (float*)alloca(_num*64);
+			mtx = (float*)BX_STACK_ALLOC(_num*64);
 			for (uint16_t ii = 0; ii < _num; ++ii)
 			{
 				const float* mtxTransform = (const float*)_mtx;

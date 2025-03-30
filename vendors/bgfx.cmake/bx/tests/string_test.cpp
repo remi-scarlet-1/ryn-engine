@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2024 Branimir Karadzic. All rights reserved.
+ * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bx/blob/master/LICENSE
  */
 
@@ -207,7 +207,7 @@ TEST_CASE("strCmpV sort", "[string][sort]")
 		"test_100.txt",
 	};
 
-	BX_STATIC_ASSERT(BX_COUNTOF(test) == BX_COUNTOF(expected) );
+	static_assert(BX_COUNTOF(test) == BX_COUNTOF(expected) );
 
 	bx::quickSort(test, BX_COUNTOF(test), sizeof(const char*), strCmpV);
 
@@ -311,8 +311,10 @@ TEST_CASE("toString intXX_t/uintXX_t", "[string]")
 {
 	REQUIRE(testToStringS(0,          "0") );
 	REQUIRE(testToStringS(-256,       "-256") );
+	REQUIRE(testToStringS(INT32_MIN,  "-2147483648") );
 	REQUIRE(testToStringS(INT32_MAX,  "2147483647") );
 	REQUIRE(testToStringS(UINT32_MAX, "4294967295") );
+	REQUIRE(testToStringS(INT64_MIN,  "-9223372036854775808") );
 	REQUIRE(testToStringS(INT64_MAX,  "9223372036854775807") );
 	REQUIRE(testToStringS(UINT64_MAX, "18446744073709551615") );
 

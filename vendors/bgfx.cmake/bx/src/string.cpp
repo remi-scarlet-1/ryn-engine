@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2024 Branimir Karadzic. All rights reserved.
+ * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bx/blob/master/LICENSE
  */
 
@@ -1230,7 +1230,8 @@ namespace bx
 
 	int32_t vsnprintf(char* _out, int32_t _max, const char* _format, va_list _argList)
 	{
-		if (0 < _max)
+		if (   0 <  _max
+		&&  NULL != _out)
 		{
 			StaticMemoryBlockWriter writer(_out, uint32_t(_max) );
 
