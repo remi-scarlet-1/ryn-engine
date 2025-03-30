@@ -1,19 +1,20 @@
 -- Construct paths
-dir = { script = debug.getinfo(1, "S").source:sub(2):match("(.*/)") } -- Get path of script directory & save into new 'dir' table
+dir = { scripts = debug.getinfo(1, "S").source:sub(2):match("(.*/)") } -- Get path of script directory & save into new 'dir' table
+dir.scripts          = dir.scripts:match("(.*)/$") or dir.scripts -- Remove trailing slash (if any) from dir.script
 
-dir.script          = dir.script:match("(.*)/$") or dir.script -- Remove trailing slash (if any) from dir.script
-dir.root            = path.getabsolute(path.join(dir.script, ".."))
-dir.generate        = path.join(dir.root, "generated")
-
-dir.runtime         = path.join(dir.root, "source", "runtime")
-dir.runtimeBuild    = path.join(dir.generate, "build")
-
-dir.user            = path.join(dir.root, "source", "user")
-dir.userBuild       = path.join(dir.generate, "build")
-
+dir.root            = path.getabsolute(path.join(dir.scripts, ".."))
+dir.docs            = path.join(dir.root, "docs")
+dir.generated       = path.join(dir.root, "generated")
+dir.source          = path.join(dir.root, "source")
 dir.vendors         = path.join(dir.root, "vendors")
-dir.vendorsBuild    = path.join(dir.generate, "vendor_projects")
-dir.vendorsInstall  = path.join(dir.generate, "vendor_install")
+
+dir.builds          = path.join(dir.generated, "builds")
+dir.vendorsBuild    = path.join(dir.generated, "vendorBuilds")
+dir.vendorsInstall  = path.join(dir.generated, "vendorInstall")
+dir.vendorsBySource = path.join(dir.vendors, "_bysource")
+
+dir.runtimeSource   = path.join(dir.source, "runtime")
+dir.testsSource     = path.join(dir.source, "tests")
 
 -- Setup workspace
 os.chdir(dir.root)
@@ -21,46 +22,52 @@ os.chdir(dir.root)
 workspace "RynEngine"  
     configurations { "Release", "Debug" }
     platforms "x64"
-    location "%{dir.generate}"
+    location "%{dir.generated}"
 
-    ---------- Project: Runtime ----------
+    --------------- [ Project: Runtime ] ---------------
     project "runtime"
         kind "SharedLib"
         language "C++"
         cppdialect "C++20"
         architecture "x64"
 
-        targetdir "%{dir.runtimeBuild}/bin/%{cfg.platform}/%{cfg.buildcfg}"
-        objdir "%{dir.runtimeBuild}/obj/%{cfg.platform}/%{cfg.buildcfg}"
+        targetdir   "%{dir.builds}/%{cfg.buildcfg}%{cfg.platform}/bin"
+        objdir      "%{dir.builds}/%{cfg.buildcfg}%{cfg.platform}/obj"
 
         defines {
             "RYN_EXPORT",
         }
 
         files { 
-            "%{dir.runtime}/**.h", "%{dir.runtime}/**.hpp",
-            "%{dir.runtime}/**.c", "%{dir.runtime}/**.cpp",
-            "%{dir.vendors}/_header-only/**.c", "%{dir.vendors}/_header-only/**.cpp", -- Include source of some vendors
-            "%{dir.vendors}/_header-only/**.h", "%{dir.vendors}/_header-only/**.hpp",
-            "%{dir.script}/premake5.lua", "%{dir.root}/docs/**.*", -- Include build scripts & documentation (make viewable in solution explorer)
+            "%{dir.runtimeSource}/**.h", "%{dir.runtimeSource}/**.hpp",
+            "%{dir.runtimeSource}/**.c", "%{dir.runtimeSource}/**.cpp",
+            -- Add some vendors by source
+            "%{dir.vendorsBySource}/**.h", "%{dir.vendorsBySource}/**.hpp",
+            "%{dir.vendorsBySource}/**.c", "%{dir.vendorsBySource}/**.cpp",
+            -- Add scripts & docs (make viewable in solution explorer)
+            "%{dir.scripts}/**.lua", 
+            "%{dir.docs}/**.*",
+        }
+
+        vpaths {
+            ["Docs"] = { "%{dir.docs}/**.*" },
+            ["Scripts"] = { "%{dir.scripts}/**.lua" },
+            ["Headers"] = { "%{dir.runtimeSource}/**.h", "%{dir.runtimeSource}/**.hpp" },
+            ["Sources"] = { "%{dir.runtimeSource}/**.c", "%{dir.runtimeSource}/**.cpp" },
+            ["Vendors (by source)/*"] = { 
+                "%{dir.vendorsBySource}/**.h", "%{dir.vendorsBySource}/**.hpp", 
+                "%{dir.vendorsBySource}/**.c", "%{dir.vendorsBySource}/**.cpp" 
+            },
         }
 
         includedirs {
-            "%{dir.runtime}",
-            "%{dir.vendors}/_header-only", -- Include headers of header-only vendors
-            "%{dir.vendorsInstall}/include", -- Include headers of linked vendors
+            "%{dir.runtimeSource}",
+            "%{dir.vendorsBySource}",           -- Include headers of vendors added by source
+            "%{dir.vendorsInstall}/include",    -- Include headers of vendors added by building & linking
         }
 
         libdirs {
             "%{dir.vendorsInstall}/lib",
-        }
-
-        vpaths {
-            ["Build"] = { "%{dir.script}/**.*" },
-            ["Docs"] = { "%{dir.root}/docs/**.*" },
-            ["Headers/*"] = { "%{dir.runtime}/**.h", "%{dir.runtime}/**.hpp" },
-            ["Sources"] = { "%{dir.runtime}/**.c", "%{dir.runtime}/**.cpp" },
-            ["Vendors (header-only)/*"] = { "%{dir.vendors}/_header-only/**.h", "%{dir.vendors}/_header-only/**.hpp", "%{dir.vendors}/_header-only/**.c", "%{dir.vendors}/_header-only/**.cpp" },
         }
 
         ----- Configuration filters -----
@@ -68,14 +75,14 @@ workspace "RynEngine"
             optimize "On"
             defines { 
                 "RYN_CONFIG_RELEASE", 
-                "BX_CONFIG_DEBUG=0" 
+                "BX_CONFIG_DEBUG=0",
             }
 
             links {
-                "bgfx",
-                "bimg",
-                "bimg_decode",
-                "bimg_encode",
+                "bgfx", 
+                "bimg", 
+                "bimg_decode", 
+                "bimg_encode", 
                 "bx",
                 "glfw3",
             }
@@ -88,10 +95,10 @@ workspace "RynEngine"
             }
 
             links {
-                "bgfx_d",
-                "bimg_d",
-                "bimg_decode_d",
-                "bimg_encode_d",
+                "bgfx_d", 
+                "bimg_d", 
+                "bimg_decode_d", 
+                "bimg_encode_d", 
                 "bx_d",
                 "glfw3_d",
             }
@@ -103,58 +110,53 @@ workspace "RynEngine"
 
             defines {
                 "RYN_PLATFORM_WIN",
-                "GLFW_EXPOSE_NATIVE_WIN32", -- required for glfw (windows)
+                "GLFW_EXPOSE_NATIVE_WIN32", -- required by glfw (windows)
             }
 
             buildoptions { 
-                "/Zc:__cplusplus", -- required for bgfx (msvc)
-                "/Zc:preprocessor", -- required for bgfx (msvc)
+                "/Zc:__cplusplus",  -- required by bgfx (msvc)
+                "/Zc:preprocessor", -- required by bgfx (msvc)
             }
 
             includedirs { 
-                "%{dir.vendorsInstall}/include/bx/compat/msvc",  -- required for bgfx (msvc)
+                "%{dir.vendorsInstall}/include/bx/compat/msvc", -- required by bgfx (msvc)
             }
 
             links {
-                "Ws2_32",
+                "Ws2_32", -- native windows networking
             }
 
-    ---------- Project: Unit Testing ----------
-    project "unit_tests"
+    --------------- [ Project: (Unit) Tests ] ---------------
+    project "tests"
         kind "ConsoleApp"
         language "C++"
         cppdialect "C++20"
         architecture "x64"
 
-        
-
-    --[[
-    project "user"
-        kind "ConsoleApp"
-        language "C++"
-        cppdialect "C++20"
-        architecture "x64"
-
-        targetdir "%{dir.userBuild}/bin/%{cfg.platform}/%{cfg.buildcfg}"
-        objdir "%{dir.userBuild}/obj/%{cfg.platform}/%{cfg.buildcfg}"
+        targetdir   "%{dir.builds}/%{cfg.buildcfg}%{cfg.platform}/bin"
+        objdir      "%{dir.builds}/%{cfg.buildcfg}%{cfg.platform}/obj"
 
         files { 
-            "%{dir.user}/**.h", "%{dir.user}/**.hpp",
-            "%{dir.user}/**.c", "%{dir.user}/**.cpp",
+            "%{dir.testsSource}/**.h", "%{dir.testsSource}/**.hpp",
+            "%{dir.testsSource}/**.c", "%{dir.testsSource}/**.cpp",
+        }
+
+        vpaths {
+            ["Headers"] = { "%{dir.testsSource}/**.h", "%{dir.testsSource}/**.hpp" },
+            ["Sources"] = { "%{dir.testsSource}/**.c", "%{dir.testsSource}/**.cpp" },
         }
 
         includedirs {
-            "%{dir.runtime}",
-            "%{dir.runtime}/public", -- public engine headers
+            "%{dir.testsSource}",
+            "%{dir.runtimeSource}",
         }
 
         libdirs {
-            "%{dir.runtimeBuild}/bin/%{cfg.buildcfg}", -- Where the runtime .lib is output
-            "%{dir.vendorsInstall}/lib",
+
         }
 
         links {
-            "runtime", -- Link against the runtime shared library
+            "runtime",
         }
 
         ----- Configuration filters -----
@@ -170,8 +172,10 @@ workspace "RynEngine"
         filter { "system:windows", "action:vs*" } -- windows (msvc)
             system "windows"
             toolset "msc"
+
             defines { "RYN_PLATFORM_WIN" }
-        ]]--
+
+
 
 -- Helper functions
 local function touchDir(dir)
@@ -206,15 +210,6 @@ local function cmakeBuildAndInstall(buildDir)
 end
 
 -- Action functions
-function clean()
-    os.rmdir(dir.generate)
-end
-
-function cleanVendors()
-    os.rmdir(dir.vendorsBuild)
-    os.rmdir(dir.vendorsInstall)
-end
-
 function buildVendors()
     local generator = "Visual Studio 17 2022" -- TODO: make this configurable
 
@@ -231,18 +226,6 @@ function buildVendors()
 end
 
 -- Actions
-newaction {
-    trigger = "clean",
-    description = "Remove all generated project files, including project files and artifacts of vendors",
-    execute = clean
-}
-
-newaction {
-    trigger = "clean-vendors",
-    description = "Remove generated project files and artifacts of vendors",
-    execute = cleanVendors
-}
-
 newaction {
     trigger = "vs2022-vendors",
     description = "Generate Visual Studio 2022 project files of vendors, build and install",
