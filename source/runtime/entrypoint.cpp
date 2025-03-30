@@ -3,14 +3,24 @@
 #include "game.h"
 #include "window.h"
 #include "input.h"
+#include "network.h"
+
+#include <iostream>
 
 RYN_API void ryn::run(Game* game) {
-    // Create window
+    // Initialize
     ryn::WindowSettings windowSettings("Ryn Engine!", true, 1600, 900, true);
     ryn::Window window = ryn::Window(windowSettings);
-
-    // Hookup input system to window
     ryn::Input::registerWindow(&window);
+    ryn::net::initialize();
+
+    // Network example
+#ifdef RYN_NET_CLIENT
+    ryn::net::NetAddress serverAddress("127.0.0.1", 9898);
+    ryn::net::UDPSocket socket;
+#elif RYN_NET_SERVER
+    ryn::net::UDPSocket socket(9898);
+#endif
 
     // Signal to user code that setup is complete
     game->onStarted();
@@ -19,9 +29,25 @@ RYN_API void ryn::run(Game* game) {
     while (!window.getShouldClose()) {
         ryn::Window::pollEvents();
 
-        // Signal to user code that a frame update is in process
-        game->onUpdate();
+        // Network example
+#ifdef RYN_NET_CLIENT
+        const char* exampleMessage = "Hello, Server!";
+        if (ryn::Input::isKeyPressed(ryn::Key::Space)) {
+            socket.send(exampleMessage, strlen(exampleMessage) + 1, serverAddress);
+            std::cout << "Send a message." << std::endl;
+        }
+#elif RYN_NET_SERVER
+        char buffer[256];
+        int receivedBytes = socket.receive(buffer, 256);
+        if (receivedBytes > 0)
+            std::cout << buffer << std::endl;
+#endif
+
+        game->onUpdate(); // Signal to user code that a frame update is in process
     }
+
+    // Cleanup
+    ryn::net::cleanup();
 
     // Signal to user code that the engine is shutting down
     game->onShutdown();

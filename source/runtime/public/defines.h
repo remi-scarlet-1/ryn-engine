@@ -2,8 +2,8 @@
 * @file		defines.h
 * @brief	Common macro definitions, platform-specific configurations and utility headers for the engine.
 * @author	Konstantinos Lampros
-* @version	1.0.1
-* @date		2025-02-23
+* @version	1.0.2
+* @date		2025-03-06
 */
 
 #pragma once
@@ -11,6 +11,14 @@
 #include <cstdint>
 #include <string>
 using string = std::string;
+
+#include <functional>
+
+#include <vector>
+#include <queue>
+#include <array>
+
+#include <iostream>
 
 /**
 * @brief Define the RYN_API macro for different platforms.

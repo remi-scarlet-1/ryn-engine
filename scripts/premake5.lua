@@ -9,7 +9,7 @@ dir.runtime         = path.join(dir.root, "source", "runtime")
 dir.runtimeBuild    = path.join(dir.generate, "build")
 
 dir.user            = path.join(dir.root, "source", "user")
-dir.userBuild       = path.join(dir.generate, "Build")
+dir.userBuild       = path.join(dir.generate, "build")
 
 dir.vendors         = path.join(dir.root, "vendors")
 dir.vendorsBuild    = path.join(dir.generate, "vendor_projects")
@@ -19,8 +19,8 @@ dir.vendorsInstall  = path.join(dir.generate, "vendor_install")
 os.chdir(dir.root)
 
 workspace "RynEngine"  
-    configurations { "Debug", "Release" }
-    platforms { "x64" }
+    configurations { "Release", "Debug" }
+    platforms { "ClientX64", "ServerX64" }
     location "%{dir.generate}"
 
     project "runtime"
@@ -29,8 +29,8 @@ workspace "RynEngine"
         cppdialect "C++20"
         architecture "x64"
 
-        targetdir "%{dir.runtimeBuild}/bin/%{cfg.buildcfg}"
-        objdir "%{dir.runtimeBuild}/obj/%{cfg.buildcfg}"
+        targetdir "%{dir.runtimeBuild}/bin/%{cfg.platform}/%{cfg.buildcfg}"
+        objdir "%{dir.runtimeBuild}/obj/%{cfg.platform}/%{cfg.buildcfg}"
 
         defines {
             "RYN_EXPORT",
@@ -62,7 +62,14 @@ workspace "RynEngine"
             ["Vendors (header-only)/*"] = { "%{dir.vendors}/_header-only/**.h", "%{dir.vendors}/_header-only/**.hpp", "%{dir.vendors}/_header-only/**.c", "%{dir.vendors}/_header-only/**.cpp" },
         }
 
+        ----- Platforms filters -----
+        filter "platforms:ClientX64"
+            defines { "RYN_NET_CLIENT" }
 
+        filter "platforms:ServerX64"
+            defines { "RYN_NET_SERVER" }
+
+        ----- Configuration filters -----
         filter "configurations:Release"
             optimize "On"
             defines { 
@@ -95,8 +102,8 @@ workspace "RynEngine"
                 "glfw3_d",
             }
 
-        -- windows (msvc)
-        filter { "system:windows", "action:vs*" }
+        ----- System filters -----
+        filter { "system:windows", "action:vs*" } -- windows (msvc)
             system "windows"
             toolset "msc"
 
@@ -125,8 +132,8 @@ workspace "RynEngine"
         cppdialect "C++20"
         architecture "x64"
 
-        targetdir "%{dir.userBuild}/bin/%{cfg.buildcfg}"
-        objdir "%{dir.userBuild}/obj/%{cfg.buildcfg}"
+        targetdir "%{dir.userBuild}/bin/%{cfg.platform}/%{cfg.buildcfg}"
+        objdir "%{dir.userBuild}/obj/%{cfg.platform}/%{cfg.buildcfg}"
 
         files { 
             "%{dir.user}/**.h", "%{dir.user}/**.hpp",
@@ -147,6 +154,7 @@ workspace "RynEngine"
             "runtime", -- Link against the runtime shared library
         }
 
+        ----- Configuration filters -----
         filter "configurations:Release"
             optimize "On"
             defines { "RYN_CONFIG_RELEASE" }
@@ -155,8 +163,8 @@ workspace "RynEngine"
             symbols "On"
             defines { "RYN_CONFIG_DEBUG" }
 
-        -- windows (msvc)
-        filter { "system:windows", "action:vs*" }
+        ----- System filters -----
+        filter { "system:windows", "action:vs*" } -- windows (msvc)
             system "windows"
             toolset "msc"
             defines { "RYN_PLATFORM_WIN" }

@@ -20,7 +20,7 @@ namespace ryn {
 
 namespace ryn {
     /**
-    * @enum Input::Key
+    * @enum Key
     * @brief Represents all possible keys on the keyboard.
     *
     * Defines all keys that can be monitored by the input system.
@@ -43,7 +43,7 @@ namespace ryn {
     };
 
     /**
-    * @enum Input::MouseButton
+    * @enum MouseButton
     * @brief Represents all buttons on the mouse.
     *
     * Defines all buttons on the mouse that can be monitored by the input system.
