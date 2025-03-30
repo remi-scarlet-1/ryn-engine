@@ -46,11 +46,6 @@ void NetAddress::setPort(uint16_t port) {
     this->port = htons(port);
 }
 
-void NetAddress::setInternal(const sockaddr_in& address) {
-    port = address.sin_port;
-    addr = address.sin_addr.s_addr;
-}
-
 string NetAddress::getIP(bool includePort) const {
     // Convert network byte order ip to string
     char ip[INET_ADDRSTRLEN];
@@ -65,6 +60,11 @@ string NetAddress::getIP(bool includePort) const {
 
 uint16_t NetAddress::getPort() const {
     return ntohs(port);
+}
+
+void NetAddress::setInternal(const sockaddr_in& address) {
+    port = address.sin_port;
+    addr = address.sin_addr.s_addr;
 }
 
 sockaddr_in NetAddress::getInternal() const {

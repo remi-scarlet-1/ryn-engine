@@ -22,11 +22,11 @@ namespace ryn::net::backend {
 
 		void setIP(const char* ipv4);
 		void setPort(uint16_t port);
-		void setInternal(const sockaddr_in& address);
-
 		string getIP(bool includePort = false) const;
 		uint16_t getPort() const;
-		sockaddr_in getInternal() const;
+
+		void setInternal(const sockaddr_in& address); // TODO: warn that this function doesn't work outside the backend implementation
+		sockaddr_in getInternal() const; // TODO: warn that this function doesn't work outside the backend implementation
 
 		// Implement comparison operator & hasher (allows usage of NetAddress as key in std containers)
 		bool operator==(const NetAddress& other) const {
