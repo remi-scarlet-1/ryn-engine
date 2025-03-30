@@ -20,9 +20,10 @@ os.chdir(dir.root)
 
 workspace "RynEngine"  
     configurations { "Release", "Debug" }
-    platforms { "ClientX64", "ServerX64" }
+    platforms "x64"
     location "%{dir.generate}"
 
+    ---------- Project: Runtime ----------
     project "runtime"
         kind "SharedLib"
         language "C++"
@@ -61,13 +62,6 @@ workspace "RynEngine"
             ["Sources"] = { "%{dir.runtime}/**.c", "%{dir.runtime}/**.cpp" },
             ["Vendors (header-only)/*"] = { "%{dir.vendors}/_header-only/**.h", "%{dir.vendors}/_header-only/**.hpp", "%{dir.vendors}/_header-only/**.c", "%{dir.vendors}/_header-only/**.cpp" },
         }
-
-        ----- Platforms filters -----
-        filter "platforms:ClientX64"
-            defines { "RYN_NET_CLIENT" }
-
-        filter "platforms:ServerX64"
-            defines { "RYN_NET_SERVER" }
 
         ----- Configuration filters -----
         filter "configurations:Release"
@@ -125,7 +119,16 @@ workspace "RynEngine"
                 "Ws2_32",
             }
 
+    ---------- Project: Unit Testing ----------
+    project "unit_tests"
+        kind "ConsoleApp"
+        language "C++"
+        cppdialect "C++20"
+        architecture "x64"
 
+        
+
+    --[[
     project "user"
         kind "ConsoleApp"
         language "C++"
@@ -168,7 +171,8 @@ workspace "RynEngine"
             system "windows"
             toolset "msc"
             defines { "RYN_PLATFORM_WIN" }
-        
+        ]]--
+
 -- Helper functions
 local function touchDir(dir)
     if not os.isdir(dir) then os.mkdir(dir) end

@@ -10,7 +10,6 @@
 
 #include <cstdint>
 #include <string>
-using string = std::string;
 
 #include <functional>
 
@@ -30,11 +29,7 @@ using string = std::string;
 		#define RYN_API __declspec(dllexport) // Export functions when building the DLL.
 	#else
 		#define RYN_API __declspec(dllimport) // Import functions when using the DLL.
-	#endif // RYN_EXPORT
+	#endif
 #else
-	/**
-	* @brief Error message when the platform is unsupported.
-	* @warning Only Windows platform is currently supported.
-	*/
 	#error "RYN_API (shared library symbol export/import) is currently only supported on Windows. Please define RYN_PLATFORM_WIN or implement support for other platforms."
-#endif // RYN_PLATFORM_WIN
+#endif

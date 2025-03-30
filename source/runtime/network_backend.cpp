@@ -46,7 +46,7 @@ void NetAddress::setPort(uint16_t port) {
     this->port = htons(port);
 }
 
-string NetAddress::getIP(bool includePort) const {
+std::string NetAddress::getIP(bool includePort) const {
     // Convert network byte order ip to string
     char ip[INET_ADDRSTRLEN];
     if (inet_ntop(AF_INET, &addr, ip, sizeof(ip)) == nullptr)

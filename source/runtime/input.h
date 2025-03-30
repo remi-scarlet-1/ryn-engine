@@ -9,16 +9,16 @@
 
 #pragma once
 
-#include "public/defines.h"
+#include "defines.h"
 
 // Forward declarations
 struct GLFWwindow;
 
-namespace ryn {
+namespace ryn::window {
     class Window;
 }
 
-namespace ryn {
+namespace ryn::input {
     /**
     * @enum Key
     * @brief Represents all possible keys on the keyboard.
@@ -29,7 +29,7 @@ namespace ryn {
     *
     * @note The enum values are internally mapped to GLFW key codes.
     */
-    enum class Key {
+    enum class RYN_API Key {
         A = 0, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z,
         Zero, One, Two, Three, Four, Five, Six, Seven, Eight, Nine,
         F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12,
@@ -50,7 +50,7 @@ namespace ryn {
     * It includes typical mouse buttons like left, right, middle (scroll wheel), and additional
     * buttons such as Button4 and Button5 commonly found on gaming mice (side buttons).
     */
-    enum class MouseButton {
+    enum class RYN_API MouseButton {
         Left = 0,
         Right,
         Middle,
@@ -73,7 +73,7 @@ namespace ryn {
     *
     * @see Input::registerWindow
     */
-    class Input {
+    class RYN_API Input {
     public:
         /**
         * @brief Prepares the input system for a new frame by resetting its state.
@@ -84,7 +84,7 @@ namespace ryn {
         * 
         * @note This method should be called at the beginning of each frame, prior to polling events.
         */
-		static void reset();
+        static void reset();
 
         /**
         * @brief Register a window to listen for input events.
@@ -94,15 +94,15 @@ namespace ryn {
         * 
         * @param window The window to be registered.
         */
-		static void registerWindow(Window* window);
+        static void registerWindow(window::Window* window);
 
-		RYN_API static bool isKeyPressed(Key key);
-		RYN_API static bool isKeyReleased(Key key);
-		RYN_API static bool isKeyHeld(Key key);
+		static bool isKeyPressed(Key key);
+		static bool isKeyReleased(Key key);
+		static bool isKeyHeld(Key key);
 
-		RYN_API static bool isMousePressed(MouseButton button);
-		RYN_API static bool isMouseReleased(MouseButton button);
-		RYN_API static bool isMouseHeld(MouseButton button);
+		static bool isMousePressed(MouseButton button);
+		static bool isMouseReleased(MouseButton button);
+		static bool isMouseHeld(MouseButton button);
 
         /**
         * @brief Retrieves the current mouse position.
@@ -113,7 +113,7 @@ namespace ryn {
         * @param xPos A reference to store the current x-coordinate of the mouse.
         * @param yPos A reference to store the current y-coordinate of the mouse.
         */
-		RYN_API static void getMousePosition(double& xPos, double& yPos);
+		static void getMousePosition(double& xPos, double& yPos);
 
         /**
         * @brief Retrieves the scroll offset (delta) of the mouse wheel.
@@ -123,7 +123,7 @@ namespace ryn {
         * @param xOffset A reference to store the horizontal scroll delta.
         * @param yOffset A reference to store the vertical scroll delta.
         */
-		RYN_API static void getMouseScroll(double& xOffset, double& yOffset);
+		static void getMouseScroll(double& xOffset, double& yOffset);
 
 	private:
         // 64-bit integers used as bitmaps for keys
@@ -139,8 +139,10 @@ namespace ryn {
 		static uint16_t mouseButtonStatesLastFrame;
 
         // Doubles storing other mouse information
-		static double mouseX, mouseY;
-		static double mouseScrollX, mouseScrollY;
+        static double mouseX;
+        static double mouseY;
+        static double mouseScrollX;
+        static double mouseScrollY;
 
         // Internal functions used to update states
 		static void updateKeyState(Key key, bool pressed);

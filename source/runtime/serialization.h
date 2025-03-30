@@ -33,7 +33,7 @@
 
 #pragma once
 
-#include "public/defines.h"
+#include "defines.h"
 #include <type_traits>
 
 namespace ryn::serialization {
@@ -49,7 +49,7 @@ namespace ryn::serialization {
 	* @warning	This interface does not enforce a specific serialization format.
 	*			Implementations must ensure compatibility between serialization and deserialization.
 	*/
-	class ISerializable {
+	class RYN_API ISerializable {
 	public:
 		virtual ~ISerializable() = default;
 
@@ -89,7 +89,7 @@ namespace ryn::serialization {
 	*				unexpected results. Use `Derived::getByteSize()` instead.
 	*/
 	template <typename Derived>
-	class AutoSerializable : public ISerializable {
+	class RYN_API AutoSerializable : public ISerializable {
 	public:
 		/**
 		* @brief				Serializes the object into a raw byte buffer.
@@ -161,7 +161,7 @@ namespace ryn::serialization {
 	* @return				Number of bytes written to the destination buffer, or `0` on failure.
 	*/
 	template <typename T>
-	size_t serializeToBuffer(uint8_t* buffer, size_t bufferSize, size_t bufferOffset, const T& value, size_t valuePtrOffset = 0) {
+	RYN_API size_t serializeToBuffer(uint8_t* buffer, size_t bufferSize, size_t bufferOffset, const T& value, size_t valuePtrOffset = 0) {
 		// Assert that type T is trivially copyable with the exception of all AutoSerializable<T> objects
 		static_assert(std::is_trivially_copyable<T>::value || std::is_base_of<AutoSerializable<T>, T>::value, 
 			"Type must either be trivially copyable, inherited from AutoSerializable or feature a explicit specialization of 'serializeToBuffer'!");
@@ -196,7 +196,7 @@ namespace ryn::serialization {
 	* @return				Number of bytes read from the source buffer, or `0` on failure.
 	*/
 	template <typename T>
-	size_t deserializeFromBuffer(const uint8_t* buffer, size_t bufferSize, size_t bufferOffset, T& value, size_t valuePtrOffset = 0) {
+	RYN_API size_t deserializeFromBuffer(const uint8_t* buffer, size_t bufferSize, size_t bufferOffset, T& value, size_t valuePtrOffset = 0) {
 		// Assert that type T is trivially copyable with the exception of all AutoSerializable<T> objects
 		static_assert(std::is_trivially_copyable<T>::value || std::is_base_of<AutoSerializable<T>, T>::value, 
 			"Type must either be trivially copyable, inherited from AutoSerializable or feature a explicit specialization of 'deserializeFromBuffer'!");

@@ -1,19 +1,20 @@
 #include "input.h"
-
 #include "window.h"
 #include <GLFW/glfw3.h>
 
-uint64_t ryn::Input::regularKeyStates = 0;
-uint64_t ryn::Input::regularKeyStatesLastFrame = 0;
-uint64_t ryn::Input::specialKeyStates = 0;
-uint64_t ryn::Input::specialKeyStatesLastFrame = 0;
+using namespace ryn::input;
 
-uint16_t ryn::Input::mouseButtonStates = 0;
-uint16_t ryn::Input::mouseButtonStatesLastFrame = 0;
-double ryn::Input::mouseX = 0.0;
-double ryn::Input::mouseY = 0.0;
-double ryn::Input::mouseScrollX = 0.0;
-double ryn::Input::mouseScrollY = 0.0;
+uint64_t Input::regularKeyStates = 0;
+uint64_t Input::regularKeyStatesLastFrame = 0;
+uint64_t Input::specialKeyStates = 0;
+uint64_t Input::specialKeyStatesLastFrame = 0;
+
+uint16_t Input::mouseButtonStates = 0;
+uint16_t Input::mouseButtonStatesLastFrame = 0;
+double Input::mouseX = 0.0;
+double Input::mouseY = 0.0;
+double Input::mouseScrollX = 0.0;
+double Input::mouseScrollY = 0.0;
 
 #pragma region Bitwise manipulation helper functions
 /**
@@ -56,7 +57,15 @@ inline constexpr bool getBit(const uint64_t& word, int bit) {
 }
 #pragma endregion
 
-void ryn::Input::registerWindow(Window* window) {
+void Input::reset() {
+    regularKeyStatesLastFrame = regularKeyStates;
+    specialKeyStatesLastFrame = specialKeyStates;
+    mouseButtonStatesLastFrame = mouseButtonStates;
+    mouseScrollX = 0;
+    mouseScrollY = 0;
+}
+
+void Input::registerWindow(window::Window* window) {
     GLFWwindow* glfwWindow = window->getGlfwHandle();
     glfwSetKeyCallback(glfwWindow, onKey);
     glfwSetMouseButtonCallback(glfwWindow, onMouseButton);
@@ -64,7 +73,7 @@ void ryn::Input::registerWindow(Window* window) {
     glfwSetCursorPosCallback(glfwWindow, onMousePosition);
 }
 
-RYN_API bool ryn::Input::isKeyPressed(Key key) {
+bool Input::isKeyPressed(Key key) {
     int index = static_cast<int>(key);
 
     if (index < static_cast<int>(Key::KeyCount))
@@ -75,7 +84,7 @@ RYN_API bool ryn::Input::isKeyPressed(Key key) {
     }
 }
 
-RYN_API bool ryn::Input::isKeyReleased(Key key) {
+bool Input::isKeyReleased(Key key) {
     int index = static_cast<int>(key);
 
     if (index < static_cast<int>(Key::KeyCount))
@@ -86,7 +95,7 @@ RYN_API bool ryn::Input::isKeyReleased(Key key) {
     }
 }
 
-RYN_API bool ryn::Input::isKeyHeld(Key key) {
+bool Input::isKeyHeld(Key key) {
     int index = static_cast<int>(key);
 
     if (index < static_cast<int>(Key::KeyCount))
@@ -97,40 +106,32 @@ RYN_API bool ryn::Input::isKeyHeld(Key key) {
     }
 }
 
-RYN_API bool ryn::Input::isMousePressed(MouseButton button) {
+bool Input::isMousePressed(MouseButton button) {
     int index = static_cast<int>(button);
     return getBit(mouseButtonStates, index) && !getBit(mouseButtonStatesLastFrame, index);
 }
 
-RYN_API bool ryn::Input::isMouseReleased(MouseButton button) {
+bool Input::isMouseReleased(MouseButton button) {
     int index = static_cast<int>(button);
     return !getBit(mouseButtonStates, index) && getBit(mouseButtonStatesLastFrame, index);
 }
 
-RYN_API bool ryn::Input::isMouseHeld(MouseButton button) {
+bool Input::isMouseHeld(MouseButton button) {
     int index = static_cast<int>(button);
     return getBit(mouseButtonStates, index);
 }
 
-RYN_API void ryn::Input::getMousePosition(double& xPos, double& yPos) {
+void Input::getMousePosition(double& xPos, double& yPos) {
     xPos = mouseX;
     yPos = mouseY;
 }
 
-RYN_API void ryn::Input::getMouseScroll(double& xOffset, double& yOffset) {
+void Input::getMouseScroll(double& xOffset, double& yOffset) {
     xOffset = mouseScrollX;
     yOffset = mouseScrollY;
 }
 
-void ryn::Input::reset() {
-    regularKeyStatesLastFrame = regularKeyStates;
-    specialKeyStatesLastFrame = specialKeyStates;
-    mouseButtonStatesLastFrame = mouseButtonStates;
-    mouseScrollX = 0;
-    mouseScrollY = 0;
-}
-
-void ryn::Input::updateKeyState(Key key, bool pressed) {
+void Input::updateKeyState(Key key, bool pressed) {
     int index = static_cast<int>(key);
     if (index < static_cast<int>(Key::KeyCount))
         return setBit(regularKeyStates, index, pressed);
@@ -140,23 +141,23 @@ void ryn::Input::updateKeyState(Key key, bool pressed) {
     }
 }
 
-void ryn::Input::updateMouseButtonState(MouseButton button, bool pressed) {
+void Input::updateMouseButtonState(MouseButton button, bool pressed) {
     int index = static_cast<int>(button);
     if (index < static_cast<int>(MouseButton::Count))
         setBit(mouseButtonStates, index, pressed);
 }
 
-void ryn::Input::updateMousePosition(double xPos, double yPos) {
+void Input::updateMousePosition(double xPos, double yPos) {
     mouseX = xPos;
     mouseY = yPos;
 }
 
-void ryn::Input::updateMouseScroll(double xOffset, double yOffset) {
+void Input::updateMouseScroll(double xOffset, double yOffset) {
     mouseScrollX = xOffset;
     mouseScrollY = yOffset;
 }
 
-void ryn::Input::onKey(GLFWwindow* win, int key, int scancode, int action, int mods) {
+void Input::onKey(GLFWwindow* win, int key, int scancode, int action, int mods) {
     Key mappedKey;
 
     if (key >= GLFW_KEY_A && key <= GLFW_KEY_Z)
@@ -213,7 +214,7 @@ void ryn::Input::onKey(GLFWwindow* win, int key, int scancode, int action, int m
     updateKeyState(mappedKey, action != GLFW_RELEASE);
 }
 
-void ryn::Input::onMouseButton(GLFWwindow* win, int button, int action, int mods) {
+void Input::onMouseButton(GLFWwindow* win, int button, int action, int mods) {
     MouseButton mappedButton;
 
     switch (button) {
@@ -228,10 +229,10 @@ void ryn::Input::onMouseButton(GLFWwindow* win, int button, int action, int mods
     updateMouseButtonState(mappedButton, action != GLFW_RELEASE);
 }
 
-void ryn::Input::onMouseScroll(GLFWwindow* win, double xOffset, double yOffset) {
+void Input::onMouseScroll(GLFWwindow* win, double xOffset, double yOffset) {
     updateMouseScroll(xOffset, yOffset);
 }
 
-void ryn::Input::onMousePosition(GLFWwindow* window, double xPos, double yPos) {
+void Input::onMousePosition(GLFWwindow* window, double xPos, double yPos) {
     updateMousePosition(xPos, yPos);
 }

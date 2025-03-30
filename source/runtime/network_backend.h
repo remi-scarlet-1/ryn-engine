@@ -1,7 +1,7 @@
 #pragma once
 // TODO: document file and classes. Warn how this backend is not threadsafe, especially UDPSocket!
 
-#include "public/defines.h"
+#include "defines.h"
 
 // Forward declarations
 struct sockaddr_in;
@@ -22,7 +22,7 @@ namespace ryn::net::backend {
 
 		void setIP(const char* ipv4);
 		void setPort(uint16_t port);
-		string getIP(bool includePort = false) const;
+		std::string getIP(bool includePort = false) const;
 		uint16_t getPort() const;
 
 		void setInternal(const sockaddr_in& address); // TODO: warn that this function doesn't work outside the backend implementation

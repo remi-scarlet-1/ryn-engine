@@ -3,16 +3,16 @@
 
 using namespace ryn::net;
 
-NetServer::NetServer(const NetServer::Config config, const backend::UDPSocket socket) 
-	  :	config(config),
-		socket(socket)
+NetServer::NetServer(const NetServer::Config config) 
+	  :	config(config)
 { }
 
 void NetServer::start() {
+	// Calculate buffer sizes
 	inBufferSize = config.MaxClients * config.InboundBandwidthPCPT;
 	outBufferSize = config.MaxClients * config.OutboundBandwidthPCPT;
 
-	// Ensure sufficient upload & download speeds given configuration
+	// Ensure sufficient upload & download speeds given server config
 	if (config.ExpectedDownloadMbps * 1'000'000 / 8 < inBufferSize * config.TickRate)
 		throw std::runtime_error(std::format(
 			"ExpectedDownloadMbps aren't sufficient to sustain {} max clients at {} ticks per second.",
@@ -23,19 +23,35 @@ void NetServer::start() {
 			"ExpectedUploadMbps aren't sufficient to sustain {} max clients at {} ticks per second.",
 			config.MaxClients, config.TickRate));
 
-	// Allocate I/O buffers
+	createBuffers();
+	createSockets();
+	createThreads();
+}
+
+void NetServer::shutdown() {
+	destroyThreads();
+	destroyBuffers();
+}
+
+void NetServer::createBuffers() {
 	inFrontBuffer = (uint8_t*)malloc(inBufferSize);
 	inBackBuffer = (uint8_t*)malloc(inBufferSize);
 	outFrontBuffer = (uint8_t*)malloc(outBufferSize);
 	outBackBuffer = (uint8_t*)malloc(outBufferSize);
 
-	// Ensure allocation of I/O buffers was successful
+	// Ensure allocation was successful
 	if (!inFrontBuffer || !inBackBuffer || !outFrontBuffer || !outBackBuffer || inBufferSize == 0 || outBufferSize == 0) {
-		freeIOBuffers();
+		destroyBuffers();
 		throw std::bad_alloc();
 	}
+}
 
-	// Start I/O threads
+void NetServer::createSockets() {
+	inSocket = backend::UDPSocket(config.PortInboundTraffic, false);
+	outSocket = backend::UDPSocket(config.PortOutboundTraffic, false);
+}
+
+void NetServer::createThreads() {
 	try {
 		inThread = std::thread(&NetServer::handleInboundPackets, this);
 		outThread = std::thread(&NetServer::handleOutboundPackets, this);
@@ -45,39 +61,68 @@ void NetServer::start() {
 	}
 }
 
-void NetServer::shutdown() {
-	// Stop I/O threads & free I/O buffers
-	terminateIOThreads();
-	freeIOBuffers();
+void NetServer::destroyBuffers() {
+	if (inFrontBuffer)	{ free(inFrontBuffer);	inFrontBuffer = nullptr;  }
+	if (inBackBuffer)	{ free(inBackBuffer);	inBackBuffer = nullptr;	  }
+	if (outFrontBuffer) { free(outFrontBuffer); outFrontBuffer = nullptr; }
+	if (outBackBuffer)	{ free(outBackBuffer);	outBackBuffer = nullptr;  }
+	inBufferSize = 0;
+	inBackHead = 0;
+	outBufferSize = 0;
+}
+
+void NetServer::destroyThreads() {
+	shutdownThreads = true;
+	inBackBufferReady.notify_one(); // Wake inbound thread (so it can be joined)
+	inThread.join();
+	outThread.join();
 }
 
 void NetServer::handleInboundPackets() {
-	while (!shutdownIOThreads) {
+	while (!shutdownThreads) {
 		// Ensure main thread doesn't attempt modifying back buffer state during this iteration
 		std::unique_lock<std::mutex> lock(inMutex);
-		
+
 		// Sleep thread if 'inBackBuffer' memory runs out
 		// Wake thread if memory is available agains OR threads are shutting down
-		inBackBufferReady.wait(lock, [this]() { return inBackHead < inBufferSize || shutdownIOThreads; });
-		if (shutdownIOThreads) break;
+		// Mutex is released temporarily while waiting
+		inBackBufferReady.wait(lock, [this]() { return inBackHead < inBufferSize || shutdownThreads; });
+		if (shutdownThreads) break;
 
-		int bytesReceived = socket.receive(inBackBuffer + inBackHead, inBufferSize - inBackHead);
-		if (bytesReceived > 0) {
-			// TODO: Get connection address of sender
-			// TODO: Ensure sender isn't overusing their upload limit per tick ('InboundBandwidthPCPT')
-			// TODO: Ensure sended isn't overusing their poll limit per tick ('RequestLimitPCPT')
+		// Attempt to receive new package and its sender information
+		uint8_t* bufferHead = inBackBuffer + inBackHead;
+		size_t bufferSize = inBufferSize - inBackHead;
+		backend::NetAddress sender;
 
-			// TODO: If package valid, update sender upload/poll usage & increment 'inBackHead'
-			inBackHead += bytesReceived;
+		int bytesReceived = inSocket.receive(bufferHead, bufferSize, &sender);
+		if (bytesReceived <= 0) 
+			continue;
 
-			// TODO: Potentially index package. Keep a sorted table of each clients packages as pointers to buffer.
-			// TODO: When do HMAC verification and other security checks happen?
-		}
+		// Ensure sender has an entry in 'clientIndexMap' (sender is a logged-in client)
+		auto it = clientIndexMap.find(sender);
+		if (it == clientIndexMap.end()) 
+			continue;
+
+		// Get client state
+		ClientState& client = clientStates[it->second];
+
+		// Ensure client hasn't exceeded request and bandwidth limits for the current tick
+		if (client.RequestsTT >= config.RequestLimitPCPT) 
+			continue;
+		if (client.InboundBandwidthUsageTT + bytesReceived >= config.InboundBandwidthPCPT) 
+			continue;
+
+		// Update client and buffer state
+		client.RequestsTT++;
+		client.InboundBandwidthUsageTT += bytesReceived;
+		inBackHead += bytesReceived;
+
+		// TODO: processing of package (HMAC?, Indexing?)
 	}
 }
 
-void ryn::net::NetServer::handleOutboundPackets() {
-	while (!shutdownIOThreads) {
+void NetServer::handleOutboundPackets() {
+	while (!shutdownThreads) {
 		// Ensure main thread doesn't attempt modifying back buffer state during this iteration
 		std::unique_lock<std::mutex> lock(outMutex);
 
@@ -99,21 +144,4 @@ void NetServer::swapOutboundBuffers() {
 	// (Lock mutex) Wait for chance to swap out front/back buffers without causing race conditions
 	std::lock_guard<std::mutex> lock(outMutex);
 	std::swap(outFrontBuffer, outBackBuffer);
-}
-
-void NetServer::terminateIOThreads() {
-	shutdownIOThreads = true;
-	inBackBufferReady.notify_one(); // Wake inbound I/O thread so it can be joined
-	inThread.join();
-	outThread.join();
-}
-
-void NetServer::freeIOBuffers() {
-	if (inFrontBuffer)	{ free(inFrontBuffer);	inFrontBuffer = nullptr;  }
-	if (inBackBuffer)	{ free(inBackBuffer);	inBackBuffer = nullptr;	  }
-	if (outFrontBuffer) { free(outFrontBuffer); outFrontBuffer = nullptr; }
-	if (outBackBuffer)	{ free(outBackBuffer);	outBackBuffer = nullptr;  }
-	inBufferSize = 0;
-	inBackHead = 0;
-	outBufferSize = 0;
 }

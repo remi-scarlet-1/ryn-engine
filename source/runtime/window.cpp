@@ -1,11 +1,12 @@
 #include "window.h"
-
 #include "input.h"
 #include <iostream>
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
 
-ryn::Window::Window(WindowSettings settings) {
+using namespace ryn::window;
+
+Window::Window(WindowSettings settings) {
 	// Set glfw error callback
 	glfwSetErrorCallback([](int error, const char* description) {
 		std::fprintf(stderr, "GLFW error %d: %s\n", error, description);
@@ -32,20 +33,20 @@ ryn::Window::Window(WindowSettings settings) {
 	glfwSetWindowPos(glfwHandle, (mode->width - settings.width) / 2, (mode->height - settings.height) / 2);
 }
 
-ryn::Window::~Window() {
+Window::~Window() {
 	glfwDestroyWindow(glfwHandle);
 }
 
-void ryn::Window::pollEvents() {
-	ryn::Input::reset();
+void Window::pollEvents() {
+	ryn::input::Input::reset();
 	glfwPollEvents();
 }
 
-GLFWwindow* ryn::Window::getGlfwHandle() {
+GLFWwindow* Window::getGlfwHandle() {
 	return glfwHandle;
 }
 
-void* ryn::Window::getNativeHandle() {
+void* Window::getNativeHandle() {
 #ifdef GLFW_EXPOSE_NATIVE_WIN32
 	return glfwGetWin32Window(glfwHandle);
 #elif GLFW_EXPOSE_NATIVE_COCOA
@@ -57,6 +58,6 @@ void* ryn::Window::getNativeHandle() {
 #endif
 }
 
-bool ryn::Window::getShouldClose() {
+bool Window::getShouldClose() {
 	return glfwWindowShouldClose(glfwHandle);
 }

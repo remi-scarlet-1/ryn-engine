@@ -9,18 +9,18 @@
 
 #pragma once
 
-#include "public/defines.h"
+#include "defines.h"
 
-// Forward declaration of GLFWwindow type
+// Forward declarations
 struct GLFWwindow;
 
-namespace ryn {
+namespace ryn::window {
 
 	/**
 	* @struct WindowSettings
 	* @brief Defines the settings required for creating a window.
 	*/
-	struct WindowSettings {
+	struct RYN_API WindowSettings {
 		const char* title;		// The title of the window.
 		const bool resizable;	// Whether the window is resizable
 		int width, height;		// The width and height of the window in pixels.
@@ -33,7 +33,7 @@ namespace ryn {
 	*
 	* The 'Window' class provides basic functionality to create a window using GLFW, manage window events, and query the window's state.
 	*/
-	class Window {
+	class RYN_API Window {
 	public:
 		/**
 		* @brief Constructs a new Window object with the specified settings.
