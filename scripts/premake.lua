@@ -4,17 +4,24 @@ dir.scripts          = dir.scripts:match("(.*)/$") or dir.scripts -- Remove trai
 
 dir.root            = path.getabsolute(path.join(dir.scripts, ".."))
 dir.docs            = path.join(dir.root, "docs")
-dir.generated       = path.join(dir.root, "generated")
-dir.source          = path.join(dir.root, "source")
+dir.projects        = path.join(dir.root, "projects")
 dir.vendors         = path.join(dir.root, "vendors")
 
+dir.generated       = path.join(dir.root, "generated")
 dir.builds          = path.join(dir.generated, "builds")
-dir.vendorsBuild    = path.join(dir.generated, "vendorBuilds")
-dir.vendorsInstall  = path.join(dir.generated, "vendorInstall")
-dir.vendorsBySource = path.join(dir.vendors, "_bysource")
+dir.vendorBuilds    = path.join(dir.generated, "vendorBuilds")
 
-dir.runtimeSource   = path.join(dir.source, "runtime")
-dir.testsSource     = path.join(dir.source, "tests")
+dir.sourceRuntime   = path.join(dir.projects, "runtime")
+dir.sourceTests     = path.join(dir.projects, "tests")
+
+-- apfgnpoadngpuong
+function appendWildcard(paths)
+    local newPaths = {}
+    for _, path in ipairs(paths) do
+        table.insert(newPaths, path .. "/**.*") -- Append /**.* to each path
+    end
+    return newPaths
+end
 
 -- Setup workspace
 os.chdir(dir.root)
@@ -23,6 +30,21 @@ workspace "RynEngine"
     configurations { "Release", "Debug" }
     platforms "x64"
     location "%{dir.generated}"
+
+    --------------- [ Project: All (Build Scripts, Docs, etc.) ] ---------------
+    project "all"
+        kind "None"
+        language "C++"
+
+        files {
+            "%{dir.docs}/**.*",
+            "%{dir.scripts}/**.*", 
+        }
+
+        vpaths {
+            ["Docs"] = { "%{dir.docs}/**.*" },
+            ["Scripts"] = { "%{dir.scripts}/**.*" },
+        }
 
     --------------- [ Project: Runtime ] ---------------
     project "runtime"
@@ -38,33 +60,32 @@ workspace "RynEngine"
             "RYN_EXPORT",
         }
 
-        files { 
-            "%{dir.runtimeSource}/**.h", "%{dir.runtimeSource}/**.hpp",
-            "%{dir.runtimeSource}/**.c", "%{dir.runtimeSource}/**.cpp",
-            -- Add some vendors by source
-            "%{dir.vendorsBySource}/**.h", "%{dir.vendorsBySource}/**.hpp",
-            "%{dir.vendorsBySource}/**.c", "%{dir.vendorsBySource}/**.cpp",
-            -- Add scripts & docs (make viewable in solution explorer)
-            "%{dir.scripts}/**.lua", 
-            "%{dir.docs}/**.*",
+        vendorInclude = {
+            "%{dir.vendorBuilds}/entt/include/",
+            "%{dir.vendorBuilds}/imgui/include/",
         }
+        vendorHeader = appendWildcard(vendorInclude)
+        vendorSource = {
+            "%{dir.vendorBuilds}/imgui/source/**.*",
+        }
+
+        files {
+            "%{dir.sourceRuntime}/**.h", "%{dir.sourceRuntime}/**.hpp",
+            "%{dir.sourceRuntime}/**.c",  "%{dir.sourceRuntime}/**.cpp",
+        }
+        files(vendorHeader)
+        files(vendorSource)
+
+        includedirs { "%{dir.sourceRuntime}/" }
+        includedirs(vendorInclude)
 
         vpaths {
-            ["Docs"] = { "%{dir.docs}/**.*" },
-            ["Scripts"] = { "%{dir.scripts}/**.lua" },
-            ["Headers"] = { "%{dir.runtimeSource}/**.h", "%{dir.runtimeSource}/**.hpp" },
-            ["Sources"] = { "%{dir.runtimeSource}/**.c", "%{dir.runtimeSource}/**.cpp" },
-            ["Vendors (by source)/*"] = { 
-                "%{dir.vendorsBySource}/**.h", "%{dir.vendorsBySource}/**.hpp", 
-                "%{dir.vendorsBySource}/**.c", "%{dir.vendorsBySource}/**.cpp" 
-            },
+            ["Headers"] = { "%{dir.sourceRuntime}/**.h", "%{dir.sourceRuntime}/**.hpp" },
+            ["Sources"] = { "%{dir.sourceRuntime}/**.c",  "%{dir.sourceRuntime}/**.cpp" },
+            ["Vendors/*"] = vendorHeader,
+            ["Vendors/*"] = vendorSource, 
         }
 
-        includedirs {
-            "%{dir.runtimeSource}",
-            "%{dir.vendorsBySource}",           -- Include headers of vendors added by source
-            "%{dir.vendorsInstall}/include",    -- Include headers of vendors added by building & linking
-        }
 
         libdirs {
             "%{dir.vendorsInstall}/lib",
