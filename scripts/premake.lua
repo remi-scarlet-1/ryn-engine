@@ -10,6 +10,7 @@ dir.vendors         = path.join(dir.root, "vendors")
 dir.generated       = path.join(dir.root, "generated")
 dir.builds          = path.join(dir.generated, "builds")
 dir.vendorBuilds    = path.join(dir.generated, "vendorBuilds")
+dir.vendorBySource  = path.join(dir.generated, "vendorBySource")
 dir.vendorInstalls  = path.join(dir.generated, "vendorInstalls")
 
 dir.sourceRuntime   = path.join(dir.projects, "runtime")
@@ -34,6 +35,9 @@ workspace "RynEngine"
     project "all"
         kind "None"
         language "C++"
+
+        targetdir   "%{dir.builds}/%{cfg.buildcfg}/%{cfg.platform}/bin"
+        objdir      "%{dir.builds}/%{cfg.buildcfg}/%{cfg.platform}/obj"
 
         files {
             "%{dir.docs}/**.*",
@@ -61,37 +65,31 @@ workspace "RynEngine"
             "RYN_EXPORT",
         }
         
-        vendorSource = { -- Add source of some vendors
-            "%{dir.vendorBuilds}/imgui/source/",
-            "%{dir.vendorBuilds}/entt/source/",
-        }
-
-        vendorLibs = { -- Add vendor lib directories (link further down, 'filter' sections)
+        vendorLibs = {
             "%{dir.vendorInstalls}/bgfx.cmake/lib/",
             "%{dir.vendorInstalls}/glfw/lib/",
         }
 
-        vendorInclude = { -- Add vendor include directories
-            "%{dir.vendorBuilds}/bgfx.cmake/include/",
-            "%{dir.vendorBuilds}/glfw/include/",
-            "%{dir.vendorBuilds}/imgui/include/",
-            "%{dir.vendorBuilds}/entt/include/",
+        vendorInclude = {
+            "%{dir.vendorInstalls}/bgfx.cmake/include/",
+            "%{dir.vendorInstalls}/glfw/include/",
         }
 
         files {
             "%{dir.sourceRuntime}/**.h", "%{dir.sourceRuntime}/**.hpp",
             "%{dir.sourceRuntime}/**.c", "%{dir.sourceRuntime}/**.cpp",
-            table.unpack(appendPostfix(vendorSource, "**.*")),
+            "%{dir.vendorBySource}/source/**.*",
         }
 
         vpaths {
             ["Headers"] = { "%{dir.sourceRuntime}/**.h", "%{dir.sourceRuntime}/**.hpp" },
             ["Sources"] = { "%{dir.sourceRuntime}/**.c", "%{dir.sourceRuntime}/**.cpp" },
-            ["Vendor (Read-only)/*"] = appendPostfix(vendorSource, "**.*"),
+            ["Vendor by Source (Read-only)/*"] = { "%{dir.vendorBySource}/source/**.*" },
         }
         
         includedirs { 
             "%{dir.sourceRuntime}/",
+            "%{dir.vendorBySource}/include/",
             table.unpack(vendorInclude),
         }
 

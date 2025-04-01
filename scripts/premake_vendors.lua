@@ -40,60 +40,55 @@ local function cmakeGenerateAndBuild(source, name, config, generator, options)
     local build = path.join(dir.vendorBuilds, name)
     local install = path.join(dir.vendorInstalls, name)
 
+    touchDir(build)
+    touchDir(install)
+
     cmakeGenerate(source, build, install, generator, options)
     cmakeBuild(build, config)
 end
 
---- Copies files from a source directory to a target directory, with optional filtering based on file extensions.
--- This function copies files from the source directory to the target directory, optionally filtering 
--- them based on file extensions. It can also operate recursively, processing subdirectories.
--- @param source            (string)  The source directory from which files are copied.
--- @param target            (string)  The target directory where files are copied to.
--- @param postfixFilters    (table)   A list of file extensions (strings) to filter files by. 
---                                    Extensions are case-insensitive (e.g., `.txt`, `.jpg`).
--- @param postfixInclusive  (boolean) If true, only files with extensions in `postfixFilters` are copied. 
---                                    If false, files with extensions *not* in `postfixFilters` are copied.
--- @param recursive         (boolean) If true, the function will process subdirectories of the source directory.
-local function copySource(source, target, postfixFilters, postfixInclusive, recursive)
-    touchDir(target)
+--- Copies vendor source files to destination directories, handling optional recursive copy and extension filtering.
+-- This function processes the source directories for a specific vendor, copying them into the appropriate destination directories.
+-- It validates source paths and supports recursive copying of subdirectories, as well as extension-based filtering for source files.
+-- The function also generates a separate "include" directory by copying only header files and excluding source files like `.c` or `.cpp`.
+-- 
+-- @param name    (string) The name of the vendor whose source files are being processed.
+-- @param sources (table) A table where each entry represents a source directory and associated configuration. Each entry is itself a table containing:
+--                       - `source`     (string): The absolute path to the source directory.
+--                       - `relPathFix` (boolean): Whether to try and preserve the subdirs relative path from the first sources entry
+--                       - `recursive`  (boolean): Whether to recursively copy subdirectories from the source.
+--                       - `extFilters` (table|null): A list of file extensions (e.g., `".h"`, `".cpp"`) to filter the files for copying. If `nil`, all files are copied.
+-- 
+-- @error Throws an error if the assumed source root directory doesn't exist or if any of the specified source directories don't exist.
+local function vendorBySource(name, sources)
+    local sourceDestination = path.join(dir.vendorBySource, "source", name)
+    local includeDestination = path.join(dir.vendorBySource, "include", name)
+    touchDir(sourceDestination)
+    touchDir(includeDestination)
 
-    local filters = {}
-    for _, ext in ipairs(postfixFilters or {}) do
-        filters[string.lower(ext)] = true
-    end
+    -- Assume that first path of the first entry in sources represents this vendors (source) root
+    local assumedRoot = sources[1][1]
+    if not os.isdir(assumedRoot) then error([[Including vendor by source failed. Assumed source root directory "%s" doesn't exist]], assumedRoot) end
 
-    local files = os.matchfiles(path.join(source, "*"))
-    for _, file in ipairs(files) do
-        local ext = string.lower(path.getextension(file))
-        local shouldCopy = postfixInclusive and filters[ext] or (not postfixInclusive and not filters[ext])
+    -- Copy all sources/subdirectories based on settings
+    for i, entry in ipairs(sources) do
+        local source = entry[1]
+        local relPathFix = entry[2]
+        local recursive = entry[3]
+        local extFilters = entry[4]
 
-        if shouldCopy then
-            local filename = path.getname(file)
-            local destination = path.join(target, filename)
-            os.copyfile(file, destination)
+        if not os.isdir(source) then error(string.format([[Failed copying "%s" vendor source. Directory "%s" doesn't exist.]], name, source)) end
 
-            local rootEscaped = dir.root:gsub("([%.%-])", "%%%1")
-            local relativSource = tostring(file):gsub(rootEscaped, "")
-            printf('Copied file: ".%s"', relativSource)
+        local finalSourceDestination = sourceDestination
+        if relPathFix then
+            finalSourceDestination = path.join(sourceDestination, getRelativePath(assumedRoot, source))
         end
+
+        advancedCopy(source, finalSourceDestination, recursive, extFilters, false)
     end
 
-    if recursive then
-        local directories = os.matchdirs(path.join(source, "*"))
-        for _, dir in ipairs(directories) do
-            local dirname = path.getname(dir)
-            copySource(dir, path.join(target, dirname), postfixFilters, postfixInclusive, recursive)
-        end
-    end
-end
-
---- Prepares the target directories required for the build process.
--- Ensures that necessary directories for generated files, vendor builds, and vendor installations exist.
--- This function creates the required directories if they are missing.
-local function prepTarget()
-    touchDir(dir.generated)
-    touchDir(dir.vendorBuilds)
-    touchDir(dir.vendorInstalls)
+    -- 'Generate' include directory from copied source by re-copying but excluding .c/.cpp files
+    advancedCopy(sourceDestination, includeDestination, true, { ".c", ".cpp" }, true)
 end
 
 --------------------------------------------------------------------------------
@@ -105,9 +100,7 @@ end
 --------------------------------------------------------------------------------
 local function build_vs2022()
     local cmakeGenerator = "Visual Studio 17 2022"
-    local cmakeConfig = "Release"
     
-    prepTarget()
     cmakeGenerateAndBuild(path.join(dir.vendors, "bgfx.cmake"),     "bgfx.cmake",   "Release",  cmakeGenerator, '-D CMAKE_CXX_FLAGS_INIT="/w" -D CMAKE_C_FLAGS_INIT="/w"')
     cmakeGenerateAndBuild(path.join(dir.vendors, "bgfx.cmake"),     "bgfx.cmake",   "Debug",    cmakeGenerator, '-D CMAKE_CXX_FLAGS_INIT="/w" -D CMAKE_C_FLAGS_INIT="/w"')
     cmakeGenerateAndBuild(path.join(dir.vendors, "glfw"),           "glfw",         "Release",  cmakeGenerator, '-D GLFW_BUILD_EXAMPLES=OFF -D GLFW_BUILD_TESTS=OFF -D GLFW_BUILD_DOCS=OFF')
@@ -115,34 +108,14 @@ local function build_vs2022()
     cmakeGenerateAndBuild(path.join(dir.vendors, "catch2"),         "catch2",       "Release",  cmakeGenerator, nil)
     cmakeGenerateAndBuild(path.join(dir.vendors, "catch2"),         "catch2",       "Debug",    cmakeGenerator, nil)
 
-    -- Copy imgui source
-    copySource(
-        path.join(dir.vendors, "imgui"), 
-        path.join(dir.vendorBuilds, "imgui", "source", "imgui"), 
-        { ".h", ".hpp", ".c", ".cpp" }, true, false
-    )
-    copySource(
-        path.join(dir.vendors, "imgui", "backends"), 
-        path.join(dir.vendorBuilds, "imgui", "source", "imgui", "backends"), 
-        {}, false, true
-    )
-    copySource(
-        path.join(dir.vendorBuilds, "imgui", "source", "imgui"), 
-        path.join(dir.vendorBuilds, "imgui", "include", "imgui"), 
-        { ".c", ".cpp" }, false, true
-    )
+    vendorBySource("imgui", {
+        { path.join(dir.vendors, "imgui"), false, false, { ".h", ".hpp", ".c", ".cpp" }},
+        { path.join(dir.vendors, "imgui_bgfx_backend"), false, false, { ".h", ".cpp" }},
+    })
 
-    -- Copy entt source
-    copySource(
-        path.join(dir.vendors, "entt", "src", "entt"), 
-        path.join(dir.vendorBuilds, "entt", "source", "entt"), 
-        {}, false, true
-    )
-    copySource(
-        path.join(dir.vendors, "entt", "src", "entt"), 
-        path.join(dir.vendorBuilds, "entt", "include", "entt"), 
-        {}, false, true
-    )
+    vendorBySource("entt", {
+        { path.join(dir.vendors, "entt", "src", "entt"), false, nil },
+    })
 end
 
 newaction {
