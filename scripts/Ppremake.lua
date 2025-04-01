@@ -35,8 +35,8 @@ workspace "RynEngine"
         kind "None"
         language "C++"
 
-        targetdir   "%{dir.builds}/%{cfg.buildcfg}/%{cfg.platform}/bin"
-        objdir      "%{dir.builds}/%{cfg.buildcfg}/%{cfg.platform}/obj"
+        targetdir   "%{dir.builds}/%{cfg.buildcfg}/bin"
+        objdir      "%{dir.builds}/%{cfg.buildcfg}/obj"
 
         files {
             "%{dir.docs}/**.*",
@@ -57,8 +57,8 @@ workspace "RynEngine"
         cppdialect "C++20"
         architecture "x64"
 
-        targetdir   "%{dir.builds}/%{cfg.buildcfg}/%{cfg.platform}/bin"
-        objdir      "%{dir.builds}/%{cfg.buildcfg}/%{cfg.platform}/obj"
+        targetdir   "%{dir.builds}/%{cfg.buildcfg}/bin"
+        objdir      "%{dir.builds}/%{cfg.buildcfg}/obj"
 
         defines {
             "RYN_EXPORT",
