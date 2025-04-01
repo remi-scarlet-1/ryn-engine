@@ -9,9 +9,8 @@ dir.vendors         = path.join(dir.root, "vendors")
 
 dir.generated       = path.join(dir.root, "generated")
 dir.builds          = path.join(dir.generated, "builds")
+dir.vendorArtifacts = path.join(dir.generated, "vendorArtifacts")
 dir.vendorBuilds    = path.join(dir.generated, "vendorBuilds")
-dir.vendorBySource  = path.join(dir.generated, "vendorBySource")
-dir.vendorInstalls  = path.join(dir.generated, "vendorInstalls")
 
 dir.sourceRuntime   = path.join(dir.projects, "runtime")
 dir.sourceTests     = path.join(dir.projects, "tests")
@@ -20,8 +19,8 @@ dir.sourceTests     = path.join(dir.projects, "tests")
 os.chdir(dir.root)
 
 -- Include other scripts
-dofile("premake_helpers.lua")
-dofile("premake_vendors.lua")
+dofile("PremakeHelpers.lua")
+dofile("PremakeVendors.lua")
 
 -- Premake workspace
 workspace "RynEngine"  
@@ -66,30 +65,36 @@ workspace "RynEngine"
         }
         
         vendorLibs = {
-            "%{dir.vendorInstalls}/bgfx.cmake/lib/",
-            "%{dir.vendorInstalls}/glfw/lib/",
+            "%{dir.vendorArtifacts}/bgfx.cmake/lib/",
+            "%{dir.vendorArtifacts}/glfw/lib/",
+        }
+
+        vendorSource = {
+            "%{dir.vendorArtifacts}/imgui/source/**.*",
+            "%{dir.vendorArtifacts}/entt/source/**.*",
         }
 
         vendorInclude = {
-            "%{dir.vendorInstalls}/bgfx.cmake/include/",
-            "%{dir.vendorInstalls}/glfw/include/",
+            "%{dir.vendorArtifacts}/bgfx.cmake/include/",
+            "%{dir.vendorArtifacts}/glfw/include/",
+            "%{dir.vendorArtifacts}/imgui/include/",
+            "%{dir.vendorArtifacts}/entt/include/",
         }
 
         files {
             "%{dir.sourceRuntime}/**.h", "%{dir.sourceRuntime}/**.hpp",
             "%{dir.sourceRuntime}/**.c", "%{dir.sourceRuntime}/**.cpp",
-            "%{dir.vendorBySource}/source/**.*",
+            table.unpack(vendorSource),
         }
 
         vpaths {
             ["Headers"] = { "%{dir.sourceRuntime}/**.h", "%{dir.sourceRuntime}/**.hpp" },
             ["Sources"] = { "%{dir.sourceRuntime}/**.c", "%{dir.sourceRuntime}/**.cpp" },
-            ["Vendor by Source (Read-only)/*"] = { "%{dir.vendorBySource}/source/**.*" },
+            ["Vendor by Source (Read-only)/*"] = { table.unpack(vendorSource) },
         }
         
         includedirs { 
             "%{dir.sourceRuntime}/",
-            "%{dir.vendorBySource}/include/",
             table.unpack(vendorInclude),
         }
 

@@ -5,41 +5,51 @@ function touchDir(dir)
 end
 
 function safeExecute(command)
+    assert(type(command) == "string", "safeExecute: 'command' must be of type string")
+
     print("Executing Command: " .. command)
-    local result = os.execute(command)
-    if not result then 
-        error("Command failed: " .. command) 
+    local success, type, code = os.execute(command)
+
+    if not success then 
+        error(string.format([[Command failed: "%s" (Exit Type: %s, Exit Code: %d)]], command, type, code)) 
     end
 end
 
 function appendPostfix(strings, postfix)
-    local newStrings = {}
+    assert(type(strings) == "table", "appendPostfix: 'strings' must be of type table (array of strings)")
+    assert(type(postfix) == "string", "appendPostfix: 'postfix' must be of type string")
+
+    local new = {}
     for _, string in ipairs(strings) do
-        table.insert(newStrings, string .. postfix)
+        table.insert(new, string .. postfix)
     end
-    return newStrings
+
+    return new
 end
 
-function tableIsEmpty(t)
-    return next(t) == nil
+function tableIsEmpty(table)
+    assert(type(table) == "table", "tableIsEmpty: 'table' must be of type table")
+
+    return next(table) == nil
 end
 
 function getRelativePath(root, sub)
-    -- Ensure the paths are normalized (removing trailing slashes, etc.)
+    assert(type(root) == "string", "getRelativePath: 'root' must be of type string (path)")
+    assert(type(sub) == "string", "getRelativePath: 'sub' must be of type string (path)")
+
     root = root:gsub("/$", "")  -- Remove trailing slash, if any
     sub = sub:gsub("/$", "")  -- Remove trailing slash, if any
 
-    -- Check if sub starts with root
     if sub:sub(1, #root) == root then
-        -- Subtract root from sub
-        return sub:sub(#root + 2)  -- Add 2 to remove the '/' separator after root
+        return sub:sub(#root + 2)
     else
-        error("sub is not inside root!")
+        error(string.format([[Getting relative path failed. Sub-path "%s" isn't inside of root-path "%s".']], sub, root))
     end
 end
 
--- TODO: Support other platforms ("NUMBER_OF_PROCESSORS" is specific to windows)
-function getProcessorCount()
+function getProcessorCount() -- TODO: cross-platform
+    print("Caution: getProcessorCount() has not yet been implemented for non-windows platforms!")
+
     local cores = tonumber(os.getenv("NUMBER_OF_PROCESSORS")) or 4
     return cores
 end

@@ -23,7 +23,7 @@ end
 -- @param config  (string) The build configuration (e.g., `"Release"`, `"Debug"`, etc.) to use during the build and install process.
 local function cmakeBuild(build, config)
     local processors = getProcessorCount()
-    print("Build and install cmake project using \'" .. processors .. "\' processors.")
+    printf([[Build and install cmake project using %d processors.]], processors)
     safeExecute(string.format('cmake --build "%s" --config %s --parallel %d', build, config, processors))
     safeExecute(string.format('cmake --install "%s" --config %s', build, config))
 end
@@ -38,7 +38,7 @@ end
 -- @param options   (string|nil) Additional CMake options (optional). Defaults to an empty string if not provided.
 local function cmakeGenerateAndBuild(source, name, config, generator, options)
     local build = path.join(dir.vendorBuilds, name)
-    local install = path.join(dir.vendorInstalls, name)
+    local install = path.join(dir.vendorArtifacts, name)
 
     touchDir(build)
     touchDir(install)
@@ -60,9 +60,9 @@ end
 --                       - `extFilters` (table|null): A list of file extensions (e.g., `".h"`, `".cpp"`) to filter the files for copying. If `nil`, all files are copied.
 -- 
 -- @error Throws an error if the assumed source root directory doesn't exist or if any of the specified source directories don't exist.
-local function vendorBySource(name, sources)
-    local sourceDestination = path.join(dir.vendorBySource, "source", name)
-    local includeDestination = path.join(dir.vendorBySource, "include", name)
+local function bySource(name, sources)
+    local sourceDestination = path.join(dir.vendorArtifacts, name, "source", name)
+    local includeDestination = path.join(dir.vendorArtifacts, name, "include", name)
     touchDir(sourceDestination)
     touchDir(includeDestination)
 
@@ -108,12 +108,12 @@ local function build_vs2022()
     cmakeGenerateAndBuild(path.join(dir.vendors, "catch2"),         "catch2",       "Release",  cmakeGenerator, nil)
     cmakeGenerateAndBuild(path.join(dir.vendors, "catch2"),         "catch2",       "Debug",    cmakeGenerator, nil)
 
-    vendorBySource("imgui", {
+    bySource("imgui", {
         { path.join(dir.vendors, "imgui"), false, false, { ".h", ".hpp", ".c", ".cpp" }},
-        { path.join(dir.vendors, "imgui_bgfx_backend"), false, false, { ".h", ".cpp" }},
+        { path.join(dir.vendors, "imgui_impl_bgfx"), false, false, { ".h", ".cpp" }},
     })
 
-    vendorBySource("entt", {
+    bySource("entt", {
         { path.join(dir.vendors, "entt", "src", "entt"), false, true, nil },
     })
 end
