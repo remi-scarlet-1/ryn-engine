@@ -114,7 +114,7 @@ local function build_vs2022()
     })
 
     vendorBySource("entt", {
-        { path.join(dir.vendors, "entt", "src", "entt"), false, nil },
+        { path.join(dir.vendors, "entt", "src", "entt"), false, true, nil },
     })
 end
 
