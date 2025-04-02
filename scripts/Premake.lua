@@ -4,7 +4,7 @@ dir.scripts         = dir.scripts:match("(.*)/$") or dir.scripts -- Remove trail
 
 dir.root            = path.getabsolute(path.join(dir.scripts, ".."))
 dir.docs            = path.join(dir.root, "docs")
-dir.projects        = path.join(dir.root, "projects")
+dir.source          = path.join(dir.root, "source")
 dir.vendors         = path.join(dir.root, "vendors")
 
 dir.generated       = path.join(dir.root, "generated")
@@ -15,9 +15,9 @@ dir.vendorArtifacts = path.join(dir.generated, "vendorArtifacts")
 dir.vendorBuilds    = path.join(dir.generated, "vendorBuilds")
 
 
-dir.sourceRuntime   = path.join(dir.projects, "runtime")
-dir.sourceSandbox   = path.join(dir.projects, "sandbox")
-dir.sourceTests     = path.join(dir.projects, "tests")
+dir.sourceRuntime   = path.join(dir.source, "runtime")
+dir.sourceSandbox   = path.join(dir.source, "sandbox")
+dir.sourceTests     = path.join(dir.source, "tests")
 
 -- Set working directory to root
 os.chdir(dir.root)
