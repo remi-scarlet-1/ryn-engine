@@ -48,8 +48,8 @@ workspace "RynEngine"
         }
 
         vpaths {
-            ["Docs"] = { "%{dir.docs}/**.*" },
-            ["Scripts"] = { "%{dir.scripts}/**.*" },
+            ["docs"] = { "%{dir.docs}/**.*" },
+            ["scripts"] = { "%{dir.scripts}/**.*" },
         }
 
     --------------------------------------------------------------------------------
@@ -80,9 +80,9 @@ workspace "RynEngine"
         }
 
         vpaths {
-            ["Headers"] = { "%{dir.sourceRuntime}/**.h", "%{dir.sourceRuntime}/**.hpp" },
-            ["Sources"] = { "%{dir.sourceRuntime}/**.c", "%{dir.sourceRuntime}/**.cpp" },
-            ["Vendor by Source (Read-only)/*"] = { table.unpack(vendorSource) },
+            ["headers"] = { "%{dir.sourceRuntime}/**.h", "%{dir.sourceRuntime}/**.hpp" },
+            ["sources"] = { "%{dir.sourceRuntime}/**.c", "%{dir.sourceRuntime}/**.cpp" },
+            ["vendor by source (read-only)/*"] = { table.unpack(vendorSource) },
         }
         
         includedirs { 
@@ -166,8 +166,8 @@ workspace "RynEngine"
         }
 
         vpaths {
-            ["Headers"] = { "%{dir.sourceSandbox}/**.h", "%{dir.sourceSandbox}/**.hpp" },
-            ["Sources"] = { "%{dir.sourceSandbox}/**.c", "%{dir.sourceSandbox}/**.cpp" },
+            ["headers"] = { "%{dir.sourceSandbox}/**.h", "%{dir.sourceSandbox}/**.hpp" },
+            ["sources"] = { "%{dir.sourceSandbox}/**.c", "%{dir.sourceSandbox}/**.cpp" },
         }
 
         includedirs {
@@ -213,8 +213,8 @@ workspace "RynEngine"
         }
 
         vpaths {
-            ["Headers"] = { "%{dir.sourceTests}/**.h", "%{dir.sourceTests}/**.hpp" },
-            ["Sources"] = { "%{dir.sourceTests}/**.c", "%{dir.sourceTests}/**.cpp" },
+            ["headers"] = { "%{dir.sourceTests}/**.h", "%{dir.sourceTests}/**.hpp" },
+            ["sources"] = { "%{dir.sourceTests}/**.c", "%{dir.sourceTests}/**.cpp" },
         }
 
         includedirs {
