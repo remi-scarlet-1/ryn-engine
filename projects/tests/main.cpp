@@ -1,12 +1,12 @@
-#include "window.h"
+#define CATCH_CONFIG_RUNNER
+#include <catch2/catch_all.hpp>
+#include <iostream>
 
-int main() {
-	ryn::window::WindowSettings windowSettings("Test", false, 1920, 1080, false);
-	ryn::window::Window window(windowSettings);
+int main(int argc, char* argv[]) {
+    int result = Catch::Session().run(argc, argv);
 
-	while (!window.getShouldClose()) {
-		window.pollEvents();
+    std::cout << "Press enter to exit...";
+    std::cin.get();
 
-
-	}
+    return result;
 }

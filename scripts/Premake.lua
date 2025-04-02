@@ -9,10 +9,14 @@ dir.vendors         = path.join(dir.root, "vendors")
 
 dir.generated       = path.join(dir.root, "generated")
 dir.builds          = path.join(dir.generated, "builds")
+dir.buildsTarget    = "%{dir.builds}/%{cfg.buildcfg}/bin"
+dir.buildsObject    = "%{dir.builds}/%{cfg.buildcfg}/obj"
 dir.vendorArtifacts = path.join(dir.generated, "vendorArtifacts")
 dir.vendorBuilds    = path.join(dir.generated, "vendorBuilds")
 
+
 dir.sourceRuntime   = path.join(dir.projects, "runtime")
+dir.sourceSandbox   = path.join(dir.projects, "sandbox")
 dir.sourceTests     = path.join(dir.projects, "tests")
 
 -- Set working directory to root
@@ -35,8 +39,8 @@ workspace "RynEngine"
         kind "None"
         language "C++"
 
-        targetdir   "%{dir.builds}/%{cfg.buildcfg}/bin"
-        objdir      "%{dir.builds}/%{cfg.buildcfg}/obj"
+        targetdir   "%{dir.buildsTarget}"
+        objdir      "%{dir.buildsObject}"
 
         files {
             "%{dir.docs}/**.*",
@@ -57,28 +61,16 @@ workspace "RynEngine"
         cppdialect "C++20"
         architecture "x64"
 
-        targetdir   "%{dir.builds}/%{cfg.buildcfg}/bin"
-        objdir      "%{dir.builds}/%{cfg.buildcfg}/obj"
+        targetdir   "%{dir.buildsTarget}"
+        objdir      "%{dir.buildsObject}"
 
         defines {
             "RYN_EXPORT",
         }
         
-        vendorLibs = {
-            "%{dir.vendorArtifacts}/bgfx.cmake/lib/",
-            "%{dir.vendorArtifacts}/glfw/lib/",
-        }
-
         vendorSource = {
             "%{dir.vendorArtifacts}/imgui/source/**.*",
             "%{dir.vendorArtifacts}/entt/source/**.*",
-        }
-
-        vendorInclude = {
-            "%{dir.vendorArtifacts}/bgfx.cmake/include/",
-            "%{dir.vendorArtifacts}/glfw/include/",
-            "%{dir.vendorArtifacts}/imgui/include/",
-            "%{dir.vendorArtifacts}/entt/include/",
         }
 
         files {
@@ -95,10 +87,16 @@ workspace "RynEngine"
         
         includedirs { 
             "%{dir.sourceRuntime}/",
-            table.unpack(vendorInclude),
+            "%{dir.vendorArtifacts}/bgfx.cmake/include/",
+            "%{dir.vendorArtifacts}/glfw/include/",
+            "%{dir.vendorArtifacts}/imgui/include/",
+            "%{dir.vendorArtifacts}/entt/include/",
         }
 
-        libdirs(vendorLibs)
+        libdirs {
+            "%{dir.vendorArtifacts}/bgfx.cmake/lib/",
+            "%{dir.vendorArtifacts}/glfw/lib/",
+        }
 
         ----- Configuration filters -----
         filter "configurations:Release"
@@ -151,52 +149,108 @@ workspace "RynEngine"
             }
 
     --------------------------------------------------------------------------------
-    --------------------------- [ Project: (Unit) Test ] ---------------------------
+    ----------------------------- [ Project: Sandbox ] -----------------------------
     --------------------------------------------------------------------------------
-    -- project "tests"
-    --     kind "ConsoleApp"
-    --     language "C++"
-    --     cppdialect "C++20"
-    --     architecture "x64"
+    project "sandbox"
+        kind "ConsoleApp"
+        language "C++"
+        cppdialect "C++20"
+        architecture "x64"
 
-    --     targetdir   "%{dir.builds}/%{cfg.buildcfg}%{cfg.platform}/bin"
-    --     objdir      "%{dir.builds}/%{cfg.buildcfg}%{cfg.platform}/obj"
+        targetdir   "%{dir.buildsTarget}"
+        objdir      "%{dir.buildsObject}"
 
-    --     files { 
-    --         "%{dir.testsSource}/**.h", "%{dir.testsSource}/**.hpp",
-    --         "%{dir.testsSource}/**.c", "%{dir.testsSource}/**.cpp",
-    --     }
+        files { 
+            "%{dir.sourceSandbox}/**.h", "%{dir.sourceSandbox}/**.hpp",
+            "%{dir.sourceSandbox}/**.c", "%{dir.sourceSandbox}/**.cpp",
+        }
 
-    --     vpaths {
-    --         ["Headers"] = { "%{dir.testsSource}/**.h", "%{dir.testsSource}/**.hpp" },
-    --         ["Sources"] = { "%{dir.testsSource}/**.c", "%{dir.testsSource}/**.cpp" },
-    --     }
+        vpaths {
+            ["Headers"] = { "%{dir.sourceSandbox}/**.h", "%{dir.sourceSandbox}/**.hpp" },
+            ["Sources"] = { "%{dir.sourceSandbox}/**.c", "%{dir.sourceSandbox}/**.cpp" },
+        }
 
-    --     includedirs {
-    --         "%{dir.testsSource}",
-    --         "%{dir.runtimeSource}",
-    --     }
+        includedirs {
+            "%{dir.sourceSandbox}",
+            "%{dir.sourceRuntime}",
+        }
 
-    --     libdirs {
+        links {
+            "runtime",
+        }
 
-    --     }
+        ----- Configuration filters -----
+        filter "configurations:Release"
+            optimize "On"
+            defines { "RYN_CONFIG_RELEASE" }
 
-    --     links {
-    --         "runtime",
-    --     }
+        filter "configurations:Debug"
+            symbols "On"
+            defines { "RYN_CONFIG_DEBUG" }
 
-    --     ----- Configuration filters -----
-    --     filter "configurations:Release"
-    --         optimize "On"
-    --         defines { "RYN_CONFIG_RELEASE" }
+        ----- System filters -----
+        filter { "system:windows", "action:vs*" } -- windows (msvc)
+            system "windows"
+            toolset "msc"
 
-    --     filter "configurations:Debug"
-    --         symbols "On"
-    --         defines { "RYN_CONFIG_DEBUG" }
+            defines { "RYN_PLATFORM_WIN" }
 
-    --     ----- System filters -----
-    --     filter { "system:windows", "action:vs*" } -- windows (msvc)
-    --         system "windows"
-    --         toolset "msc"
+    --------------------------------------------------------------------------------
+    -------------------------- [ Project: (Unit) Tests ] ---------------------------
+    --------------------------------------------------------------------------------
+    project "tests"
+        kind "ConsoleApp"
+        language "C++"
+        cppdialect "C++20"
+        architecture "x64"
 
-    --         defines { "RYN_PLATFORM_WIN" }
+        targetdir   "%{dir.buildsTarget}"
+        objdir      "%{dir.buildsObject}"
+
+        files { 
+            "%{dir.sourceTests}/**.h", "%{dir.sourceTests}/**.hpp",
+            "%{dir.sourceTests}/**.c", "%{dir.sourceTests}/**.cpp",
+        }
+
+        vpaths {
+            ["Headers"] = { "%{dir.sourceTests}/**.h", "%{dir.sourceTests}/**.hpp" },
+            ["Sources"] = { "%{dir.sourceTests}/**.c", "%{dir.sourceTests}/**.cpp" },
+        }
+
+        includedirs {
+            "%{dir.sourceTests}",
+            "%{dir.sourceRuntime}",
+            "%{dir.vendorArtifacts}/catch2/include/",
+        }
+
+        libdirs {
+            "%{dir.vendorArtifacts}/catch2/lib/",
+        }
+
+        links {
+            "runtime",
+        }
+
+        ----- Configuration filters -----
+        filter "configurations:Release"
+            optimize "On"
+            defines { "RYN_CONFIG_RELEASE" }
+
+            links {
+                "Catch2",
+            }
+
+        filter "configurations:Debug"
+            symbols "On"
+            defines { "RYN_CONFIG_DEBUG" }
+
+            links {
+                "Catch2d",
+            }
+
+        ----- System filters -----
+        filter { "system:windows", "action:vs*" } -- windows (msvc)
+            system "windows"
+            toolset "msc"
+
+            defines { "RYN_PLATFORM_WIN" }
