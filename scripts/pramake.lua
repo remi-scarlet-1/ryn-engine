@@ -11,8 +11,8 @@ dir.generated       = path.join(dir.root, "generated")
 dir.builds          = path.join(dir.generated, "builds")
 dir.buildsTarget    = "%{dir.builds}/%{cfg.buildcfg}/bin"
 dir.buildsObject    = "%{dir.builds}/%{cfg.buildcfg}/obj"
-dir.vendorArtifacts = path.join(dir.generated, "vendorArtifacts")
-dir.vendorBuilds    = path.join(dir.generated, "vendorBuilds")
+dir.vendorArtifacts = path.join(dir.generated, "vendor_artifacts")
+dir.vendorBuilds    = path.join(dir.generated, "vendor_builds")
 
 
 dir.sourceRuntime   = path.join(dir.source, "runtime")
@@ -23,8 +23,8 @@ dir.sourceTests     = path.join(dir.source, "tests")
 os.chdir(dir.root)
 
 -- Include other scripts
-dofile("PremakeHelpers.lua")
-dofile("PremakeVendors.lua")
+dofile("premake_helpers.lua")
+dofile("premake_vendors.lua")
 
 -- Premake workspace
 workspace "RynEngine"  
