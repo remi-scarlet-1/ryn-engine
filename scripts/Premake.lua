@@ -171,8 +171,8 @@ workspace "RynEngine"
         }
 
         includedirs {
-            "%{dir.sourceSandbox}",
-            "%{dir.sourceRuntime}",
+            "%{dir.sourceSandbox}/",
+            "%{dir.sourceRuntime}/",
         }
 
         links {
@@ -218,8 +218,8 @@ workspace "RynEngine"
         }
 
         includedirs {
-            "%{dir.sourceTests}",
-            "%{dir.sourceRuntime}",
+            "%{dir.sourceTests}/",
+            "%{dir.sourceRuntime}/",
             "%{dir.vendorArtifacts}/catch2/include/",
         }
 
