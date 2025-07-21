@@ -25,7 +25,7 @@
 *        depending on whether the RYN_EXPORT preprocessor directive is defined.
 */
 #ifdef RYN_PLATFORM_WIN
-	#ifdef RYN_EXPORT
+	#ifdef RYN_RUNTIME
 		#define RYN_API __declspec(dllexport) // Export functions when building the DLL.
 	#else
 		#define RYN_API __declspec(dllimport) // Import functions when using the DLL.

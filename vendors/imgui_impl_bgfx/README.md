@@ -1,2 +1,0 @@
-Custom imgui backend compatible with bgfx:
-https://gist.github.com/pr0g/aff79b71bf9804ddb03f39ca7c0c3bbb
