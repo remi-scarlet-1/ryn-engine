@@ -1,7 +1,7 @@
 project "EnTT"
     kind "Utility"
     language "C++"
-    staticruntime "on"
+    staticruntime "off"
 
     setOutputDirs()
 

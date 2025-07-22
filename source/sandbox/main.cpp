@@ -1,11 +1,24 @@
-#include "window.h"
+#include <ryn.h>
+#include <entrypoint.h>
 
-int main() {
-	ryn::window::WindowSettings windowSettings("Test", false, 1920, 1080, false);
-	ryn::window::Window window(windowSettings);
+class ExampleGame : public ryn::Game {
+protected:
+	// Example callbacks to hook into:
+	/*
+	void onBeforeInit() override {};
+	void onAfterInit() override {};
 
-	while (!window.getShouldClose()) {
-		window.pollEvents();
-		// TODO: rest of the main loop
-	}
+	void onBeforeUpdate() override {};
+	void onAfterUpdate() override {};
+
+	void onBeforeRender() override {};
+	void onAfterRender() override {};
+
+	void onBeforeShutdown() override {};
+	void onAfterShutdown() override {};
+	*/
+};
+
+ryn::Game* ryn::createGame() {
+	return new ExampleGame();
 }

@@ -9,15 +9,6 @@
 #pragma once
 
 #include <cstdint>
-#include <string>
-
-#include <functional>
-
-#include <vector>
-#include <queue>
-#include <array>
-
-#include <iostream>
 
 /**
 * @brief Define the RYN_API macro for different platforms.
@@ -25,7 +16,7 @@
 *        depending on whether the RYN_EXPORT preprocessor directive is defined.
 */
 #ifdef RYN_PLATFORM_WIN
-	#ifdef RYN_RUNTIME
+	#ifdef RYN_ENGINE
 		#define RYN_API __declspec(dllexport) // Export functions when building the DLL.
 	#else
 		#define RYN_API __declspec(dllimport) // Import functions when using the DLL.

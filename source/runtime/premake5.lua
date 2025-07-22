@@ -2,7 +2,7 @@ project "Runtime"
     kind "SharedLib"
     language "C++"
     cppdialect "C++20"
-    staticruntime "on"
+    staticruntime "off"
 
     setOutputDirs()
 
@@ -34,7 +34,7 @@ project "Runtime"
     }
 
     defines {
-        "RYN_RUNTIME",
+        "RYN_ENGINE",
         "GLFW_EXPOSE_NATIVE_WIN32",
     }
 
