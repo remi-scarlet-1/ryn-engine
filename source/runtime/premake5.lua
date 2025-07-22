@@ -8,20 +8,26 @@ project "Runtime"
 
     files {
         path.join(dir.source, "runtime", "premake5.lua"),
-        path.join(dir.source, "runtime", "**.h"),
-        path.join(dir.source, "runtime", "**.hpp"),
+        path.join(dir.source, "runtime", "include", "ryn", "**.h"),
+        path.join(dir.source, "runtime", "include", "ryn", "**.hpp"),
         path.join(dir.source, "runtime", "**.c"),
         path.join(dir.source, "runtime", "**.cpp"),
     }
 
     vpaths {
         ["."] = { path.join(dir.source, "runtime", "premake5.lua") },
-        ["headers"] = { path.join(dir.source, "runtime", "**.h"), path.join(dir.source, "runtime", "**.hpp") },
-        ["sources"] = { path.join(dir.source, "runtime", "**.c"), path.join(dir.source, "runtime", "**.cpp") },
+        ["headers/**"] = { 
+            path.join(dir.source, "runtime", "include", "**.h"), 
+            path.join(dir.source, "runtime", "include", "**.hpp") 
+        },
+        ["sources"] = { 
+            path.join(dir.source, "runtime", "**.c"), 
+            path.join(dir.source, "runtime", "**.cpp") 
+        },
     }
 
     includedirs {
-        path.join(dir.source, "runtime"),
+        path.join(dir.source, "runtime", "include"),
         path.join(dir.vendors, "glfw", "include"),
         path.join(dir.vendors, "imgui"),
         path.join(dir.vendors, "entt", "src"),
@@ -34,7 +40,7 @@ project "Runtime"
     }
 
     defines {
-        "RYN_ENGINE",
+        "RYN_RUNTIME",
         "GLFW_EXPOSE_NATIVE_WIN32",
     }
 

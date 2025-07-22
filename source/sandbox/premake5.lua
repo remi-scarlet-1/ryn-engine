@@ -16,12 +16,18 @@ project "Sandbox"
 
     vpaths {
         ["."] = { path.join(dir.source, "sandbox", "premake5.lua") },
-        ["headers"] = { path.join(dir.source, "sandbox", "**.h"), path.join(dir.source, "sandbox", "**.hpp") },
-        ["sources"] = { path.join(dir.source, "sandbox", "**.c"), path.join(dir.source, "sandbox", "**.cpp") },
+        ["headers"] = { 
+            path.join(dir.source, "sandbox", "**.h"), 
+            path.join(dir.source, "sandbox", "**.hpp") 
+        },
+        ["sources"] = { 
+            path.join(dir.source, "sandbox", "**.c"), 
+            path.join(dir.source, "sandbox", "**.cpp") 
+        },
     }
 
     includedirs {
-        path.join(dir.source, "runtime"),
+        path.join(dir.source, "runtime", "include"),
         path.join(dir.source, "sandbox"),
     }
 

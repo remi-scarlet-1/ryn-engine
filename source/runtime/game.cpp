@@ -1,37 +1,52 @@
-#include "game.h"
+#include "ryn/core/game.h"
 
 #include <iostream>
 
+ryn::Game::Game(const WindowSettings& windowSettings)
+{
+	window = new Window(windowSettings);
+}
+
+ryn::Game::~Game()
+{
+	delete window;
+}
+
 bool ryn::Game::isRunning()
 {
-	return true; // TODO: implement actual flag
+	return !window->isClosing();
 }
 
 void ryn::Game::initialize()
 {
 	onBeforeInit();
-	std::cout << "Engine initializing...\n";
+	// TODO: initialize engine
+
 	onAfterInit();
 }
 
 void ryn::Game::update()
 {
 	onBeforeUpdate();
-	std::cout << "Engine updating...\n";
+	// TODO: update engine
+	Window::pollEvents();
+
 	onAfterUpdate();
 }
 
 void ryn::Game::render()
 {
 	onBeforeRender();
-	std::cout << "Engine rendering...\n";
+	// TODO: render engine
+
 	onAfterRender();
 }
 
 void ryn::Game::shutdown()
 {
 	onBeforeShutdown();
-	std::cout << "Engine shutdown...\n";
+	// TODO: shutdown engine
+
 	onAfterShutdown();
 }
 
