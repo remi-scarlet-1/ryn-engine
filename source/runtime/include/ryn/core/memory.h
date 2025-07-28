@@ -4,13 +4,19 @@
 
 namespace ryn {
 	template<typename T>
+	struct DefaultDeleter {
+		void operator()(T* ptr) const noexcept {
+			delete ptr;
+		}
+	};
+
+	template<typename T, typename Deleter = DefaultDeleter<T>>
 	class RYN_API UniquePtr {
 	public:
-		using DeleterFunction = void(*)(T*);
-
 		// Explicit constructor and normal destructor
-		explicit UniquePtr(T* ptr = nullptr, DeleterFunction deleter = &defaultDeleter) noexcept 
+		explicit UniquePtr(T* ptr = nullptr, Deleter deleter = Deleter{}) noexcept
 			: ptr(ptr), deleter(deleter) {}
+
 		~UniquePtr() { reset(); }
 
 		// Delete copy constructor and assignment 
@@ -54,9 +60,7 @@ namespace ryn {
 		}
 
 	private:
-		static void defaultDeleter(T* ptr) { delete ptr; }
-
 		T* ptr;
-		DeleterFunction deleter;
+		Deleter deleter;
 	};
 }
