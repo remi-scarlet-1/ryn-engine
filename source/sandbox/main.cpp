@@ -8,10 +8,10 @@ public:
 	ExampleSubsystem() = default;
 	~ExampleSubsystem() = default;
 
-	void initialize() override { std::cout << "Hello, example subsystem!" << std::endl; }
+	void initialize() override { std::cout << "Hello, subsystem!" << std::endl; }
 	void update() override {}
 	void render() override {}
-	void shutdown() override { std::cout << "Example subsystem, out!" << std::endl; }
+	void shutdown() override { std::cout << "Example subsystem, shutdown!" << std::endl; }
 };
 
 // Example setting up the engine
@@ -33,12 +33,13 @@ protected:
 };
 
 ryn::Game* ryn::createGame() {
-	WindowSettings windowSettings = {
+	const WindowSettings windowSettings = {
 		.title = "Space Invaders",
 		.resizable = false,
 		.width = 1200,
 		.height = 900,
-		.vsync = true,
+		.graphicsBackend = OpenGL,
+		.vsyncMode = EveryVBlank,
 	};
 
 	auto* game = new ExampleGame(windowSettings);

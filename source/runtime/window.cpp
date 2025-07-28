@@ -1,5 +1,4 @@
 #include "ryn/graphics/window.h"
-#include "ryn/core/input.h"
 
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
@@ -7,68 +6,70 @@
 
 #include <iostream>
 
-ryn::Window::Window(WindowSettings settings) {
-	// Set glfw error callback
+void ryn::Window::GLFWBackend::initialize() {
 	glfwSetErrorCallback([](int error, const char* description) {
 		std::fprintf(stderr, "GLFW error %d: %s\n", error, description);
 	});
 
-	// Initialize glfw if not already
 	if (!glfwInit())
 		throw std::runtime_error("Failed to initialize GLFW");
+}
 
-	// Create the window
-	//glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+void ryn::Window::GLFWBackend::pollEvents() {
+	glfwPollEvents();
+}
 
+void ryn::Window::GLFWBackend::makeGLContextCurrent(Window& window) {
+	glfwMakeContextCurrent(window.getGLFWwindowPtr());
+}
+
+void ryn::Window::GLFWBackend::clearGLContext() {
+	glfwMakeContextCurrent(nullptr);
+}
+
+ryn::Window::Window(const WindowSettings& settings) {
+	switch (settings.graphicsBackend) {
+	case None:
+		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+		break;
+
+	case OpenGL:
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+		break;
+	}
+
+	glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 	glfwWindowHint(GLFW_RESIZABLE, settings.resizable ? GLFW_TRUE : GLFW_FALSE);
 
-	window = UniquePtr<GLFWwindow, void(*)(GLFWwindow*)>(
+	windowPtr = UniquePtr<GLFWwindow, void(*)(GLFWwindow*)>(
 		glfwCreateWindow(settings.width, settings.height, settings.title, nullptr, nullptr),
 		glfwDestroyWindow
 	);
 
-	// Check if window creation was successful
-	if (!window)
-		throw std::runtime_error("Failed to create GLFW window");
+	if (!windowPtr)
+		throw std::runtime_error("Failed to create GLFW window.");
 
-	glfwMakeContextCurrent(window.get());
-	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-		throw std::runtime_error("Failed to initialize GLAD\n");
+	glfwMakeContextCurrent(windowPtr.get());
 
-	std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
+	// Associate the GLFWwindow instance with this instance of ryn::Window
+	glfwSetWindowUserPointer(windowPtr.get(), this);
 
-	// Associate the GLFW window with this ryn::Window instance
-	glfwSetWindowUserPointer(window.get(), this);
-
-	// Center window
-	const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-	glfwSetWindowPos(window.get(), (mode->width - settings.width) / 2, (mode->height - settings.height) / 2);
-
-	// Force window to show responding
-	glfwShowWindow(window.get());
-	glfwSetCursor(window.get(), nullptr);
-	glfwPollEvents();
-}
-
-void ryn::Window::pollEvents() {
-	ryn::Input::reset();
+	const GLFWvidmode* videoMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+	glfwSetWindowPos(windowPtr.get(), (videoMode->width - settings.width) / 2, (videoMode->height - settings.height) / 2);
+	glfwSetCursor(windowPtr.get(), nullptr);
+	glfwShowWindow(windowPtr.get());
 	glfwPollEvents();
 }
 
 bool ryn::Window::isClosing() {
-	return glfwWindowShouldClose(window.get());
-}
-
-GLFWwindow* ryn::Window::getGLFWwindowPtr() {
-	return window.get();
+	return glfwWindowShouldClose(windowPtr.get());
 }
 
 void* ryn::Window::getNativeWindowPtr() {
 #ifdef GLFW_EXPOSE_NATIVE_WIN32
-	return glfwGetWin32Window(window.get());
+	return glfwGetWin32Window(windowPtr.get());
 #elif GLFW_EXPOSE_NATIVE_COCOA
 	return glfwGetCocoaWindow(window.get());
 #elif GLFW_EXPOSE_NATIVE_X11
@@ -76,4 +77,8 @@ void* ryn::Window::getNativeWindowPtr() {
 #else
 #error "Couldn't find platform specific implementation for Window::getNativeHandle(). Please define the appropriate GLFW_EXPOSE_NATIVE_[...] macro for your platform."
 #endif
+}
+
+GLFWwindow* ryn::Window::getGLFWwindowPtr() {
+	return windowPtr.get();
 }

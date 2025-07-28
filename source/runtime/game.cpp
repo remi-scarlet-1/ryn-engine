@@ -8,12 +8,9 @@ struct ryn::Game::Impl {
 	std::vector<UniquePtr<Subsystem>> subsystems;
 };
 
-ryn::Game::Game(const WindowSettings& windowSettings)
-	: impl(UniquePtr(new Impl { 
-		UniquePtr(new Window(windowSettings)),
-		{}
-	})) 
-{	
+ryn::Game::Game(const WindowSettings& windowSettings) : impl(UniquePtr(new Impl)) {	
+	Window::GLFWBackend::initialize();
+	impl->window = UniquePtr(new Window(windowSettings));
 	impl->subsystems.reserve(32);
 }
 
@@ -45,38 +42,30 @@ bool ryn::Game::destroySubsystem(Subsystem* subsystem) {
 
 void ryn::Game::initialize() {
 	onBeforeInit();
-
 	for (auto& subsystem : impl->subsystems)
 		subsystem->initialize();
-
 	onAfterInit();
 }
 
 void ryn::Game::update() {
 	onBeforeUpdate();
-
-	Window::pollEvents();
+	Window::GLFWBackend::pollEvents();
 	for (auto& subsystem : impl->subsystems)
 		subsystem->update();
-
 	onAfterUpdate();
 }
 
 void ryn::Game::render() {
 	onBeforeRender();
-
 	for (auto& subsystem : impl->subsystems)
 		subsystem->render();
-
 	onAfterRender();
 }
 
 void ryn::Game::shutdown() {
 	onBeforeShutdown();
-
 	for (auto& subsystem : impl->subsystems)
 		subsystem->shutdown();
-
 	onAfterShutdown();
 }
 
