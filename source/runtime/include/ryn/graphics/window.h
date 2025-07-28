@@ -10,6 +10,7 @@
 #pragma once
 
 #include "ryn/defines.h"
+#include "ryn/core/memory.h"
 
 struct GLFWwindow;
 
@@ -36,11 +37,7 @@ namespace ryn {
 		 * @param	settings: A instance of struct `ryn::WindowSettings`.
 		 */
 		Window(WindowSettings settings);
-		~Window();
-
-		// IMPORTANT: disable copying to prevent accidental calls to the destructor, which may lead to double destruction.
-		Window(const Window&) = delete;
-		Window& operator=(const Window&) = delete;
+		~Window() = default;
 
 		/**
 		 * @brief	Polls events for all windows.
@@ -70,6 +67,6 @@ namespace ryn {
 		void* getNativeWindowPtr();
 
 	private:
-		GLFWwindow* window;
+		UniquePtr<GLFWwindow, void(*)(GLFWwindow*)> window;
 	};
 }

@@ -1,9 +1,9 @@
 #pragma once
 
 #include "ryn/defines.h"
-#include "ryn/core/window.h"
 #include "ryn/core/memory.h"
 #include "ryn/core/subsystem.h"
+#include "ryn/graphics/window.h"
 
 namespace ryn {
 	class RYN_API Game {

@@ -15,4 +15,4 @@
 #include "ryn/core/input.h"
 #include "ryn/core/memory.h"
 #include "ryn/core/subsystem.h"
-#include "ryn/core/window.h"
+#include "ryn/graphics/window.h"
