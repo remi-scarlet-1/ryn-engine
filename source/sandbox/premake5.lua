@@ -28,12 +28,14 @@ project "Sandbox"
 
     includedirs {
         path.join(dir.source, "runtime", "include"),
+        -- Runtime transitive dependencies:
         path.join(dir.vendors, "entt", "src"),
         path.join(dir.source, "sandbox"),
     }
 
     links {
         "Runtime",
+        -- Runtime transitive dependencies:
         "EnTT",
     }
 

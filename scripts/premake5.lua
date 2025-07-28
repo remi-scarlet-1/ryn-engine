@@ -20,8 +20,9 @@ workspace "RynEngine"
     startproject "Sandbox"
 
 group "Dependencies"
-    include(path.join(dir.vendors, "premake", "wrappers", "entt", "premake5.lua"))
+    include(path.join(dir.vendors, "premake", "wrappers", "glad", "premake5.lua"))
     include(path.join(dir.vendors, "premake", "wrappers", "glfw", "premake5.lua"))
+    include(path.join(dir.vendors, "premake", "wrappers", "entt", "premake5.lua"))
     include(path.join(dir.vendors, "premake", "wrappers", "imgui", "premake5.lua"))
 
 group ""

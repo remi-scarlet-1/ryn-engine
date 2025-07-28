@@ -8,7 +8,7 @@ public:
 	ExampleSubsystem() = default;
 	~ExampleSubsystem() = default;
 
-	void initialize() override { std::cout << "Hello, Example subsystem!" << std::endl; }
+	void initialize() override { std::cout << "Hello, example subsystem!" << std::endl; }
 	void update() override {}
 	void render() override {}
 	void shutdown() override { std::cout << "Example subsystem, out!" << std::endl; }

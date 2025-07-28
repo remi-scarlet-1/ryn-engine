@@ -1,21 +1,28 @@
 #include "ryn/graphics/window.h"
 #include "ryn/core/input.h"
-#include <iostream>
+
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
+#include <glad/glad.h>
+
+#include <iostream>
 
 ryn::Window::Window(WindowSettings settings) {
 	// Set glfw error callback
 	glfwSetErrorCallback([](int error, const char* description) {
 		std::fprintf(stderr, "GLFW error %d: %s\n", error, description);
-		});
+	});
 
 	// Initialize glfw if not already
 	if (!glfwInit())
 		throw std::runtime_error("Failed to initialize GLFW");
 
 	// Create the window
-	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+	//glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
 	glfwWindowHint(GLFW_RESIZABLE, settings.resizable ? GLFW_TRUE : GLFW_FALSE);
 
 	window = UniquePtr<GLFWwindow, void(*)(GLFWwindow*)>(
@@ -26,6 +33,12 @@ ryn::Window::Window(WindowSettings settings) {
 	// Check if window creation was successful
 	if (!window)
 		throw std::runtime_error("Failed to create GLFW window");
+
+	glfwMakeContextCurrent(window.get());
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+		throw std::runtime_error("Failed to initialize GLAD\n");
+
+	std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
 
 	// Associate the GLFW window with this ryn::Window instance
 	glfwSetWindowUserPointer(window.get(), this);

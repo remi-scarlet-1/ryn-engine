@@ -29,18 +29,21 @@ project "Runtime"
     includedirs {
         path.join(dir.source, "runtime", "include"),
         path.join(dir.vendors, "glfw", "include"),
-        path.join(dir.vendors, "imgui"),
+        path.join(dir.vendors, "glad", "include"),
         path.join(dir.vendors, "entt", "src"),
+        path.join(dir.vendors, "imgui"),
     }
 
     links {
         "GLFW",
-        "ImGui",
+        "Glad",
         "EnTT",
+        "ImGui",
     }
 
     defines {
         "RYN_RUNTIME",
+        "GLFW_INCLUDE_NONE",
         "GLFW_EXPOSE_NATIVE_WIN32",
     }
 
@@ -61,6 +64,11 @@ project "Runtime"
     filter { "system:windows" }
         system "windows"
         toolset "msc"
+
+        links {
+            "opengl32",
+        }
+
         defines {
             "RYN_PLATFORM_WIN",
         }
