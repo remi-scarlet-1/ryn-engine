@@ -28,11 +28,13 @@ project "Sandbox"
 
     includedirs {
         path.join(dir.source, "runtime", "include"),
+        path.join(dir.vendors, "entt", "src"),
         path.join(dir.source, "sandbox"),
     }
 
     links {
-        "Runtime"
+        "Runtime",
+        "EnTT",
     }
 
     filter "configurations:Debug"

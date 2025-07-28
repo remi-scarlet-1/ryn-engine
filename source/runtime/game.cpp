@@ -1,51 +1,81 @@
 #include "ryn/core/game.h"
 
-#include <iostream>
+#include "ryn/core/subsystem.h"
+#include <vector>
+
+struct ryn::Game::Impl {
+	UniquePtr<Window> window;
+	std::vector<UniquePtr<Subsystem>> subsystems;
+};
 
 ryn::Game::Game(const WindowSettings& windowSettings)
-{
-	window = new Window(windowSettings);
+	: impl(UniquePtr(new Impl { 
+		UniquePtr(new Window(windowSettings)),
+		{}
+	})) 
+{	
+	impl->subsystems.reserve(32);
 }
 
-ryn::Game::~Game()
-{
-	delete window;
+ryn::Game::~Game() = default;
+
+bool ryn::Game::isRunning() {
+	return !impl->window->isClosing();
 }
 
-bool ryn::Game::isRunning()
-{
-	return !window->isClosing();
+ryn::Subsystem* ryn::Game::addSubsystem(UniquePtr<Subsystem> subsystem) {
+	Subsystem* rawPtr = subsystem.get();
+	impl->subsystems.push_back(std::move(subsystem));
+	return rawPtr;
 }
 
-void ryn::Game::initialize()
-{
+bool ryn::Game::destroySubsystem(Subsystem* subsystem) {
+	auto it = std::find_if(impl->subsystems.begin(), impl->subsystems.end(),
+		[subsystem](const UniquePtr<Subsystem>& ptr) {
+			return ptr.get() == subsystem;
+		});
+
+	if (it != impl->subsystems.end()) {
+		impl->subsystems.erase(it);
+		return true;
+	}
+
+	return false;
+}
+
+void ryn::Game::initialize() {
 	onBeforeInit();
-	// TODO: initialize engine
+
+	for (auto& subsystem : impl->subsystems)
+		subsystem->initialize();
 
 	onAfterInit();
 }
 
-void ryn::Game::update()
-{
+void ryn::Game::update() {
 	onBeforeUpdate();
-	// TODO: update engine
+
 	Window::pollEvents();
+	for (auto& subsystem : impl->subsystems)
+		subsystem->update();
 
 	onAfterUpdate();
 }
 
-void ryn::Game::render()
-{
+void ryn::Game::render() {
 	onBeforeRender();
-	// TODO: render engine
+
+	for (auto& subsystem : impl->subsystems)
+		subsystem->render();
 
 	onAfterRender();
 }
 
-void ryn::Game::shutdown()
-{
+void ryn::Game::shutdown() {
 	onBeforeShutdown();
-	// TODO: shutdown engine
+
+	for (auto& subsystem : impl->subsystems)
+		subsystem->shutdown();
 
 	onAfterShutdown();
 }

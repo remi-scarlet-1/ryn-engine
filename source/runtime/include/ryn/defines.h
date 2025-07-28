@@ -3,8 +3,8 @@
  * @brief		Common macro definitions, platform-specific configurations and utility headers for the engine.
  *
  * @author		Konstantinos Lampros
- * @version		1.0.4
- * @date		2025-07-22
+ * @version		1.0.5
+ * @date		2025-07-23
  */
 
 #pragma once
@@ -13,7 +13,7 @@
 
 /**
  * @brief	Define a RYN_API macro which is used for dynamic linking and will import or export
- *			functions depending on whether the RYN_API_EXPORT preprocessor directive is defined.
+ *			functions depending on whether the RYN_RUNTIME preprocessor directive is defined.
  */
 #ifdef RYN_PLATFORM_WIN
 	#ifdef RYN_RUNTIME

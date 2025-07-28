@@ -1,22 +1,9 @@
 #pragma once
 
-// TODO: 
-// - [ ] wrap entt registry
-// - [ ] wrap entt entity key
-// - [ ] wrap entt view
-//
-// - [ ] create system base class
-// - [ ] create component "reflection" macro, some in-lined code that statically registers all components
-//
-// - [ ] add ECS registry
-// - [ ] add ECS systems container (maybe a vector?)
-// 
-// - [ ] implement input management as (ECS) system
-// - [ ] implement rendering as ECS system
-// - [ ] implement hierarchy as ECS system
-
 #include "ryn/defines.h"
 #include "ryn/core/window.h"
+#include "ryn/core/memory.h"
+#include "ryn/core/subsystem.h"
 
 namespace ryn {
 	class RYN_API Game {
@@ -26,18 +13,19 @@ namespace ryn {
 
 		bool isRunning();
 
+		Subsystem* addSubsystem(UniquePtr<Subsystem> subsystem);
+		bool destroySubsystem(Subsystem* subsystem);
+
 	protected:
-		virtual void onBeforeInit() {};
-		virtual void onAfterInit() {};
+		virtual void onBeforeInit() {}
+		virtual void onBeforeUpdate() {}
+		virtual void onBeforeRender() {}
+		virtual void onBeforeShutdown() {}
 		
-		virtual void onBeforeUpdate() {};
-		virtual void onAfterUpdate() {};;
-
-		virtual void onBeforeRender() {};
-		virtual void onAfterRender() {};
-
-		virtual void onBeforeShutdown() {};
-		virtual void onAfterShutdown() {};
+		virtual void onAfterInit() {}
+		virtual void onAfterUpdate() {}
+		virtual void onAfterRender() {}
+		virtual void onAfterShutdown() {}
 
 	private:
 		void initialize();
@@ -48,6 +36,7 @@ namespace ryn {
 		friend int run(int argc, char* argv[]);
 
 	private:
-		Window* window;
+		struct Impl;
+		UniquePtr<Impl> impl;
 	};
 }
