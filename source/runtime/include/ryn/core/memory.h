@@ -13,7 +13,6 @@ namespace ryn {
 	template<typename T, typename Deleter = DefaultDeleter<T>>
 	class RYN_API UniquePtr {
 	public:
-		// Explicit constructor and normal destructor
 		explicit UniquePtr(T* ptr = nullptr, Deleter deleter = Deleter{}) noexcept
 			: ptr(ptr), deleter(deleter) {}
 
@@ -62,5 +61,70 @@ namespace ryn {
 	private:
 		T* ptr;
 		Deleter deleter;
+	};
+
+	template<typename T, typename Deleter = DefaultDeleter<T>>
+	class RYN_API SharedPtr {
+	public:
+		explicit SharedPtr(T* ptr, Deleter deleter = Deleter{}) noexcept
+			: control(ptr ? new ControlBlock(ptr, deleter) : nullptr) {}
+
+		~SharedPtr() { release(); }
+
+		SharedPtr(const SharedPtr& other) noexcept {
+			control = other.control;
+			if (control) ++control->refCount;
+		}
+
+		SharedPtr& operator=(const SharedPtr& other) noexcept {
+			if (this != &other) {
+				release();
+				control = other.control;
+				if (control) ++control->refCount;
+			}
+			return *this;
+		}
+
+		SharedPtr(SharedPtr&& other) noexcept {
+			control = other.control;
+			other.control = nullptr;
+		}
+
+		SharedPtr& operator=(SharedPtr&& other) noexcept {
+			if (this != &other) {
+				release();
+				control = other.control;
+				other.control = nullptr;
+			}
+			return *this;
+		}
+
+		T& operator*() const noexcept { return *control->ptr; }
+		T* operator->() const noexcept { return control->ptr; }
+		[[nodiscard]] T* get() const noexcept { return control ? control->ptr : nullptr; }
+		[[nodiscard]] explicit operator bool() const noexcept { return control && control->ptr; }
+
+		size_t getRefCount() const noexcept { return control ? control->refCount : 0; }
+
+	private:
+		struct ControlBlock {
+			T* ptr;
+			Deleter deleter;
+			size_t refCount;
+
+			ControlBlock(T* ptr, Deleter deleter) : ptr(ptr), deleter(deleter), refCount(1) {}
+		};
+
+		ControlBlock* control;
+
+		void release() noexcept {
+			if (control) {
+				if (--control->refCount == 0) {
+					control->deleter(control->ptr);
+					delete control;
+				}
+				control = nullptr;
+			}
+		}
 	};
 }
