@@ -4,7 +4,7 @@
  *				designed to maintain ABI stability and avoid exposing standard library types.
  *
  * @author		Konstantinos Lampros
- * @version		1.1.0
+ * @version		1.2.0
  * @date		2025-07-29
  */
 
@@ -101,7 +101,7 @@ namespace ryn {
 	template<typename T, typename Deleter = DefaultDeleter<T>>
 	class RYN_API SharedPtr {
 	public:
-		explicit SharedPtr(T* ptr, Deleter deleter = Deleter{}) noexcept
+		explicit SharedPtr(T* ptr = nullptr, Deleter deleter = Deleter{}) noexcept
 			: control(ptr ? new ControlBlock(ptr, deleter) : nullptr) {}
 
 		~SharedPtr() { release(); }
@@ -169,5 +169,61 @@ namespace ryn {
 				control = nullptr;
 			}
 		}
+	};
+
+	/**
+	 * @class	OptionalPtr
+	 * @brief	A lightweight, non-owning pointer wrapper that explicitly signals the pointer may be null or dangling.
+	 *			Disables implicit pointer conversions and operators to enforce explicit checks
+	 *			for validity before usage. Use the `tryGet()` method to safely attempt access.
+	 * @tparam	T: Type of the pointed-to object.
+	 * @example	OptionalPtr<Window> optionalWindow(rawWindowPtr);
+	 *			if (auto [ok, ptr] = optionalWindow.tryGet(); ok) {
+	 *			    ptr->doSomething();
+	 *			}
+	 */
+	template<typename T>
+	class RYN_API OptionalPtr {
+	public:
+		explicit OptionalPtr(T* ptr = nullptr) noexcept : ptr(ptr) {}
+
+		/**
+		 * @struct	TryResult
+		 * @brief	Represents the result of an attempt to retrieve the pointer from OptionalPtr<T>.
+		 *			Contains:
+		 *			- `ok`: Indicates whether the pointer is valid (true if non-null).
+		 *			- `ptr`: The raw pointer to the managed object, which may be nullptr if `ok` is false.
+		 */
+		struct TryResult {
+			bool ok;
+			T* ptr;
+		};
+
+		/**
+		 * @brief	Checks if the stored pointer is valid (non-null).
+		 * @return	true if the pointer is valid (non-null), false otherwise.
+		 */
+		[[nodiscard]] bool isValid() const noexcept { return ptr != nullptr; }
+
+		/**
+		 * @brief	Attempts to retrieve the stored pointer along with its validity status.
+		 *			Returns a struct containing a boolean flag `ok` indicating whether the pointer
+		 *			is valid, and the raw pointer `ptr` itself.
+		 * @return	TryResult struct with fields:
+		 *			- ok: true if the pointer is valid, false otherwise.
+		 *			- ptr: the stored raw pointer.
+		 * @example	OptionalPtr<Window> optionalWindow(rawWindowPtr);
+		 *			if (auto [ok, ptr] = optionalWindow.tryGet(); ok) {
+		 *			    ptr->doSomething();
+		 *			}
+		 */
+		[[nodiscard]] TryResult tryGet() const noexcept { return { isValid(), ptr }; }
+
+		T& operator*() const = delete;
+		T* operator->() const = delete;
+		explicit operator bool() const = delete;
+
+	private:
+		T* ptr;
 	};
 }
