@@ -1,4 +1,5 @@
 #include "ryn/core/game.h"
+
 #include <vector>
 #include <optional>
 
@@ -12,20 +13,28 @@ struct ryn::Game::Impl {
 ryn::Game::Game(const WindowSettings& windowSettings) : impl(UniquePtr(new Impl)) { impl->windowInitSettings.emplace(windowSettings); }
 ryn::Game::~Game() = default;
 
-ryn::OptionalPtr<ryn::Subsystem> ryn::Game::addSubsystem(UniquePtr<Subsystem> newSubsystem) {
-	auto subsystemOptPtr = OptionalPtr<Subsystem>(newSubsystem.get());
-	impl->subsystems.push_back(std::move(newSubsystem));
-	return subsystemOptPtr;
+bool ryn::Game::isRunning() {
+	return !impl->window->isClosing();
 }
 
-bool ryn::Game::tryDeleteSubsystem(OptionalPtr<Subsystem> subsystemOptPtr) {
-	auto [ok, rawPtr] = subsystemOptPtr.tryGet();
+ryn::SharedPtr<ryn::Window> ryn::Game::getWindow() {
+	return impl->window;
+}
+
+ryn::OptionalPtr<ryn::Subsystem> ryn::Game::addSubsystem(UniquePtr<Subsystem> newSubsystem) {
+	auto subsystemOptional = OptionalPtr<Subsystem>(newSubsystem.get());
+	impl->subsystems.push_back(std::move(newSubsystem));
+	return subsystemOptional;
+}
+
+bool ryn::Game::tryDeleteSubsystem(OptionalPtr<Subsystem> subsystemOptional) {
+	auto [ok, ptr] = subsystemOptional.tryGet();
 	if (!ok)
 		return false;
 
 	auto it = std::find_if(impl->subsystems.begin(), impl->subsystems.end(),
-		[rawPtr](const UniquePtr<Subsystem>& ptr) {
-			return ptr.get() == rawPtr;
+		[ptr](const UniquePtr<Subsystem>& itPtr) {
+			return itPtr.get() == ptr;
 		});
 	if (it == impl->subsystems.end())
 		return false;
@@ -34,17 +43,15 @@ bool ryn::Game::tryDeleteSubsystem(OptionalPtr<Subsystem> subsystemOptPtr) {
 	return true;
 }
 
-bool ryn::Game::isRunning() {
-	return !impl->window->isClosing();
-}
-
 void ryn::Game::initialize() {
 	onBeforeInit();
 
 	Window::GLFWBackend::initialize();
 	impl->window = SharedPtr(new Window(*impl->windowInitSettings));
 	impl->windowInitSettings.reset();
+
 	impl->subsystems.reserve(32);
+
 	for (auto& subsystem : impl->subsystems)
 		subsystem->initialize();
 
@@ -55,6 +62,7 @@ void ryn::Game::update() {
 	onBeforeUpdate();
 
 	Window::GLFWBackend::pollEvents();
+
 	for (auto& subsystem : impl->subsystems)
 		subsystem->update();
 

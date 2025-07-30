@@ -5,16 +5,19 @@
 #include "ryn/core/subsystem.h"
 #include "ryn/graphics/window.h"
 
+// TODO: Write documentation
 namespace ryn {
 	class RYN_API Game {
 	public:
 		Game(const WindowSettings& windowSettings);
 		virtual ~Game();
-
-		OptionalPtr<Subsystem> addSubsystem(UniquePtr<Subsystem> newSubsystem);
-		bool tryDeleteSubsystem(OptionalPtr<Subsystem> subsystemOptPtr);
+		 
+		// TODO: Rethink responsibilities of this class
 
 		bool isRunning();
+		SharedPtr<Window> getWindow();
+		OptionalPtr<Subsystem> addSubsystem(UniquePtr<Subsystem> newSubsystem);
+		bool tryDeleteSubsystem(OptionalPtr<Subsystem> subsystemOptional);
 
 	protected:
 		virtual void onBeforeInit() {}

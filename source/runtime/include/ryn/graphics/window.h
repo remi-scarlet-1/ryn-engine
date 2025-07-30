@@ -3,19 +3,38 @@
  * @brief		Provides platform agnostic windowing API, wraps GLFW. 
  *
  * @author		Konstantinos Lampros
- * @version		1.1.0
- * @date		2025-07-28
+ * @version		1.2.0
+ * @date		2025-07-30
  */
 
 #pragma once
 
 #include "ryn/defines.h"
-#include "ryn/graphics/enums.h"
 #include "ryn/core/memory.h"
 
 struct GLFWwindow;
 
 namespace ryn {
+	/**
+	 * @enum	GraphicsAPI
+	 * @brief	Defines graphics API backends.
+	 */
+	enum RYN_API GraphicsAPI {
+		None = 0,
+		OpenGL,
+	};
+
+	/**
+	 * @enum	VsyncMode
+	 * @brief	Defines the method by which the framerate is limited or not. 
+	 */
+	enum RYN_API VsyncMode {
+		Off = 0,
+		EveryVBlank,
+		EverySecondVBlank,
+	};
+
+	// TODO: Rethink if this is sufficient as window configuration or if another system is needed
 	/**
 	 * @struct	WindowSettings
 	 * @brief	Defines a set of settings required for window creation.
@@ -24,8 +43,8 @@ namespace ryn {
 		const char* title;
 		const bool resizable;
 		const int width, height;
-		const GraphicsAPI graphicsBackend;
 		const VsyncMode vsyncMode;
+		const GraphicsAPI graphicsAPI;
 	};
 	
 	/**
@@ -52,6 +71,7 @@ namespace ryn {
 			 */
 			static void pollEvents();
 
+			// TODO: Ensure calls to this function don't raise errors when GLFW is set to NO_API (non OpenGL mode)
 			/**
 			 * @brief	Activates the window's OpenGL context on the calling thread
 			 *			This function is only meaningful if the passed window has been created using the
@@ -61,6 +81,7 @@ namespace ryn {
 			 */
 			static void makeGLContextCurrent(Window& window);
 
+			// TODO: Ensure calls to this function don't raise errors when GLFW is set to NO_API (non OpenGL mode)
 			/**
 			 * @brief	Deactivate any current OpenGL context on the calling thread
 			 * @note	Calling this function with any other `GraphicsAPI` backends then `OpenGL` has no effect.
@@ -89,12 +110,15 @@ namespace ryn {
 		 */
 		void* getNativeWindowPtr();
 
+		// TODO: Update signature to use custom smart pointers as return type
 		/**
 		 * @brief	Retrieves the underlying GLFW window instance.
 		 *			Can be used for low-level operations or integration with external libraries.
 		 * @return	A pointer to the `GLFWwindow` instance.
 		 */
 		GLFWwindow* getGLFWwindowPtr();
+
+		// TODO: Implement backbuffer swapping
 
 	private:
 		UniquePtr<GLFWwindow, void(*)(GLFWwindow*)> windowPtr;

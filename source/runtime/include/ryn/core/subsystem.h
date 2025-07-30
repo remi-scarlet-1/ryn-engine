@@ -2,7 +2,7 @@
 
 #include "ryn/defines.h"
 
-// TODO: document
+// TODO: Write documentation
 namespace ryn {
 	class RYN_API Subsystem {
 	public:

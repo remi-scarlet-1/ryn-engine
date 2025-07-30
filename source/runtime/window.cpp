@@ -28,7 +28,7 @@ void ryn::Window::GLFWBackend::clearGLContext() {
 }
 
 ryn::Window::Window(const WindowSettings& settings) {
-	switch (settings.graphicsBackend) {
+	switch (settings.graphicsAPI) {
 	case None:
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		break;
