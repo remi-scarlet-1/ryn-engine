@@ -7,8 +7,7 @@
 namespace ryn {
 	class RYN_API OpenGLRenderer : public Subsystem {
 	public:
-		// TODO: replace dependency injection with SharedPtr
-		OpenGLRenderer(Window& window);
+		OpenGLRenderer(SharedPtr<Window> window);
 		~OpenGLRenderer() = default;
 
 		// TODO: implement initialize
@@ -18,6 +17,6 @@ namespace ryn {
 		//void shutdown() override;
 
 	private:
-
+		SharedPtr<Window> window;
 	};
 }

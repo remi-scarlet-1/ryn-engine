@@ -1,8 +1,7 @@
 #include "ryn/graphics/opengl_renderer.h"
 
-ryn::OpenGLRenderer::OpenGLRenderer(Window& window) {
-
-}
+ryn::OpenGLRenderer::OpenGLRenderer(SharedPtr<Window> window) 
+	: window(window) {}
 
 //void ryn::OpenGLRenderer::initialize() {
 //	//glfwMakeContextCurrent(window.get());

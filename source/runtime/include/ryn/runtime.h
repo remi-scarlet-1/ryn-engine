@@ -4,15 +4,19 @@
  *				Mostly used for convenience.
  *
  * @author		Konstantinos Lampros
- * @version		1.0.1
- * @date		2025-07-23
+ * @version		1.0.2
+ * @date		2025-07-29
  */
 
 #pragma once
 
 #include "ryn/defines.h"
+
 #include "ryn/core/game.h"
 #include "ryn/core/input.h"
 #include "ryn/core/memory.h"
 #include "ryn/core/subsystem.h"
+
+#include "ryn/graphics/enums.h"
+#include "ryn/graphics/opengl_renderer.h"
 #include "ryn/graphics/window.h"

@@ -11,10 +11,10 @@ namespace ryn {
 		Game(const WindowSettings& windowSettings);
 		virtual ~Game();
 
-		bool isRunning();
+		OptionalPtr<Subsystem> addSubsystem(UniquePtr<Subsystem> newSubsystem);
+		bool tryDeleteSubsystem(OptionalPtr<Subsystem> subsystemOptPtr);
 
-		Subsystem* addSubsystem(UniquePtr<Subsystem> subsystem);
-		bool destroySubsystem(Subsystem* subsystem);
+		bool isRunning();
 
 	protected:
 		virtual void onBeforeInit() {}

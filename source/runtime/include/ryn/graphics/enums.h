@@ -2,6 +2,7 @@
 
 #include "ryn/defines.h"
 
+// TODO: document
 namespace ryn {
 	enum RYN_API GraphicsAPI {
 		None = 0,
