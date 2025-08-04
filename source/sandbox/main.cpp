@@ -55,3 +55,8 @@ ryn::Game* ryn::createGame() {
 	// of their creation.
 	return game;
 }
+
+77 = OUTPUT_DIRECTORY
+994 = INPUT
+
+// Optional: HAVE_DOT for diagrams
