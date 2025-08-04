@@ -1,23 +1,44 @@
 #pragma once
 
 #include "ryn/defines.h"
-#include "ryn/core/memory.h"
-#include "ryn/core/subsystem.h"
-#include "ryn/graphics/window.h"
+#include "ryn/core/type.h"
+#include <concepts>
 
-// TODO: Write documentation
 namespace ryn {
+	class Subsystem;
+
+	template<typename T>
+	concept DerivedFromSubsystem = std::derived_from<T, Subsystem>;
+
 	class RYN_API Game {
 	public:
-		Game(const WindowSettings& windowSettings);
+		Game();
 		virtual ~Game();
-		 
-		// TODO: Rethink responsibilities of this class
+		Game(const Game&) = delete;
+		Game& operator=(const Game&) = delete;
+
+		template<DerivedFromSubsystem T>
+		T* createSubsystem(T* subsystem) {
+			auto typeID = getTypeID<T>();
+			internal_createSubsystem(typeID, subsystem);
+			return subsystem;
+		}
+
+		template<DerivedFromSubsystem T>
+		bool deleteSubsystem() {
+			auto typeID = getTypeID<T>();
+			return internal_deleteSubsystem(typeID);
+		}
+
+		template<DerivedFromSubsystem T>
+		T* getSubsystem() {
+			auto typeID = getTypeID<T>();
+			auto ptr = internal_getSubsystem(typeID);
+			return static_cast<T*>(ptr);
+		}
 
 		bool isRunning();
-		SharedPtr<Window> getWindow();
-		OptionalPtr<Subsystem> addSubsystem(UniquePtr<Subsystem> newSubsystem);
-		bool tryDeleteSubsystem(OptionalPtr<Subsystem> subsystemOptional);
+		void terminate();
 
 	protected:
 		virtual void onBeforeInit() {}
@@ -31,6 +52,10 @@ namespace ryn {
 		virtual void onAfterShutdown() {}
 
 	private:
+		void internal_createSubsystem(TypeID typeID, Subsystem* subsystem);
+		bool internal_deleteSubsystem(TypeID typeID);
+		Subsystem* internal_getSubsystem(TypeID typeID);
+
 		void initialize();
 		void update();
 		void render();
@@ -40,6 +65,6 @@ namespace ryn {
 
 	private:
 		struct Impl;
-		UniquePtr<Impl> impl;
+		Impl* m_impl;
 	};
 }

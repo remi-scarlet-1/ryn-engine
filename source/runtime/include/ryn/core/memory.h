@@ -1,11 +1,11 @@
 /**
  * @file		memory.h
- * @brief		Provides smart pointer types for manual memory management without relying on STL,
- *				designed to maintain ABI stability and avoid exposing standard library types.
+ * @brief		Smart pointer types for manual memory management without relying on STL.
+ * @warning		Do not use in shared public API's.
  *
  * @author		Konstantinos Lampros
- * @version		1.2.0
- * @date		2025-07-29
+ * @version		1.2.1
+ * @date		2025-08-04
  */
 
 #pragma once
@@ -35,7 +35,7 @@ namespace ryn {
 	 * @tparam	Deleter: Callable type used to delete the managed object (default: DefaultDeleter<T>).
 	 */
 	template<typename T, typename Deleter = DefaultDeleter<T>>
-	class RYN_API UniquePtr {
+	class UniquePtr {
 	public:
 		explicit UniquePtr(T* ptr = nullptr, Deleter deleter = Deleter{}) noexcept
 			: ptr(ptr), deleter(deleter) {}
@@ -99,7 +99,7 @@ namespace ryn {
 	 * @warning	This implementation is **not thread-safe**. Concurrent access or modification will cause raise conditions.
 	 */
 	template<typename T, typename Deleter = DefaultDeleter<T>>
-	class RYN_API SharedPtr {
+	class SharedPtr {
 	public:
 		explicit SharedPtr(T* ptr = nullptr, Deleter deleter = Deleter{}) noexcept
 			: control(ptr ? new ControlBlock(ptr, deleter) : nullptr) {}
@@ -183,7 +183,7 @@ namespace ryn {
 	 *			}
 	 */
 	template<typename T>
-	class RYN_API OptionalPtr {
+	class OptionalPtr {
 	public:
 		explicit OptionalPtr(T* ptr = nullptr) noexcept : ptr(ptr) {}
 

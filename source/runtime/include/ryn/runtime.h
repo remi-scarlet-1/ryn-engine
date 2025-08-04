@@ -1,6 +1,6 @@
 /**
  * @file		runtime.h
- * @brief		Provides a amalgamation of headers containing common runtime API's.
+ * @brief		Amalgamation of headers containing common runtime API's.
  *
  * @author		Konstantinos Lampros
  * @version		1.0.2
@@ -14,6 +14,5 @@
 #include "ryn/core/game.h"
 #include "ryn/core/memory.h"
 #include "ryn/core/subsystem.h"
-
-#include "ryn/graphics/renderer.h"
-#include "ryn/graphics/window.h"
+#include "ryn/core/type.h"
+#include "ryn/core/window.h"
