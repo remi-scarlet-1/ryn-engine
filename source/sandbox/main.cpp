@@ -37,8 +37,8 @@ ryn::Game* ryn::createGame() {
 		.resizable = false,
 		.width = 1200,
 		.height = 900,
-		.vsyncMode = EveryVBlank,
 		.graphicsAPI = OpenGL,
+		.vsyncMode = EveryVBlank,
 	};
 
 	auto* game = new ExampleGame(windowSettings);

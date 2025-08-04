@@ -46,7 +46,7 @@ bool ryn::Game::tryDeleteSubsystem(OptionalPtr<Subsystem> subsystemOptional) {
 void ryn::Game::initialize() {
 	onBeforeInit();
 
-	Window::GLFWBackend::initialize();
+	Window::Backend::initialize();
 	impl->window = SharedPtr(new Window(*impl->windowInitSettings));
 	impl->windowInitSettings.reset();
 
@@ -61,7 +61,7 @@ void ryn::Game::initialize() {
 void ryn::Game::update() {
 	onBeforeUpdate();
 
-	Window::GLFWBackend::pollEvents();
+	Window::Backend::pollEvents();
 
 	for (auto& subsystem : impl->subsystems)
 		subsystem->update();

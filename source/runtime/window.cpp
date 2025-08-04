@@ -2,33 +2,41 @@
 
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
-#include <glad/glad.h>
 
 #include <iostream>
 
-void ryn::Window::GLFWBackend::initialize() {
+void ryn::Window::Backend::initialize() {
 	glfwSetErrorCallback([](int error, const char* description) {
 		std::fprintf(stderr, "GLFW error %d: %s\n", error, description);
 	});
 
 	if (!glfwInit())
-		throw std::runtime_error("Failed to initialize GLFW");
+		throw std::runtime_error("Failed to initialize windowing backend GLFW");
 }
 
-void ryn::Window::GLFWBackend::pollEvents() {
+void ryn::Window::Backend::pollEvents() {
 	glfwPollEvents();
 }
 
-void ryn::Window::GLFWBackend::makeGLContextCurrent(Window& window) {
-	glfwMakeContextCurrent(window.getGLFWwindowPtr());
-}
-
-void ryn::Window::GLFWBackend::clearGLContext() {
+void ryn::Window::OpenGLContext::clear() {
 	glfwMakeContextCurrent(nullptr);
 }
 
-ryn::Window::Window(const WindowSettings& settings) {
-	switch (settings.graphicsAPI) {
+void ryn::Window::OpenGLContext::activate(Window& window) {
+	if (window.m_settings.graphicsAPI == GraphicsAPI::OpenGL) {
+		auto [ok, ptr] = window.getGLFWwindowPtr().tryGet();
+		glfwMakeContextCurrent(ptr);
+	}
+}
+
+void ryn::Window::OpenGLContext::swapFramebuffers(Window& window) {
+	if (window.m_settings.graphicsAPI == GraphicsAPI::OpenGL)
+		if (auto [ok, ptr] = window.getGLFWwindowPtr().tryGet(); ok)
+			glfwSwapBuffers(ptr);
+}
+
+ryn::Window::Window(const WindowSettings& settings) : m_settings(settings) {
+	switch (m_settings.graphicsAPI) {
 	case None:
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		break;
@@ -41,44 +49,44 @@ ryn::Window::Window(const WindowSettings& settings) {
 	}
 
 	glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-	glfwWindowHint(GLFW_RESIZABLE, settings.resizable ? GLFW_TRUE : GLFW_FALSE);
+	glfwWindowHint(GLFW_RESIZABLE, m_settings.resizable ? GLFW_TRUE : GLFW_FALSE);
 
-	windowPtr = UniquePtr<GLFWwindow, void(*)(GLFWwindow*)>(
-		glfwCreateWindow(settings.width, settings.height, settings.title, nullptr, nullptr),
+	m_ptr = UniquePtr<GLFWwindow, void(*)(GLFWwindow*)>(
+		glfwCreateWindow(m_settings.width, m_settings.height, m_settings.title, nullptr, nullptr),
 		glfwDestroyWindow
 	);
 
-	if (!windowPtr)
+	if (!m_ptr)
 		throw std::runtime_error("Failed to create GLFW window.");
 
-	glfwMakeContextCurrent(windowPtr.get());
+	glfwMakeContextCurrent(m_ptr.get());
 
 	// Associate the GLFWwindow instance with this instance of ryn::Window
-	glfwSetWindowUserPointer(windowPtr.get(), this);
+	glfwSetWindowUserPointer(m_ptr.get(), this);
 
 	const GLFWvidmode* videoMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-	glfwSetWindowPos(windowPtr.get(), (videoMode->width - settings.width) / 2, (videoMode->height - settings.height) / 2);
-	glfwSetCursor(windowPtr.get(), nullptr);
-	glfwShowWindow(windowPtr.get());
+	glfwSetWindowPos(m_ptr.get(), (videoMode->width - m_settings.width) / 2, (videoMode->height - m_settings.height) / 2);
+	glfwSetCursor(m_ptr.get(), nullptr);
+	glfwShowWindow(m_ptr.get());
 	glfwPollEvents();
 }
 
 bool ryn::Window::isClosing() {
-	return glfwWindowShouldClose(windowPtr.get());
+	return glfwWindowShouldClose(m_ptr.get());
 }
 
 void* ryn::Window::getNativeWindowPtr() {
 #ifdef GLFW_EXPOSE_NATIVE_WIN32
-	return glfwGetWin32Window(windowPtr.get());
+	return glfwGetWin32Window(m_ptr.get());
 #elif GLFW_EXPOSE_NATIVE_COCOA
-	return glfwGetCocoaWindow(window.get());
+	return glfwGetCocoaWindow(m_ptr.get());
 #elif GLFW_EXPOSE_NATIVE_X11
-	return glfwGetX11Window(window.get());
+	return glfwGetX11Window(m_ptr.get());
 #else
 #error "Couldn't find platform specific implementation for Window::getNativeHandle(). Please define the appropriate GLFW_EXPOSE_NATIVE_[...] macro for your platform."
 #endif
 }
 
-GLFWwindow* ryn::Window::getGLFWwindowPtr() {
-	return windowPtr.get();
+ryn::OptionalPtr<GLFWwindow> ryn::Window::getGLFWwindowPtr() {
+	return OptionalPtr<GLFWwindow>(m_ptr.get());
 }

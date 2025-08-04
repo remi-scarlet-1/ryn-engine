@@ -1,10 +1,10 @@
 /**
  * @file		window.h
- * @brief		Provides platform agnostic windowing API, wraps GLFW. 
+ * @brief		Platform-agnostic windowing API.
  *
  * @author		Konstantinos Lampros
- * @version		1.2.0
- * @date		2025-07-30
+ * @version		1.2.1
+ * @date		2025-08-04
  */
 
 #pragma once
@@ -17,7 +17,7 @@ struct GLFWwindow;
 namespace ryn {
 	/**
 	 * @enum	GraphicsAPI
-	 * @brief	Defines graphics API backends.
+	 * @brief	Available graphics API backends.
 	 */
 	enum RYN_API GraphicsAPI {
 		None = 0,
@@ -26,7 +26,7 @@ namespace ryn {
 
 	/**
 	 * @enum	VsyncMode
-	 * @brief	Defines the method by which the framerate is limited or not. 
+	 * @brief	Framerate limiting modes.
 	 */
 	enum RYN_API VsyncMode {
 		Off = 0,
@@ -34,93 +34,98 @@ namespace ryn {
 		EverySecondVBlank,
 	};
 
-	// TODO: Rethink if this is sufficient as window configuration or if another system is needed
 	/**
 	 * @struct	WindowSettings
-	 * @brief	Defines a set of settings required for window creation.
+	 * @brief	Settings for window creation.
 	 */
 	const struct RYN_API WindowSettings {
 		const char* title;
 		const bool resizable;
 		const int width, height;
-		const VsyncMode vsyncMode;
 		const GraphicsAPI graphicsAPI;
+		const VsyncMode vsyncMode;
 	};
 	
 	/**
 	 * @class	Window
-	 * @brief	Represents a desktop window and its associated windowing operations.
+	 * @brief	Desktop window and associated operations.
 	 */
 	class RYN_API Window {
 	public:
 		/**
-		 * @class	GLFWBackend
-		 *			Acts as namespace for static functionality related to the windowing backend.
+		 * @class	Backend
+		 * @brief	Windowing backend interface (GLFW).
 		 */
-		class GLFWBackend {
+		class Backend {
 		public:
 			/**
 			 * @brief	Initializes the windowing backend.
-			 *			Must be called first in order to create instances of `ryn::Window`.
+			 * @note	Call before creating any `ryn::Window` instances.
 			 */
 			static void initialize();
 
 			/**
-			 * @brief	Polls events for all windows.
-			 *			Should be called regularly to process input events.
+			 * @brief	Polls input events for all windows.
+			 * @note	Must be called regularly to avoid the window or inputs to become sluggish.
 			 */
 			static void pollEvents();
-
-			// TODO: Ensure calls to this function don't raise errors when GLFW is set to NO_API (non OpenGL mode)
-			/**
-			 * @brief	Activates the window's OpenGL context on the calling thread
-			 *			This function is only meaningful if the passed window has been created using the
-			 *			OpenGL `GraphicsAPI` option
-			 * @param	window: The window of which to activate the OpenGL context
-			 * @note	Calling this function with any other `GraphicsAPI` backends then `OpenGL` has no effect.
-			 */
-			static void makeGLContextCurrent(Window& window);
-
-			// TODO: Ensure calls to this function don't raise errors when GLFW is set to NO_API (non OpenGL mode)
-			/**
-			 * @brief	Deactivate any current OpenGL context on the calling thread
-			 * @note	Calling this function with any other `GraphicsAPI` backends then `OpenGL` has no effect.
-			 */
-			static void clearGLContext();
 		};
 
 		/**
-		 * @brief	Constructs and initializes a new instance of `ryn::Window` with the specified settings
-		 * @param	settings: A instance of struct `ryn::WindowSettings`.
+		 * @class	OpenGLContext
+		 * @brief	Manage OpenGL context on the calling thread.
+		 * @warning	All methods operate on the calling thread's active OpenGL context. Ensure correct threading.
+		 *			Calling without an active context may fail silently or cause errors.
+		 */
+		class OpenGLContext {
+		public:
+			/**
+			 * @brief	Clears the calling threads active OpenGL context.
+			 */
+			static void clear();
+
+			/**
+			 * @brief	Activates the specified window's OpenGL context on the calling thread.
+			 * @param	window: Reference to the target window. Must use `GraphicsAPI::OpenGL`.
+			 */
+			static void activate(Window& window);
+
+			/**
+			 * @brief	Swaps the framebuffers of the specified window.
+			 * @param	window: Reference to the target window.
+			 */
+			static void swapFramebuffers(Window& window);
+		};
+
+		/**
+		 * @brief	Creates a window with the specified settings.
+		 * @param	settings: The chosen settings for window initialization.
 		 */
 		Window(const WindowSettings& settings);
 		~Window() = default;
 
 		/**
 		 * @brief	Checks whether the window has been requested to close.
-		 * @return	true if the window should close; false otherwise.
+		 * @return	True if the window should close; False otherwise.
 		 */
 		bool isClosing();
 
 		/**
-		 * @brief	Retrieves the native OS handle for the underlying window.
-		 *			May vary depending on operating and windowing system. Can be used for integration
-		 *			with external libraries.
-		 * @return	A pointer to the windows native OS handle.
+		 * @brief	Retrieves pointer to OS native window.
+		 *			Can be used for integration with external libraries.
+		 * @return	A pointer of unknown type to OS native window.
 		 */
 		void* getNativeWindowPtr();
 
-		// TODO: Update signature to use custom smart pointers as return type
 		/**
-		 * @brief	Retrieves the underlying GLFW window instance.
-		 *			Can be used for low-level operations or integration with external libraries.
+		 * @brief	Retrieves pointer to underlying GLFWwindow.
+		 *			Can be used for integration with external libraries.
 		 * @return	A pointer to the `GLFWwindow` instance.
 		 */
-		GLFWwindow* getGLFWwindowPtr();
-
-		// TODO: Implement backbuffer swapping
+		OptionalPtr<GLFWwindow> getGLFWwindowPtr();
 
 	private:
-		UniquePtr<GLFWwindow, void(*)(GLFWwindow*)> windowPtr;
+		UniquePtr<GLFWwindow, void(*)(GLFWwindow*)> m_ptr;
+		WindowSettings m_settings;
 	};
 }
