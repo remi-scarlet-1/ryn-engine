@@ -41,6 +41,7 @@ Use doxygen documentation. Start comments with ```/** */``` and make use of the 
 - @class <name>	[<header-file-path>] [<optional-label>]
 - @struct <name> [<header-file-path>] [<optional-label>]
 - @enum	<name>
+- @concept <name>
 
 - @param <parameter-name> { parameter description }	
 - @return { description of the return value }

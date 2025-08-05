@@ -11,6 +11,7 @@
   * @version	1.0.0
   * @date		2025-08-05
   */
+
 #pragma once
 
 #include "ryn/core/game.h"
