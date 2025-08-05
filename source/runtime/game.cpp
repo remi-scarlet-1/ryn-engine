@@ -28,7 +28,7 @@ void ryn::core::Game::internal_createSubsystem(meta::TypeID typeID, Subsystem* s
 
 	// Immediately initialize subsystem if game is already running
 	if (m_impl->gameHasStarted)
-		subsystem->initialize();
+		subsystem->onInitialize();
 }
 
 bool ryn::core::Game::internal_deleteSubsystem(meta::TypeID typeID) {
@@ -39,7 +39,7 @@ bool ryn::core::Game::internal_deleteSubsystem(meta::TypeID typeID) {
 	auto index = m_impl->subsystemTypetoIndex[typeID];
 	auto subsystem = m_impl->subsystems[index].get();
 	if (m_impl->gameHasStarted)
-		subsystem->shutdown();
+		subsystem->onShutdown();
 
 	// Erase subsystem entries
 	m_impl->subsystems.erase(m_impl->subsystems.begin() + index);
@@ -66,7 +66,7 @@ ryn::core::Subsystem* ryn::core::Game::internal_getSubsystem(meta::TypeID typeID
 void ryn::core::Game::initialize() {
 	onBeforeInit();
 	for (auto& subsystem : m_impl->subsystems)
-		subsystem->initialize();
+		subsystem->onInitialize();
 	onAfterInit();
 
 	m_impl->gameHasStarted = true;
@@ -76,20 +76,20 @@ void ryn::core::Game::initialize() {
 void ryn::core::Game::update() {
 	onBeforeUpdate();
 	for (auto& subsystem : m_impl->subsystems)
-		subsystem->update();
+		subsystem->onUpdate();
 	onAfterUpdate();
 }
 
 void ryn::core::Game::render() {
 	onBeforeRender();
 	for (auto& subsystem : m_impl->subsystems)
-		subsystem->render();
+		subsystem->onRender();
 	onAfterRender();
 }
 
 void ryn::core::Game::shutdown() {
 	onBeforeShutdown();
 	for (auto& subsystem : m_impl->subsystems)
-		subsystem->shutdown();
+		subsystem->onShutdown();
 	onAfterShutdown();
 }

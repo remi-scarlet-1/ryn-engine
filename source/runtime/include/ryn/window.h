@@ -51,9 +51,9 @@ namespace ryn::core {
 		GLFWwindow* getGLFWwindowPtr();
 
 	protected:
-		void initialize() override;
-		void update() override;
-		void shutdown() override;
+		void onInitialize() override;
+		void onUpdate() override;
+		void onShutdown() override;
 
 	private:
 		GLFWwindow* m_window;

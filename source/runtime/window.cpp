@@ -56,7 +56,7 @@ GLFWwindow* ryn::core::Window::getGLFWwindowPtr() {
 	return m_window;
 }
 
-void ryn::core::Window::initialize() {
+void ryn::core::Window::onInitialize() {
 	Window::Backend::initialize();
 
 	switch (m_settings.graphicsAPI) {
@@ -88,12 +88,12 @@ void ryn::core::Window::initialize() {
 	Window::Backend::pollEvents();
 }
 
-void ryn::core::Window::update() {
+void ryn::core::Window::onUpdate() {
 	Window::Backend::pollEvents();
 	if (isClosing())
 		getGame().terminate();
 }
 
-void ryn::core::Window::shutdown() {
+void ryn::core::Window::onShutdown() {
 	glfwDestroyWindow(m_window);
 }

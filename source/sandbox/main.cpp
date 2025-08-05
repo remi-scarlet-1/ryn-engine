@@ -18,10 +18,10 @@ protected:
 // Defining a custom subsystem and making use of its overrides:
 class ExampleSubsystem : public ryn::core::Subsystem {
 protected:
-	void initialize() override { std::cout << "Initializing example subsystem!" << std::endl; }
+	void onInitialize() override { std::cout << "Initializing example subsystem!" << std::endl; }
 	//void update() override;
 	//void render() override;
-	void shutdown() override { std::cout << "Shutting down example subsystem..." << std::endl; }
+	void onShutdown() override { std::cout << "Shutting down example subsystem..." << std::endl; }
 };
 
 // Required by entrypoint.h for initialization
