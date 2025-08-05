@@ -26,25 +26,25 @@ protected:
 
 // Required by entrypoint.h for initialization
 ryn::core::Game* ryn::entrypoint::createGame() {
-	const core::WindowSettings windowSettings = {
+	const ryn::core::WindowSettings windowSettings = {
 		.title = "Space Invaders",
 		.resizable = false,
 		.width = 1440,
 		.height = 1080,
-		.graphicsAPI = core::OpenGL,
-		.vsyncMode = core::EveryVBlank,
+		.graphicsAPI = ryn::core::GraphicsAPI::OpenGL,
+		.vsyncMode = ryn::core::VsyncMode::EveryVBlank,
 	};
 
 	auto* game = new ExampleGame();
 
 	// Create and register your own subsystems or ones provided by the engine!
 	// Once created, they assume a singleton state.
-	game->createSubsystem(new core::Window(windowSettings));
+	game->createSubsystem(new ryn::core::Window(windowSettings));
 	game->createSubsystem(new ExampleSubsystem());
 
 	// Retrieve existing subsystem singletons by their type. If no subsystem of that
 	// type has been created this method returns nullptr.
-	auto exampleSubsystemPtr = game->getSubsystem<core::Window>();
+	auto exampleSubsystemPtr = game->getSubsystem<ryn::core::Window>();
 
 	// You can also delete subsystem singletons like this. Should no singleton exist
 	// for the type you are trying to delete the method simply returns false.
