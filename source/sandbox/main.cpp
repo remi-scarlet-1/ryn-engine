@@ -39,8 +39,8 @@ ryn::core::Game* ryn::entrypoint::createGame() {
 
 	// Create and register your own subsystems or ones provided by the engine!
 	// Once created, they assume a singleton state.
-	game->createSubsystem(new ryn::core::Window(windowSettings));
-	game->createSubsystem(new ExampleSubsystem());
+	game->registerSubsystem(new ryn::core::Window(windowSettings));
+	game->registerSubsystem(new ExampleSubsystem());
 
 	// Retrieve existing subsystem singletons by their type. If no subsystem of that
 	// type has been created this method returns nullptr.

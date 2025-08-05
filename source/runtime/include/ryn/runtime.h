@@ -13,6 +13,7 @@
 
 #include "ryn/game.h"
 #include "ryn/memory.h"
-#include "ryn/subsystem.h"
 #include "ryn/meta.h"
+#include "ryn/namespaces.h"
+#include "ryn/subsystem.h"
 #include "ryn/window.h"

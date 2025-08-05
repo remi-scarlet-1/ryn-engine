@@ -1,6 +1,6 @@
 /**
  * @file		defines.h
- * @brief		Common macros, platform configurations, and utility includes.
+ * @brief		Common macros and utility includes.
  *
  * @author		Konstantinos Lampros
  * @version		1.0.0

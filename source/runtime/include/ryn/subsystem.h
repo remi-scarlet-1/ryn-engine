@@ -1,11 +1,9 @@
 /**
  * @file		subsystem.h
- * @brief		Base class for all game subsystems within the engine runtime.
- * @details		Subsystems encapsulate modular, self-contained functionality (e.g., input, audio, rendering, or smaller individual ECS subsystems),
- *              and are managed by ryn::Game. Subclassed by consumer-defined systems or engine components.
- *              The Game class controls lifecycle and ensures proper ordering of initialization, updates,
- *              and shutdown.
- * @warning		Do not delete Subsystem instances manually. Ownership is handled by the Game runtime.
+ * @brief		Virtual base class for game subsystems.
+ * @details		Subsystems encapsulate modular, self-contained functionality (e.g., input, audio, rendering, or atomic ECS systems),
+ *              and are managed by ryn::core::Game. Subclassed by consumer-defined systems or engine components.
+ * @warning		**Do not delete** @ref Subsystem "subsystem" instances manually. Ownership is handled by the associated ryn::core::Game instance.
  *
  * @author		Konstantinos Lampros
  * @version		1.0.0
@@ -20,13 +18,12 @@
 namespace ryn::core {
 	/**
 	 * @class	Subsystem
-	 * @brief	Base class for all subsystems used in the game engine runtime.
-	 * @details	Subsystems are registered dynamically with the Game and receive lifecycle callbacks
+	 * @brief	Virtual base class for game subsystems.
+	 * @details	Subsystems are registered dynamically via a ryn::core::Game instance and receive lifecycle callbacks
 	 *			such as onInitialize(), onUpdate(), onRender(), and onShutdown(). They must be subclassed
 	 *			to implement specific behavior.
-	 *
-	 * @note	Subsystem instances are owned by the Game runtime and should not be deleted manually.
-	 * @see		Game::createSubsystem, Game::deleteSubsystem
+	 * @note	Subsystem instances are owned by a Game instance at runtime and **should not be deleted** manually.
+	 * @see		Game::registerSubsystem, Game::deleteSubsystem
 	 */
 	class RYN_API Subsystem {
 	public:
@@ -50,7 +47,7 @@ namespace ryn::core {
 		Game& getGame() { return *m_game; }
 
 	private:
-		Game* m_game = nullptr; ///< Non-owning raw pointer to the owning Game instance. (DO NOT DELETE)
-		friend class Game;		///< Allows Game to access and manage m_game linkage.
+		Game* m_game = nullptr; // (DO NOT DELETE)
+		friend class Game;
 	};
 }

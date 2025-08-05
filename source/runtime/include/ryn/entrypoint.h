@@ -1,12 +1,12 @@
 /**
  * @file		entrypoint.h
- * @brief		Contains engine bootstrap logic for consumers.
- *	@details	Defines main for consumers which delegates control to ryn::entrypoint::run.
- *				It in turn creates a ryn::Game instance through the ryn::entrypoint::createGame
- *				factory function implemented by the consumer. The instance of ryn::Game is then
- *				used by ryn::entrypoint::run to drive the main engine loop.
- * @warning		Do not include this header multiple times! It defines main.
- *
+ * @brief		Engine bootstrap.
+ * @details		Defines the main function for the consuming application, delegating control to ryn::entrypoint::run.
+ *				This function creates a type-erased instance of a consumer-defined subclass of ryn::core::Game via ryn::entrypoint::createGame,
+ *				which the runtime uses to invoke ```init```, ```update```, ```render``` and ```shutdown``` methods in the main loop.
+ * @attention	The consuming application **must implement** the game factory ryn::entrypoint::createGame. See its documentation for implementation details.
+ * @warning		Do **not** include this header multiple times; it defines the application's ```main``` function.
+ * 
  * @author		Konstantinos Lampros
  * @version		1.0.0
  * @date		2025-08-05
@@ -16,27 +16,19 @@
 
 #include "ryn/game.h"
 
-/**
- * @namespace	ryn::entrypoint
- * @brief		Contains engine bootstrap logic and main loop.
- */
 namespace ryn::entrypoint {
 	/**
-	 * @brief		Game factory function implemented by the consumer.
-	 * @details		Consumer is expected to inherit from the virtual 
-	 *				class ryn::Game and implement this factory function
-	 *				such that it returns a heap-allocated and type-erased
-	 *				instance of their ryn::Game subclass by pointer.
-	 * @return		Heap-allocated ryn::Game instance.
-	 * @attention	Must be implemented by the consuming application!
+	 * @brief		Game factory. To be implemented by the consuming application.
+	 * @attention	This method must be implemented by the **consuming application**!
+	 *				It should return a heap-allocated instance of a consumer-defined subclass of ryn::core::Game. 
+	 * @return		A heap-allocated, type-erased instance of a consumer-defined subclass of ryn::core::Game.
 	 */
 	extern core::Game* createGame();
 
 	/**
-	 * @brief		Internal runtime entrypoint. Contains main loop.
-	 * @details		Creates game instance via ryn::entrypoint::createGame.
-	 *				Runs init, update, render, shutdown loops until game signals stop.
-	 *				Manages game instance lifetime.
+	 * @brief		Runtime entrypoint and main loop.
+	 * @details		Creates a ryn::core::Game instance via ryn::entrypoint::createGame. Uses it to invoke ```init```, ```update```, 
+	 *				```render``` and ```shutdown``` methods repeatedly until it requests termination.
 	 * @param		argc Command-line argument count
 	 * @param		argv Command-line argument array
 	 */
@@ -56,8 +48,8 @@ namespace ryn::entrypoint {
 
 #ifndef RYN_RUNTIME
 /**
- * @brief		Hidden main function implementation for consumers.
- * @details		Delegates control to ryn::entrypoint::run. Not included in runtime library build.
+ * @brief		Hidden main function implementation for consuming applications.
+ * @details		Delegates control to ryn::entrypoint::run. Used for convenience.
  * @param		argc Command-line argument count
  * @param		argv Command-line argument array
  */

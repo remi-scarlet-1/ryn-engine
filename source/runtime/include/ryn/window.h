@@ -1,7 +1,8 @@
 /**
  * @file		window.h
- * @brief		Defines the Window subsystem, backend window event polling, and OpenGL context handling.
- * @warning		Not thread-safe. Intended for internal engine use only.
+ * @brief		Window @ref ryn::core::Subsystem "subsystem"
+ * @details		Provides a window subsystem in addition to static windowing backend and OpenGL context management access.
+ * @warning		Intended for use with ryn::core::Game::registerSubsystem() and other engine subsystems only.
  *
  * @author		Konstantinos Lampros
  * @version		1.0.0
@@ -56,8 +57,8 @@ namespace ryn::core {
 
 	/**
 	 * @class	Window
-	 * @brief	Subsystem managing the native OS window, input event polling, and rendering context activation.
-	 * @details	Created with immutable settings via WindowSettings. Provides access to the native window pointer and handles lifecycle methods.
+	 * @brief	Subsystem managing a GLFW window, input event polling, and optionally OpenGL rendering context activation.
+	 * @details	Created settings via WindowSettings. Provides access to the native window pointer and handles lifecycle methods.
 	 */
 	class RYN_API Window : public Subsystem {
 	public:
@@ -80,19 +81,23 @@ namespace ryn::core {
 		class OpenGLContext {
 		public:
 			/**
-			 * @brief	Clears the framebuffer using current OpenGL state.
+			 * @brief	Clears the active OpenGL context on the calling thread.
+			 * @see		Window::OpenGLContext::activate()
+			 * @note	Thread dependent.
 			 */
 			static void clear();
 
 			/**
 			 * @brief	Makes the OpenGL context of the given window current on the calling thread.
-			 * @param	window Reference to Window instance.
+			 * @param	window Reference to target Window.
+			 * @see		Window::OpenGLContext::clear()
+			 * @note	Thread dependent.
 			 */
 			static void activate(Window& window);
 
 			/**
 			 * @brief	Swaps the front and back framebuffers of the given window.
-			 * @param	window Reference to Window instance.
+			 * @param	window Reference to target Window.
 			 */
 			static void swapFramebuffers(Window& window);
 		};
@@ -111,7 +116,7 @@ namespace ryn::core {
 
 		/**
 		 * @brief	Retrieves the raw native window pointer (platform-dependent).
-		 * @return	void pointer to the native window (e.g., HWND, X11, Cocoa).
+		 * @return	void pointer to the native window. Type unknown.
 		 */
 		void* getNativeWindowPtr();
 

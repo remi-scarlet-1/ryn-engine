@@ -1,9 +1,8 @@
 /**
  * @file		memory.h
- * @brief		Smart pointer types for manual memory management without relying on STL.
- * @details		Provides lightweight and minimal alternatives to std::unique_ptr, std::shared_ptr, and std::optional.
- *				Designed for internal use in constrained or custom environments where STL is unavailable or undesirable.
- * @warning		Do not use in shared public APIs due to potential ABI and ownership model limitations.
+ * @brief		Smart pointer types for manual memory management.
+ * @details		Provides lightweight and minimal alternatives to ```std::unique_ptr```, ```std::shared_ptr```, and ```std::optional```. Designed for internal use.
+ * @warning		**Do not use** in shared public APIs due to potential ABI and ownership model limitations.
  *
  * @author		Konstantinos Lampros
  * @version		1.0.0
@@ -14,18 +13,10 @@
 
 #include "ryn/defines.h"
 
-/**
- * @namespace	ryn::memory
- * @brief		Provides custom memory management utilities.
- * @details		This namespace includes non-STL smart pointers such as UniquePtr, SharedPtr, and OptionalPtr.
- *				These classes provide explicit memory ownership semantics for performance-critical or low-dependency scenarios.
- * @note		These tools are intended for internal use within the ryn engine. STL equivalents are preferred for general development.
- */
 namespace ryn::memory {
 	/**
 	 * @struct	DefaultDeleter
-	 * @brief	Provides a default deleter used by smart pointers to free resources. Simply calls delete
-	 *			on a given pointer.
+	 * @brief	Provides a default deleter used by smart pointers to free resources. Simply calls delete on a given pointer.
 	 * @tparam	T Type of the object to delete.
 	 */
 	template<typename T>
@@ -38,10 +29,9 @@ namespace ryn::memory {
 	/**
 	 * @class	UniquePtr
 	 * @brief	A non-copyable, movable smart pointer managing unique ownership of a dynamically allocated object.
-	 *			Provides ownership semantics, forbidding copy operations but allowing moves. Deletes managed object 
-	 *			when destroyed or reset.
-	 * @tparam	T: Type of the managed object.
-	 * @tparam	Deleter: Callable type used to delete the managed object (default: DefaultDeleter<T>).
+	 * @details	Provides ownership semantics, forbids copy operations but allows moves. Deletes managed object when destroyed or reset.
+	 * @tparam	T Type of the managed object.
+	 * @tparam	Deleter Callable type used to delete the managed object (default: DefaultDeleter<T>).
 	 */
 	template<typename T, typename Deleter = DefaultDeleter<T>>
 	class UniquePtr {
@@ -111,7 +101,7 @@ namespace ryn::memory {
 	 *			Reference counting is manual and not thread-safe.
 	 * @tparam	T Type of the managed object.
 	 * @tparam	Deleter Callable type used to delete the managed object (default: DefaultDeleter<T>).
-	 * @warning	This implementation is NOT thread-safe. Concurrent access or modification will cause race conditions.
+	 * @warning	This implementation is **not thread-safe**. Concurrent access or modification will cause race conditions.
 	 */
 	template<typename T, typename Deleter = DefaultDeleter<T>>
 	class SharedPtr {
@@ -195,7 +185,7 @@ namespace ryn::memory {
 	 * @class	OptionalPtr
 	 * @brief	A lightweight, non-owning pointer wrapper that explicitly signals the pointer may be null or dangling.
 	 * @details	Disables implicit pointer conversions and operators to enforce explicit checks
-	 *			for validity before usage. Use the tryGet() method to safely attempt access.
+	 *			for validity before usage. Use tryGet() method to safely attempt access.
 	 * @tparam	T Type of the pointed-to object.
 	 */
 	template<typename T>
@@ -205,7 +195,7 @@ namespace ryn::memory {
 
 		/**
 		 * @struct	TryResult
-		 * @brief	Represents the result of an attempt to retrieve the pointer from OptionalPtr<T>.
+		 * @brief	Represents the result of an attempt to retrieve the pointer from OptionalPtr.
 		 */
 		struct TryResult {
 			bool ok;
@@ -220,21 +210,9 @@ namespace ryn::memory {
 
 		/**
 		 * @brief	Attempts to retrieve the stored pointer along with its validity status.
-		 *			Returns a struct containing a boolean flag `ok` indicating whether the pointer
-		 *			is valid, and the raw pointer `ptr` itself.
-		 * @return	TryResult struct with fields:
-		 *			- ok: true if the pointer is valid, false otherwise.
-		 *			- ptr: the stored raw pointer.
-		 * @example	OptionalPtr<Window> optionalWindow(rawWindowPtr);
-		 *			if (auto [ok, ptr] = optionalWindow.tryGet(); ok) {
-		 *			    ptr->doSomething();
-		 *			}
-		 */
-
-		/**
-		 * @brief	Attempts to retrieve the stored pointer along with its validity status.
-		 * @return	TryResult struct with fields [ok, ptr]; ok indicating if the pointer is valid
-		 *			and ptr representing the stored raw pointer.
+		 * @return	TryResult struct with fields [ok, ptr]:
+		 *          - ok: indicates if the pointer is valid
+		 *			- ptr: raw pointer to the stored object
 		 */
 		[[nodiscard]] TryResult tryGet() const noexcept { return { isValid(), ptr }; }
 

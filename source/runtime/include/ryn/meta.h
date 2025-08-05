@@ -1,9 +1,9 @@
 /**
  * @file        meta.h
- * @brief       Compile-time type utilities and identifiers for strong typing support.
- * @details     Provides TypeID for runtime type identity and forwarding utilities for perfect forwarding.
+ * @brief       Compile-time type utilities and lightweight reflection.
+ * @details     Provides ryn::meta::TypeID for runtime type identity and forwarding utilities for @ref ryn::meta::forward "perfect forwarding".
  *              All constructs are lightweight and STL-independent except for standard hashing.
- *              Intended for internal engine use; not part of public API surface.
+ * @attention	Intended for **internal engine use only**. Wont guarantee ABI stability.
  *
  * @author      Konstantinos Lampros
  * @version     1.0.0
@@ -15,19 +15,13 @@
 #include <functional>
 #include <type_traits>
 
-/**
- * @namespace	ryn::meta
- * @brief       Contains compile-time utilities and constructs for meta programming.
- * @details     Designed to support strong typing, type erasure, and lightweight reflection without STL containers.
- *              All utilities are constexpr where possible and have minimal runtime overhead.
- */
 namespace ryn::meta {
 	/**
 	 * @struct		TypeID
 	 * @brief       Represents a unique, compile-time identifier for a type T.
-	 * @details     TypeIDs are stable during a single application execution. Useful for type-erased storage
+	 * @details     @ref TypeID "TypeIDs" are stable during a single application execution. Useful for type-erased storage
 	 *				and runtime type comparison. Comparison is based on address identity of an internal static marker.
-	 * @attention	Not intended for usage on its own. To get the TypeID of a type, use getTypeID.
+	 * @attention	Not intended for usage on its own. To get the TypeID of a type, use getTypeID().
 	 */
 	struct TypeID {
 		const void* id;

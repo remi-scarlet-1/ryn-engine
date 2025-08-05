@@ -17,7 +17,7 @@ ryn::core::Game::~Game() { delete m_impl; }
 bool ryn::core::Game::isRunning() { return m_impl->isRunning; }
 void ryn::core::Game::terminate() { m_impl->isRunning = false; }
 
-void ryn::core::Game::internal_createSubsystem(meta::TypeID typeID, Subsystem* subsystem) {
+void ryn::core::Game::internal_registerSubsystem(meta::TypeID typeID, Subsystem* subsystem) {
 	// Ensure there isn't already a singleton for the subsystem type
 	if (m_impl->subsystemTypetoIndex.contains(typeID))
 		return;
