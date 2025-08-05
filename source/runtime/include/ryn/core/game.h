@@ -5,6 +5,10 @@
 #include <concepts>
 
 namespace ryn {
+	namespace entrypoint {
+		void run(int argc, char* argv[]);
+	}
+
 	class Subsystem;
 
 	template<typename T>
@@ -61,7 +65,7 @@ namespace ryn {
 		void render();
 		void shutdown();
 
-		friend int run(int argc, char* argv[]);
+		friend void ryn::entrypoint::run(int argc, char* argv[]);
 
 	private:
 		struct Impl;

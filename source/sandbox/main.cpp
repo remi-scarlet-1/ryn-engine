@@ -25,7 +25,7 @@ protected:
 };
 
 // Required by entrypoint.h for initialization
-ryn::Game* ryn::createGame() {
+ryn::Game* ryn::entrypoint::createGame() {
 	const WindowSettings windowSettings = {
 		.title = "Space Invaders",
 		.resizable = false,
