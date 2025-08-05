@@ -12,16 +12,20 @@
 #pragma once
 
 #include "ryn/defines.h"
-#include "ryn/core/meta.h"
+#include "ryn/meta.h"
 #include <concepts>
 
+// Forward declarations
 namespace ryn {
-	// Forward declarations
-	class Subsystem;
+	namespace core {
+		class Subsystem;
+	}
 	namespace entrypoint {
 		void run(int argc, char* argv[]);
 	}
+}
 
+namespace ryn::core {
 	/**
 	 * @concept	DerivedFromSubsystem
 	 * @brief	Concept constraint. Requires T to inherit from ryn::Subsystem.

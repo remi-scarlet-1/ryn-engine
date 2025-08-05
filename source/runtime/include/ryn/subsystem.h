@@ -1,9 +1,9 @@
 #pragma once
 
 #include "ryn/defines.h"
-#include "ryn/core/game.h"
+#include "ryn/game.h"
 
-namespace ryn {
+namespace ryn::core {
 	class RYN_API Subsystem {
 	public:
 		virtual ~Subsystem() = default;

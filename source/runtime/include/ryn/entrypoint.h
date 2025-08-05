@@ -14,7 +14,7 @@
 
 #pragma once
 
-#include "ryn/core/game.h"
+#include "ryn/game.h"
 
  /**
   * @namespace	ryn::entrypoint
@@ -30,7 +30,7 @@ namespace ryn::entrypoint {
 	  * @return		Heap-allocated ryn::Game instance.
 	  * @attention	Must be implemented by the consuming application!
 	  */
-	extern Game* createGame();
+	extern core::Game* createGame();
 
 	 /**
 	  * @brief		Internal runtime entrypoint. Contains main loop.
@@ -41,7 +41,7 @@ namespace ryn::entrypoint {
 	  * @param		argv Command-line argument array
 	  */
 	void run(int argc, char* argv[]) {
-		Game* game = createGame();
+		core::Game* game = createGame();
 
 		game->initialize();
 		while (game->isRunning()) {

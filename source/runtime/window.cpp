@@ -1,10 +1,10 @@
-#include "ryn/core/window.h"
+#include "ryn/window.h"
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
 #include <iostream>
 
 #pragma region Backend
-void ryn::Window::Backend::initialize() {
+void ryn::core::Window::Backend::initialize() {
 	glfwSetErrorCallback([](int error, const char* description) {
 		std::fprintf(stderr, "GLFW error %d: %s\n", error, description);
 	});
@@ -13,34 +13,34 @@ void ryn::Window::Backend::initialize() {
 		throw std::runtime_error("Failed to initialize windowing backend GLFW");
 }
 
-void ryn::Window::Backend::pollEvents() {
+void ryn::core::Window::Backend::pollEvents() {
 	glfwPollEvents();
 }
 #pragma endregion
 
 #pragma region OpenGLContext
-void ryn::Window::OpenGLContext::clear() {
+void ryn::core::Window::OpenGLContext::clear() {
 	glfwMakeContextCurrent(nullptr);
 }
 
-void ryn::Window::OpenGLContext::activate(Window& window) {
+void ryn::core::Window::OpenGLContext::activate(Window& window) {
 	if (window.m_settings.graphicsAPI == GraphicsAPI::OpenGL)
 		glfwMakeContextCurrent(window.getGLFWwindowPtr());
 }
 
-void ryn::Window::OpenGLContext::swapFramebuffers(Window& window) {
+void ryn::core::Window::OpenGLContext::swapFramebuffers(Window& window) {
 	if (window.m_settings.graphicsAPI == GraphicsAPI::OpenGL)
 		glfwSwapBuffers(window.getGLFWwindowPtr());
 }
 #pragma endregion
 
-ryn::Window::Window(const WindowSettings& settings) : m_window(nullptr), m_settings(settings) {}
+ryn::core::Window::Window(const WindowSettings& settings) : m_window(nullptr), m_settings(settings) {}
 
-bool ryn::Window::isClosing() {
+bool ryn::core::Window::isClosing() {
 	return glfwWindowShouldClose(m_window);
 }
 
-void* ryn::Window::getNativeWindowPtr() {
+void* ryn::core::Window::getNativeWindowPtr() {
 #ifdef GLFW_EXPOSE_NATIVE_WIN32
 	return glfwGetWin32Window(m_window);
 #elif GLFW_EXPOSE_NATIVE_COCOA
@@ -52,11 +52,11 @@ void* ryn::Window::getNativeWindowPtr() {
 #endif
 }
 
-GLFWwindow* ryn::Window::getGLFWwindowPtr() {
+GLFWwindow* ryn::core::Window::getGLFWwindowPtr() {
 	return m_window;
 }
 
-void ryn::Window::initialize() {
+void ryn::core::Window::initialize() {
 	Window::Backend::initialize();
 
 	switch (m_settings.graphicsAPI) {
@@ -88,12 +88,12 @@ void ryn::Window::initialize() {
 	Window::Backend::pollEvents();
 }
 
-void ryn::Window::update() {
+void ryn::core::Window::update() {
 	Window::Backend::pollEvents();
 	if (isClosing())
 		getGame().terminate();
 }
 
-void ryn::Window::shutdown() {
+void ryn::core::Window::shutdown() {
 	glfwDestroyWindow(m_window);
 }

@@ -3,7 +3,7 @@
 #include <iostream>
 
 // Defining a game and injecting code into the main loop:
-class ExampleGame : public ryn::Game {
+class ExampleGame : public ryn::core::Game {
 protected:
 	void onBeforeInit() override { std::cout << "Game initializing..." << std::endl; }
 	//void onBeforeUpdate() override;
@@ -16,7 +16,7 @@ protected:
 };
 
 // Defining a custom subsystem and making use of its overrides:
-class ExampleSubsystem : public ryn::Subsystem {
+class ExampleSubsystem : public ryn::core::Subsystem {
 protected:
 	void initialize() override { std::cout << "Initializing example subsystem!" << std::endl; }
 	//void update() override;
@@ -25,26 +25,26 @@ protected:
 };
 
 // Required by entrypoint.h for initialization
-ryn::Game* ryn::entrypoint::createGame() {
-	const WindowSettings windowSettings = {
+ryn::core::Game* ryn::entrypoint::createGame() {
+	const core::WindowSettings windowSettings = {
 		.title = "Space Invaders",
 		.resizable = false,
 		.width = 1440,
 		.height = 1080,
-		.graphicsAPI = OpenGL,
-		.vsyncMode = EveryVBlank,
+		.graphicsAPI = core::OpenGL,
+		.vsyncMode = core::EveryVBlank,
 	};
 
 	auto* game = new ExampleGame();
 
 	// Create and register your own subsystems or ones provided by the engine!
 	// Once created, they assume a singleton state.
-	game->createSubsystem(new Window(windowSettings));
+	game->createSubsystem(new core::Window(windowSettings));
 	game->createSubsystem(new ExampleSubsystem());
 
 	// Retrieve existing subsystem singletons by their type. If no subsystem of that
 	// type has been created this method returns nullptr.
-	auto exampleSubsystemPtr = game->getSubsystem<Window>();
+	auto exampleSubsystemPtr = game->getSubsystem<core::Window>();
 
 	// You can also delete subsystem singletons like this. Should no singleton exist
 	// for the type you are trying to delete the method simply returns false.

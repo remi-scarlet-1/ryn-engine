@@ -11,8 +11,8 @@
 
 #include "ryn/defines.h"
 
-#include "ryn/core/game.h"
-#include "ryn/core/memory.h"
-#include "ryn/core/subsystem.h"
-#include "ryn/core/meta.h"
-#include "ryn/core/window.h"
+#include "ryn/game.h"
+#include "ryn/memory.h"
+#include "ryn/subsystem.h"
+#include "ryn/meta.h"
+#include "ryn/window.h"

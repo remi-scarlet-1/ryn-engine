@@ -1,11 +1,11 @@
 #pragma once
 
 #include "ryn/defines.h"
-#include "ryn/core/subsystem.h"
+#include "ryn/subsystem.h"
 
 struct GLFWwindow;
 
-namespace ryn {
+namespace ryn::core {
 	enum RYN_API GraphicsAPI {
 		None = 0,
 		OpenGL,
