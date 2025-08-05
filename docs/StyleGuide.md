@@ -19,6 +19,19 @@ Example:
 # Documentation
 Use doxygen documentation. Start comments with ```/** */``` and make use of the following tags:  
 
+## Language Style Guide
+| Aspect              | Style                                                                |
+| ------------------- | -------------------------------------------------------------------- |
+| **Tone**            | Neutral, technical, no fluff.                                        |
+| **Person**          | Third person.                                                        |
+| **Verb Tense**      | Present tense only.                                                  |
+| **Voice**           | Active preferred.                                                    |
+| **Grammar**         | Grammar optional – clarity first, brevity second.                    |
+| **Punctuation**     | Periods optional in lists/summaries.                                 |
+| **Capitalization**  | Sentence case. First word capitalized, rest lower unless identifier. |
+
+
+## Doxygen Tags Allowed
 - @author { list of authors }
 - @version { version string }
 - @date	{ date description }
