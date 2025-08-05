@@ -14,5 +14,5 @@
 #include "ryn/core/game.h"
 #include "ryn/core/memory.h"
 #include "ryn/core/subsystem.h"
-#include "ryn/core/type.h"
+#include "ryn/core/meta.h"
 #include "ryn/core/window.h"

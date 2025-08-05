@@ -7,8 +7,8 @@
 struct ryn::Game::Impl {
 	bool gameHasStarted = false;
 	bool isRunning = false;
-	std::vector<UniquePtr<Subsystem>> subsystems;
-	std::unordered_map<TypeID, size_t> subsystemTypetoIndex;
+	std::vector<memory::UniquePtr<Subsystem>> subsystems;
+	std::unordered_map<meta::TypeID, size_t> subsystemTypetoIndex;
 };
 
 ryn::Game::Game() : m_impl(new Impl()) {}
@@ -17,12 +17,12 @@ ryn::Game::~Game() { delete m_impl; }
 bool ryn::Game::isRunning() { return m_impl->isRunning; }
 void ryn::Game::terminate() { m_impl->isRunning = false; }
 
-void ryn::Game::internal_createSubsystem(TypeID typeID, Subsystem* subsystem) {
+void ryn::Game::internal_createSubsystem(meta::TypeID typeID, Subsystem* subsystem) {
 	// Ensure there isn't already a singleton for the subsystem type
 	if (m_impl->subsystemTypetoIndex.contains(typeID))
 		return;
 
-	m_impl->subsystems.emplace_back(std::move(UniquePtr<Subsystem>(subsystem)));
+	m_impl->subsystems.emplace_back(std::move(memory::UniquePtr<Subsystem>(subsystem)));
 	m_impl->subsystemTypetoIndex[typeID] = m_impl->subsystems.size() - 1;
 	subsystem->m_game = this;
 
@@ -31,7 +31,7 @@ void ryn::Game::internal_createSubsystem(TypeID typeID, Subsystem* subsystem) {
 		subsystem->initialize();
 }
 
-bool ryn::Game::internal_deleteSubsystem(TypeID typeID) {
+bool ryn::Game::internal_deleteSubsystem(meta::TypeID typeID) {
 	// Abort deletion if no singleton exists for subsystem type
 	if (!m_impl->subsystemTypetoIndex.contains(typeID))
 		return false;
@@ -53,7 +53,7 @@ bool ryn::Game::internal_deleteSubsystem(TypeID typeID) {
 	return true;
 }
 
-ryn::Subsystem* ryn::Game::internal_getSubsystem(TypeID typeID) {
+ryn::Subsystem* ryn::Game::internal_getSubsystem(meta::TypeID typeID) {
 	// Return nullptr if requested subsystem type has no corresponding singleton
 	if (!m_impl->subsystemTypetoIndex.contains(typeID))
 		return nullptr;

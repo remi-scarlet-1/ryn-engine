@@ -12,7 +12,7 @@
 #pragma once
 
 #include "ryn/defines.h"
-#include "ryn/core/type.h"
+#include "ryn/core/meta.h"
 #include <concepts>
 
 namespace ryn {
@@ -52,7 +52,7 @@ namespace ryn {
 		 */
 		template<DerivedFromSubsystem T>
 		void createSubsystem(T* subsystem) {
-			auto typeID = getTypeID<T>();
+			auto typeID = meta::getTypeID<T>();
 			internal_createSubsystem(typeID, subsystem);
 		}
 
@@ -65,7 +65,7 @@ namespace ryn {
 		 */
 		template<DerivedFromSubsystem T>
 		bool deleteSubsystem() {
-			auto typeID = getTypeID<T>();
+			auto typeID = meta::getTypeID<T>();
 			return internal_deleteSubsystem(typeID);
 		}
 
@@ -77,7 +77,7 @@ namespace ryn {
 		 */
 		template<DerivedFromSubsystem T>
 		T* getSubsystem() {
-			auto typeID = getTypeID<T>();
+			auto typeID = meta::getTypeID<T>();
 			auto ptr = internal_getSubsystem(typeID);
 			return static_cast<T*>(ptr);
 		}
@@ -113,9 +113,9 @@ namespace ryn {
 		virtual void onAfterShutdown() {}
 
 	private:
-		void internal_createSubsystem(TypeID typeID, Subsystem* subsystem);
-		bool internal_deleteSubsystem(TypeID typeID);
-		Subsystem* internal_getSubsystem(TypeID typeID);
+		void internal_createSubsystem(meta::TypeID typeID, Subsystem* subsystem);
+		bool internal_deleteSubsystem(meta::TypeID typeID);
+		Subsystem* internal_getSubsystem(meta::TypeID typeID);
 
 		void initialize();
 		void update();

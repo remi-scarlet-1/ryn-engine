@@ -1,23 +1,32 @@
 /**
  * @file		memory.h
  * @brief		Smart pointer types for manual memory management without relying on STL.
- * @warning		Do not use in shared public API's.
+ * @details		Provides lightweight and minimal alternatives to std::unique_ptr, std::shared_ptr, and std::optional.
+ *				Designed for internal use in constrained or custom environments where STL is unavailable or undesirable.
+ * @warning		Do not use in shared public APIs due to potential ABI and ownership model limitations.
  *
  * @author		Konstantinos Lampros
- * @version		1.2.1
- * @date		2025-08-04
+ * @version		1.0.0
+ * @date		2025-08-05
  */
 
 #pragma once
 
 #include "ryn/defines.h"
 
-namespace ryn {
+/**
+ * @namespace	ryn::memory
+ * @brief		Provides custom memory management utilities.
+ * @details		This namespace includes non-STL smart pointers such as UniquePtr, SharedPtr, and OptionalPtr.
+ *				These classes provide explicit memory ownership semantics for performance-critical or low-dependency scenarios.
+ * @note		These tools are intended for internal use within the ryn engine. STL equivalents are preferred for general development.
+ */
+namespace ryn::memory {
 	/**
 	 * @struct	DefaultDeleter
 	 * @brief	Provides a default deleter used by smart pointers to free resources. Simply calls delete
 	 *			on a given pointer.
-	 * @tparam	T: Type of the object to delete.
+	 * @tparam	T Type of the object to delete.
 	 */
 	template<typename T>
 	struct DefaultDeleter {
@@ -60,12 +69,17 @@ namespace ryn {
 
 		T& operator*() const noexcept { return *ptr; }
 		T* operator->() const noexcept { return ptr; }
+
+		/**
+		 * @brief	Retrieves the managed object.
+		 * @return	Pointer to the managed object.
+		 */
 		[[nodiscard]] constexpr T* get() const noexcept { return ptr; }
 		[[nodiscard]] constexpr explicit operator bool() const noexcept { return ptr != nullptr; }
 
 		/**
 		 * @brief	Replaces the managed object with a new pointer, deleting the old one if necessary.
-		 * @param	newPtr: Pointer to new object to manage (default nullptr).
+		 * @param	newPtr Pointer to new object to manage (default nullptr).
 		 */
 		void reset(T* newPtr = nullptr) noexcept {
 			if (ptr != newPtr) {
@@ -77,7 +91,7 @@ namespace ryn {
 
 		/**
 		 * @brief	Releases ownership of the managed object without deleting it.
-		 * @return	The pointer to the managed object before release.
+		 * @return	Pointer to the managed object before release.
 		 */
 		[[nodiscard]] T* release() noexcept {
 			T* oldPtr = ptr;
@@ -93,10 +107,11 @@ namespace ryn {
 	/**
 	 * @class	SharedPtr
 	 * @brief	A reference-counted smart pointer sharing ownership of a dynamically allocated object.
-	 *			When the last SharedPtr owning the object is destroyed or reset, the object is deleted.
-	 * @tparam	T: Type of the managed object.
-	 * @tparam	Deleter: Callable type used to delete the managed object (default: DefaultDeleter<T>).
-	 * @warning	This implementation is **not thread-safe**. Concurrent access or modification will cause raise conditions.
+	 * @details	When the last SharedPtr owning the object is destroyed or reset, the object is deleted.
+	 *			Reference counting is manual and not thread-safe.
+	 * @tparam	T Type of the managed object.
+	 * @tparam	Deleter Callable type used to delete the managed object (default: DefaultDeleter<T>).
+	 * @warning	This implementation is NOT thread-safe. Concurrent access or modification will cause race conditions.
 	 */
 	template<typename T, typename Deleter = DefaultDeleter<T>>
 	class SharedPtr {
@@ -136,6 +151,11 @@ namespace ryn {
 
 		T& operator*() const noexcept { return *control->ptr; }
 		T* operator->() const noexcept { return control->ptr; }
+
+		/**
+		 * @brief	Retrieves the managed object.
+		 * @return	Pointer to the managed object.
+		 */
 		[[nodiscard]] T* get() const noexcept { return control ? control->ptr : nullptr; }
 		[[nodiscard]] explicit operator bool() const noexcept { return control && control->ptr; }
 
@@ -174,13 +194,9 @@ namespace ryn {
 	/**
 	 * @class	OptionalPtr
 	 * @brief	A lightweight, non-owning pointer wrapper that explicitly signals the pointer may be null or dangling.
-	 *			Disables implicit pointer conversions and operators to enforce explicit checks
-	 *			for validity before usage. Use the `tryGet()` method to safely attempt access.
-	 * @tparam	T: Type of the pointed-to object.
-	 * @example	OptionalPtr<Window> optionalWindow(rawWindowPtr);
-	 *			if (auto [ok, ptr] = optionalWindow.tryGet(); ok) {
-	 *			    ptr->doSomething();
-	 *			}
+	 * @details	Disables implicit pointer conversions and operators to enforce explicit checks
+	 *			for validity before usage. Use the tryGet() method to safely attempt access.
+	 * @tparam	T Type of the pointed-to object.
 	 */
 	template<typename T>
 	class OptionalPtr {
@@ -190,9 +206,6 @@ namespace ryn {
 		/**
 		 * @struct	TryResult
 		 * @brief	Represents the result of an attempt to retrieve the pointer from OptionalPtr<T>.
-		 *			Contains:
-		 *			- `ok`: Indicates whether the pointer is valid (true if non-null).
-		 *			- `ptr`: The raw pointer to the managed object, which may be nullptr if `ok` is false.
 		 */
 		struct TryResult {
 			bool ok;
@@ -216,6 +229,12 @@ namespace ryn {
 		 *			if (auto [ok, ptr] = optionalWindow.tryGet(); ok) {
 		 *			    ptr->doSomething();
 		 *			}
+		 */
+
+		/**
+		 * @brief	Attempts to retrieve the stored pointer along with its validity status.
+		 * @return	TryResult struct with fields [ok, ptr]; ok indicating if the pointer is valid
+		 *			and ptr representing the stored raw pointer.
 		 */
 		[[nodiscard]] TryResult tryGet() const noexcept { return { isValid(), ptr }; }
 
