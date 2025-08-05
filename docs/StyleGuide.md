@@ -44,6 +44,7 @@ Use doxygen documentation. Start comments with ```/** */``` and make use of the 
 - @concept <name>
 
 - @param <parameter-name> { parameter description }	
+- @tparam <parameter-name> { parameter description }
 - @return { description of the return value }
 - @throws <exception-object> { exception description }
 - @warning { warning message }
