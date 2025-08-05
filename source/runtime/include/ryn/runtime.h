@@ -1,10 +1,10 @@
 /**
  * @file		runtime.h
- * @brief		Amalgamation of headers containing common runtime API's.
+ * @brief		Amalgamation of common runtime APIs.
  *
  * @author		Konstantinos Lampros
- * @version		1.0.2
- * @date		2025-07-29
+ * @version		1.0.0
+ * @date		2025-08-05
  */
 
 #pragma once
