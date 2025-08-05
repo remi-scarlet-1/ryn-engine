@@ -1,20 +1,17 @@
 /**
  * @file		defines.h
- * @brief		Common macro definitions, platform-specific configurations and utility headers for the engine.
+ * @brief		Common macros, platform configurations, and utility includes.
  *
  * @author		Konstantinos Lampros
- * @version		1.0.5
- * @date		2025-07-23
+ * @version		1.0.0
+ * @date		2025-08-05
  */
 
 #pragma once
 
 #include <cstdint>
 
-/**
- * @brief	Define a RYN_API macro which is used for dynamic linking and will import or export
- *			functions depending on whether the RYN_RUNTIME preprocessor directive is defined.
- */
+// Define RYN_API macro used for dynamic library export and import.
 #ifdef RYN_PLATFORM_WIN
 	#ifdef RYN_RUNTIME
 		#define RYN_API __declspec(dllexport)
@@ -22,5 +19,5 @@
 		#define RYN_API __declspec(dllimport)
 	#endif
 #else
-	#error "RYN_API (shared library symbol export/import) is currently only supported on Windows. Please define RYN_PLATFORM_WIN or implement support for other platforms."
+	#error "RYN_API (shared library export/import) is currently only supported on Windows. Please define RYN_PLATFORM_WIN or implement support for other platforms."
 #endif
