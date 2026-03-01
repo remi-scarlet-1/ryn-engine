@@ -2,7 +2,7 @@ module;
 #include "Prelude.h"
 
 module Ryntime.Core;
-import Ryntime.Platform;
+import Ryntime.Service;
 
 RYN_SCOPE_FILE("Application");
 
@@ -52,7 +52,7 @@ namespace ryn {
     }
 
     void IApplication::onEventIntercept(EventListener& listener) {
-        listener.match<platform::WindowCloseEvent>([this](platform::WindowCloseEvent& event) {
+        listener.match<service::WindowCloseEvent>([this](service::WindowCloseEvent& event) {
             m_Running = false;
             event.consume();
         });

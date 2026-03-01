@@ -98,12 +98,12 @@ namespace rynd {
     void Editor::onEvent(ryn::EventListener& listener) {
         ImGuiIO& io = ImGui::GetIO();
 
-        listener.match<ryn::platform::WindowKeypressEvent>([&](auto& e) {
+        listener.match<ryn::service::WindowKeypressEvent>([&](auto& e) {
             io.AddKeyEvent(mapKeycodeToImGuiKey(e.Keycode), e.IsDown);
             if (io.WantCaptureKeyboard) e.consume();
         });
 
-        listener.match<ryn::platform::WindowMouseButtonEvent>([&](auto& e) {
+        listener.match<ryn::service::WindowMouseButtonEvent>([&](auto& e) {
             int button = 0;
             if (e.Button == ryn::MouseButton::Right) button = 1;
             if (e.Button == ryn::MouseButton::Middle) button = 2;
@@ -111,17 +111,17 @@ namespace rynd {
             if (io.WantCaptureMouse) e.consume();
         });
 
-        listener.match<ryn::platform::WindowMouseMoveEvent>([&](auto& e) {
+        listener.match<ryn::service::WindowMouseMoveEvent>([&](auto& e) {
             io.AddMousePosEvent(e.Position.x, e.Position.y);
             if (io.WantCaptureMouse) e.consume();
         });
 
-        listener.match<ryn::platform::WindowMouseScrollEvent>([&](auto& e) {
+        listener.match<ryn::service::WindowMouseScrollEvent>([&](auto& e) {
             io.AddMouseWheelEvent(e.Delta.x, e.Delta.y);
             if (io.WantCaptureMouse) e.consume();
         });
 
-        listener.match<ryn::platform::WindowTextInputEvent>([&](auto& e) {
+        listener.match<ryn::service::WindowTextInputEvent>([&](auto& e) {
             io.AddInputCharactersUTF8(e.Text);
             if (io.WantCaptureKeyboard) e.consume();
         });

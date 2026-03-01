@@ -9,7 +9,7 @@ namespace rynd {
     class EditorApplication final : public ryn::IApplication {
     protected:
         void onInit() override {
-            constexpr ryn::platform::WindowConfig windowConfig{
+            constexpr ryn::service::WindowConfig windowConfig{
                 .Title        = "RynEditor",
                 .Resolution   = {2560, 1440},
                 .IsFullscreen = false,
@@ -18,15 +18,16 @@ namespace rynd {
             };
 
             // clang-format off
-            constexpr ryn::platform::GraphicsConfig graphicsConfig{
-                .Backend = ryn::platform::GraphicsBackend::Vulkan,
-                .VSync   = ryn::platform::GraphicsVSync::Enable
+            constexpr ryn::service::GraphicsConfig graphicsConfig{
+                .Backend = ryn::service::GraphicsBackend::Vulkan,
+                .VSync   = ryn::service::GraphicsVSync::Enable
             };
             // clang-format on
 
-            getServiceStack().push<ryn::platform::Window>(windowConfig);
-            getServiceStack().push<ryn::platform::Input>();
-            getServiceStack().push<ryn::platform::Graphics>(graphicsConfig);
+            getServiceStack().push<ryn::service::Window>(windowConfig);
+            getServiceStack().push<ryn::service::Input>();
+            getServiceStack().push<ryn::service::Graphics>(graphicsConfig);
+            getServiceStack().push<ryn::service::World>();
             getServiceStack().push<Editor>();
         }
 

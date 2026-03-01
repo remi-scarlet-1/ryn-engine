@@ -1,11 +1,11 @@
 module;
 #include "Prelude.h"
 
-module Ryntime.Platform;
+module Ryntime.Service;
 
 RYN_SCOPE_FILE("Service|Input");
 
-namespace ryn::platform {
+namespace ryn::service {
     Input::Input()  = default;
     Input::~Input() = default;
 

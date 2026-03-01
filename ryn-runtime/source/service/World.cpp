@@ -1,11 +1,14 @@
 module;
 #include "Prelude.h"
+#include <algorithm>
+#include <unordered_map>
+#include <vector>
 
-module Ryntime.World;
+module Ryntime.Service;
 
 RYN_SCOPE_FILE("Service|World");
 
-namespace ryn::world {
+namespace ryn::service {
     ServiceDiscovery::ServiceDiscovery(IServiceLocator& locator) : m_ServiceLocator(locator) {}
 
     IService* ServiceDiscovery::requestService(TypeID typeId, bool required) {
@@ -31,8 +34,7 @@ namespace ryn::world {
     void World::onDetach() {
         // Shutdown all systems
         for (auto it = m_Systems.begin(); it != m_Systems.end(); ++it)
-            if (it->Instance && it->IsEnabled)
-                it->Instance->onDisable();
+            if (it->Instance && it->IsEnabled) it->Instance->onDisable();
 
         m_Systems.clear();
         m_SystemIndexMap.clear();
@@ -42,8 +44,7 @@ namespace ryn::world {
         auto execute = [&](auto memberFunc) {
             for (size_t i = 0; i < m_Systems.size(); ++i) {
                 auto& entry = m_Systems[i];
-                if (entry.Instance && entry.IsEnabled)
-                    (entry.Instance.get()->*memberFunc)(time, *this);
+                if (entry.Instance && entry.IsEnabled) (entry.Instance.get()->*memberFunc)(time, *this);
             }
         };
 

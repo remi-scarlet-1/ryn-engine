@@ -44,8 +44,8 @@ export namespace rynd {
         void onEvent(ryn::EventListener& listener) override;
 
     private:
-        ryn::platform::Window*   m_WindowService   = nullptr;
-        ryn::platform::Graphics* m_GraphicsService = nullptr;
+        ryn::service::Window*   m_WindowService   = nullptr;
+        ryn::service::Graphics* m_GraphicsService = nullptr;
 
         ImFont*                                           m_Font = nullptr;
         std::unique_ptr<other::ImGuiBackend>              m_Backend;

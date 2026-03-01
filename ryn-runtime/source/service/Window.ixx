@@ -3,13 +3,13 @@ module;
 #include <SDL3/SDL.h>
 #include <cstdint>
 
-export module Ryntime.Platform:Window;
+export module Ryntime.Service:Window;
 export import Ryntime.Core;
 export import Ryntime.Core.Reflection;
 
 using namespace ryn::reflection;
 
-export namespace ryn::platform {
+export namespace ryn::service {
     enum class WindowNativeType : uint64_t {
         Undefined = 0,
         Wayland,
@@ -31,7 +31,7 @@ export namespace ryn::platform {
         bool        IsVisible    = true;
     };
 
-    class RYN_API Window final : public DynamicType<IService, "ryn::platform::Window"> {
+    class RYN_API Window final : public DynamicType<IService, "ryn::service::Window"> {
     public:
         explicit Window(const WindowConfig& config);
         ~Window() override;
@@ -68,21 +68,21 @@ export namespace ryn::platform {
         void resolveHandles(const char* debugTitle);
     };
 
-    struct RYN_API WindowCloseEvent final : DynamicType<IEvent, "ryn::platform::WindowCloseEvent"> {
+    struct RYN_API WindowCloseEvent final : DynamicType<IEvent, "ryn::service::WindowCloseEvent"> {
         inline explicit WindowCloseEvent() {}
     };
 
-    struct RYN_API WindowFramebufferResizeEvent final : DynamicType<IEvent, "ryn::platform::WindowFramebufferResizeEvent"> {
+    struct RYN_API WindowFramebufferResizeEvent final : DynamicType<IEvent, "ryn::service::WindowFramebufferResizeEvent"> {
         Vector2Int Resolution;
         inline explicit WindowFramebufferResizeEvent(Vector2Int resolution) : Resolution(resolution) {}
     };
 
-    struct RYN_API WindowTextInputEvent final : DynamicType<IEvent, "ryn::platform::WindowTextInputEvent"> {
+    struct RYN_API WindowTextInputEvent final : DynamicType<IEvent, "ryn::service::WindowTextInputEvent"> {
         const char* Text;
         inline explicit WindowTextInputEvent(const char* text) : Text(text) {}
     };
 
-    struct RYN_API WindowKeypressEvent final : DynamicType<IEvent, "ryn::platform::WindowKeypressEvent"> {
+    struct RYN_API WindowKeypressEvent final : DynamicType<IEvent, "ryn::service::WindowKeypressEvent"> {
         Keycode Keycode;
         bool    IsDown;
         bool    IsRepeat;
@@ -92,7 +92,7 @@ export namespace ryn::platform {
               IsRepeat(isRepeat) {}
     };
 
-    struct RYN_API WindowMouseButtonEvent final : DynamicType<IEvent, "ryn::platform::WindowMouseButtonEvent"> {
+    struct RYN_API WindowMouseButtonEvent final : DynamicType<IEvent, "ryn::service::WindowMouseButtonEvent"> {
         MouseButton Button;
         bool        IsDown;
         uint8_t     ClickCount;
@@ -104,23 +104,23 @@ export namespace ryn::platform {
               ClickPosition(clickPosition) {}
     };
 
-    struct RYN_API WindowMouseMoveEvent final : DynamicType<IEvent, "ryn::platform::WindowMouseMoveEvent"> {
+    struct RYN_API WindowMouseMoveEvent final : DynamicType<IEvent, "ryn::service::WindowMouseMoveEvent"> {
         Vector2 Position = Vector2::zero();
         Vector2 Delta    = Vector2::zero();
         inline explicit WindowMouseMoveEvent(Vector2 position, Vector2 delta) : Position(position), Delta(delta) {}
     };
 
-    struct RYN_API WindowMouseScrollEvent final : DynamicType<IEvent, "ryn::platform::WindowMouseScrollEvent"> {
+    struct RYN_API WindowMouseScrollEvent final : DynamicType<IEvent, "ryn::service::WindowMouseScrollEvent"> {
         Vector2 Delta = Vector2::zero();
         inline explicit WindowMouseScrollEvent(Vector2 delta) : Delta(delta) {}
     };
 }
 
-RYN_TYPE_REFLECTION_KEEP(ryn::platform::Window);
-RYN_TYPE_REFLECTION_KEEP(ryn::platform::WindowCloseEvent);
-RYN_TYPE_REFLECTION_KEEP(ryn::platform::WindowFramebufferResizeEvent);
-RYN_TYPE_REFLECTION_KEEP(ryn::platform::WindowTextInputEvent);
-RYN_TYPE_REFLECTION_KEEP(ryn::platform::WindowKeypressEvent);
-RYN_TYPE_REFLECTION_KEEP(ryn::platform::WindowMouseButtonEvent);
-RYN_TYPE_REFLECTION_KEEP(ryn::platform::WindowMouseMoveEvent);
-RYN_TYPE_REFLECTION_KEEP(ryn::platform::WindowMouseScrollEvent);
+RYN_TYPE_REFLECTION_KEEP(ryn::service::Window);
+RYN_TYPE_REFLECTION_KEEP(ryn::service::WindowCloseEvent);
+RYN_TYPE_REFLECTION_KEEP(ryn::service::WindowFramebufferResizeEvent);
+RYN_TYPE_REFLECTION_KEEP(ryn::service::WindowTextInputEvent);
+RYN_TYPE_REFLECTION_KEEP(ryn::service::WindowKeypressEvent);
+RYN_TYPE_REFLECTION_KEEP(ryn::service::WindowMouseButtonEvent);
+RYN_TYPE_REFLECTION_KEEP(ryn::service::WindowMouseMoveEvent);
+RYN_TYPE_REFLECTION_KEEP(ryn::service::WindowMouseScrollEvent);

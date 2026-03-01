@@ -3,14 +3,14 @@ module;
 #include <bitset>
 #include <cstdint>
 
-export module Ryntime.Platform:Input;
+export module Ryntime.Service:Input;
 export import Ryntime.Core;
 export import Ryntime.Core.Reflection;
 
 using namespace ryn::reflection;
 
-export namespace ryn::platform {
-    class RYN_API Input final : public DynamicType<IService, "ryn::platform::Input"> {
+export namespace ryn::service {
+    class RYN_API Input final : public DynamicType<IService, "ryn::service::Input"> {
     public:
         explicit Input();
         ~Input() override;
@@ -46,4 +46,4 @@ export namespace ryn::platform {
     };
 }
 
-RYN_TYPE_REFLECTION_KEEP(ryn::platform::Input);
+RYN_TYPE_REFLECTION_KEEP(ryn::service::Input);

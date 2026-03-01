@@ -75,13 +75,11 @@ target_sources(RynRuntime
     source/core/Event.ixx
     source/core/Service.ixx
 
-    source/platform/__BUNDLE__.ixx
-    source/platform/Graphics.ixx
-    source/platform/Input.ixx
-    source/platform/Window.ixx
-
-    source/world/__BUNDLE__.ixx
-    source/world/World.ixx
+    source/service/__BUNDLE__.ixx
+    source/service/Graphics.ixx
+    source/service/Input.ixx
+    source/service/Window.ixx
+    source/service/World.ixx
 
     source/Log.ixx
     source/Ryntime.ixx
@@ -93,11 +91,10 @@ target_sources(RynRuntime
     source/core/Event.cpp
     source/core/Service.cpp
 
-    source/platform/Graphics.cpp
-    source/platform/Input.cpp
-    source/platform/Window.cpp
-
-    source/world/World.cpp
+    source/service/Graphics.cpp
+    source/service/Input.cpp
+    source/service/Window.cpp
+    source/service/World.cpp
 
     source/Log.cpp
 )

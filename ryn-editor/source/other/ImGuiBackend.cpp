@@ -65,7 +65,7 @@ namespace {
 }
 
 namespace rynd::other {
-    ImGuiBackend::ImGuiBackend(const platform::Graphics& graphicsService) {
+    ImGuiBackend::ImGuiBackend(const service::Graphics& graphicsService) {
         // Retrieve devices (assume caller ensures the validity of the graphics layer during lifetime)
         m_Device    = &graphicsService.getDevice();
         m_Context   = &graphicsService.getContext();

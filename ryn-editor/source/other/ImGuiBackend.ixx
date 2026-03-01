@@ -11,7 +11,7 @@ using namespace ryn;
 export namespace rynd::other {
     class ImGuiBackend {
     public:
-        explicit ImGuiBackend(const platform::Graphics& graphicsService);
+        explicit ImGuiBackend(const service::Graphics& graphicsService);
         ~ImGuiBackend();
 
         void newFrame();

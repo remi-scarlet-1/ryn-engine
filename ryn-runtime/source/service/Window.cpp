@@ -4,7 +4,7 @@ module;
 #include <array>
 #include <string_view>
 
-module Ryntime.Platform;
+module Ryntime.Service;
 
 RYN_SCOPE_FILE("Service|Window");
 
@@ -12,7 +12,7 @@ namespace {
     constexpr ryn::Keycode mapSDLScancodeToKeycode(SDL_Scancode scancode);
 }
 
-namespace ryn::platform {
+namespace ryn::service {
     Window::Window(const WindowConfig& config) {
         if (!SDL_WasInit(SDL_INIT_VIDEO)) {
             RYN_TRACE("Initialize SDL video layer...");

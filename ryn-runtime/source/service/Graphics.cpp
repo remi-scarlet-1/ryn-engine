@@ -11,12 +11,12 @@ module;
     #include <EngineFactoryD3D12.h>
 #endif
 
-module Ryntime.Platform;
+module Ryntime.Service;
 
 RYN_SCOPE_FILE("Service|Graphics");
 
 namespace {
-    Diligent::NativeWindow getNativeWindow(const ryn::platform::WindowHandles& handles);
+    Diligent::NativeWindow getNativeWindow(const ryn::service::WindowHandles& handles);
     void                   debugMessageCallback(Diligent::DEBUG_MESSAGE_SEVERITY severity,
                                                 const Diligent::Char*            message,
                                                 const Diligent::Char*            function,
@@ -24,7 +24,7 @@ namespace {
                                                 int                              line);
 }
 
-namespace ryn::platform {
+namespace ryn::service {
     Graphics::Graphics(const GraphicsConfig& config) : m_CurrentBackend(config.Backend), m_CurrentVSync(config.VSync) {}
     Graphics::~Graphics() = default;
 
@@ -143,17 +143,17 @@ namespace ryn::platform {
 }
 
 namespace {
-    Diligent::NativeWindow getNativeWindow(const ryn::platform::WindowHandles& handles) {
+    Diligent::NativeWindow getNativeWindow(const ryn::service::WindowHandles& handles) {
         Diligent::NativeWindow nativeWindow;
 
 #if defined(RYN_PLATFORM_LINUX)
         switch (handles.NativeType) {
-            case ryn::platform::WindowNativeType::Wayland:
+            case ryn::service::WindowNativeType::Wayland:
                 nativeWindow.pWaylandSurface = handles.NativeHandle;
                 nativeWindow.pDisplay        = handles.NativeDisplayHandle;
                 return nativeWindow;
 
-            case ryn::platform::WindowNativeType::X11:
+            case ryn::service::WindowNativeType::X11:
                 // X11 expects a uint32_t Window ID, but we get a void* pointer.
                 // We cast via uintptr_t to safely truncate on 64-bit systems without warnings.
                 nativeWindow.WindowId = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(handles.NativeHandle));
@@ -163,7 +163,7 @@ namespace {
             default: RYN_ERROR("Unknown Linux window type!"); return nativeWindow;
         }
 #elif defined(RYN_PLATFORM_WIN)
-        if (handles.NativeType == ryn::platform::WindowNativeType::Win32) {
+        if (handles.NativeType == ryn::service::WindowNativeType::Win32) {
             nativeWindow.hWnd = handles.NativeHandle;
             return nativeWindow;
         }

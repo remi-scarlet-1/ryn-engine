@@ -3,13 +3,13 @@ module;
 #include <SwapChain.h>
 #include <cstdint>
 
-export module Ryntime.Platform:Graphics;
+export module Ryntime.Service:Graphics;
 export import Ryntime.Core;
 export import Ryntime.Core.Reflection;
 
 using namespace ryn::reflection;
 
-export namespace ryn::platform {
+export namespace ryn::service {
     enum class GraphicsBackend : uint8_t {
         Unknown   = 0,
         Vulkan    = 1,
@@ -28,7 +28,7 @@ export namespace ryn::platform {
         GraphicsVSync   VSync   = GraphicsVSync::Enable;
     };
 
-    class RYN_API Graphics final : public DynamicType<IService, "ryn::platform::Graphics"> {
+    class RYN_API Graphics final : public DynamicType<IService, "ryn::service::Graphics"> {
     public:
         explicit Graphics(const GraphicsConfig& config);
         ~Graphics() override;
@@ -59,4 +59,4 @@ export namespace ryn::platform {
     };
 }
 
-RYN_TYPE_REFLECTION_KEEP(ryn::platform::Graphics);
+RYN_TYPE_REFLECTION_KEEP(ryn::service::Graphics);

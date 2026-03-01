@@ -5,7 +5,7 @@ module;
 #include <unordered_map>
 #include <vector>
 
-export module Ryntime.World:World;
+export module Ryntime.Service:World;
 export import Ryntime.Core.Reflection;
 export import Ryntime.Core;
 
@@ -25,11 +25,11 @@ namespace entt {
     };
 }
 
-namespace ryn::world {
+namespace ryn::service {
     struct ComponentTag {};
 }
 
-export namespace ryn::world {
+export namespace ryn::service {
     class World;
 
     struct Entity {
@@ -84,7 +84,7 @@ export namespace ryn::world {
     concept IsSystem = std::derived_from<T, ISystem> && IsType<T>;
 }
 
-namespace ryn::world {
+namespace ryn::service {
     export using ObserverConnection = entt::scoped_connection;
 
     // clang-format off
@@ -101,8 +101,8 @@ namespace ryn::world {
     // clang-format on
 }
 
-export namespace ryn::world {
-    class RYN_API World final : public DynamicType<IService, "ryn::world::World"> {
+export namespace ryn::service {
+    class RYN_API World final : public DynamicType<IService, "ryn::service::World"> {
     public:
         // clang-format off
         [[nodiscard]] inline                      Entity                entityCreate();
@@ -166,10 +166,10 @@ export namespace ryn::world {
     };
 }
 
-RYN_TYPE_REFLECTION_KEEP(ryn::world::World);
+RYN_TYPE_REFLECTION_KEEP(ryn::service::World);
 
 /* ===== Inline API Implementations ===== */
-namespace ryn::world {
+namespace ryn::service {
     Entity World::entityCreate() { return m_Registry.create(); }
 
     void World::entityDestroy(Entity entity) { m_Registry.destroy(entity); }
