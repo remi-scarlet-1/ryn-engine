@@ -80,15 +80,6 @@ target_sources(RynRuntime
     source/platform/Input.ixx
     source/platform/Window.ixx
 
-    source/provided/__BUNDLE__.ixx
-    source/provided/Hierarchy.ixx
-
-    source/world/__BUNDLE__.ixx
-    source/world/Component.ixx
-    source/world/Entity.ixx
-    source/world/Processor.ixx
-    source/world/World.ixx
-
     source/Log.ixx
     source/Ryntime.ixx
 
@@ -102,8 +93,6 @@ target_sources(RynRuntime
     source/platform/Graphics.cpp
     source/platform/Input.cpp
     source/platform/Window.cpp
-
-    source/world/World.cpp
 
     source/Log.cpp
 )
