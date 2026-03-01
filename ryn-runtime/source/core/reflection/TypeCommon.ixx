@@ -41,8 +41,8 @@ export namespace ryn::reflection {
         None      = 0,
         Service   = 1,
         Event     = 2,
-        Processor = 3,
-        Component = 4,
+        Component = 3,
+        System    = 4,
         Count
     };
 
@@ -51,8 +51,8 @@ export namespace ryn::reflection {
             case TypeCategory::None: return "Other";
             case TypeCategory::Service: return "Service";
             case TypeCategory::Event: return "Event";
-            case TypeCategory::Processor: return "Processor";
             case TypeCategory::Component: return "Component";
+            case TypeCategory::System: return "System";
             case TypeCategory::Count: return "<internal_counter>";
         }
         return "<undefined>";
@@ -94,7 +94,7 @@ struct std::formatter<ryn::reflection::TypeInfo> {
     constexpr auto parse(const std::format_parse_context& ctx) const { return ctx.begin(); }
 
     inline auto format(const ryn::reflection::TypeInfo& info, std::format_context& ctx) const {
-        const char* name = info.Name ? info.Name : "<undefined>";
+        const char* name     = info.Name ? info.Name : "<undefined>";
         const char* category = ryn::reflection::typeCategoryToString(info.Category);
         return std::format_to(ctx.out(), "[ID: {}, Category: {}, Name: {}]", info.ID, category, name);
     }
