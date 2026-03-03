@@ -44,7 +44,7 @@ namespace ryn::service {
         auto execute = [&](auto memberFunc) {
             for (size_t i = 0; i < m_Systems.size(); ++i) {
                 auto& entry = m_Systems[i];
-                if (entry.Instance && entry.IsEnabled) (entry.Instance.get()->*memberFunc)(time, *this);
+                if (entry.Instance && entry.IsEnabled) (entry.Instance.get()->*memberFunc)(time);
             }
         };
 
@@ -56,7 +56,7 @@ namespace ryn::service {
         sweepSystems();
     }
 
-    bool World::internal_systemMake(TypeID id, Box<ISystem>&& system) {
+    bool World::internal_systemEmplace(TypeID id, Box<ISystem>&& system) {
         // Avoid duplicate entries
         if (m_SystemIndexMap.contains(id)) {
             RYN_ERROR("Cannot make duplicate systems! Second instance of system {0} will be destroyed.", TypeRegistry::queryType(id));
@@ -120,7 +120,7 @@ namespace ryn::service {
 
     void World::sweepSystems() {
         // Erase-remove idiom for the nulls
-        auto it = std::remove_if(m_Systems.begin(), m_Systems.end(), [](const auto& s) { return !s.Instance; });
+        auto it = std::ranges::remove_if(m_Systems, [](const auto& s) { return !s.Instance; }).begin();
 
         if (it != m_Systems.end()) {
             m_Systems.erase(it, m_Systems.end());

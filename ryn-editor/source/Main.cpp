@@ -27,8 +27,18 @@ namespace rynd {
             getServiceStack().push<ryn::service::Window>(windowConfig);
             getServiceStack().push<ryn::service::Input>();
             getServiceStack().push<ryn::service::Graphics>(graphicsConfig);
-            getServiceStack().push<ryn::service::World>();
+            auto world = getServiceStack().push<ryn::service::World>();
             getServiceStack().push<Editor>();
+
+            // TODO: remove hierarchy system test
+            world->systemMake<ryn::game::HierarchySystem>();
+
+            auto entity = world->entityCreate();
+            auto entity2 = world->entityCreate();
+            world->componentMake<ryn::game::HierarchyComponent>(entity);
+            world->componentMake<ryn::game::HierarchyComponent>(entity2);
+
+            ryn::game::HierarchySystem::setParent(*world, entity, entity2);
         }
 
         void onShutdown() override {}

@@ -2,6 +2,7 @@ module;
 #include "Prelude.h"
 #include <cstdint>
 #include <entt/entt.hpp>
+#include <format>
 #include <unordered_map>
 #include <vector>
 
@@ -32,7 +33,7 @@ namespace ryn::service {
 export namespace ryn::service {
     class World;
 
-    struct Entity {
+    struct RYN_API Entity {
         static const Entity Null;
 
         constexpr Entity(entt::entity e) noexcept : id(static_cast<ENTT_ID_TYPE>(e)) {}
@@ -75,9 +76,16 @@ export namespace ryn::service {
         virtual inline void onEnable() {}
         virtual inline void onDisable() {}
 
-        virtual inline void onBeginFrame([[maybe_unused]] const FrameTime time, [[maybe_unused]] World& world) {}
-        virtual inline void onUpdate([[maybe_unused]] const FrameTime time, [[maybe_unused]] World& world) {}
-        virtual inline void onEndFrame([[maybe_unused]] const FrameTime time, [[maybe_unused]] World& world) {}
+        virtual inline void onBeginFrame([[maybe_unused]] const FrameTime time) {}
+        virtual inline void onUpdate([[maybe_unused]] const FrameTime time) {}
+        virtual inline void onEndFrame([[maybe_unused]] const FrameTime time) {}
+
+    protected:
+        [[nodiscard]] inline World& world() const noexcept { return *m_World; }
+
+    private:
+        friend World;
+        World* m_World = nullptr;
     };
 
     template<typename T>
@@ -109,10 +117,11 @@ export namespace ryn::service {
         inline                                    void                  entityDestroy(Entity entity);
 
         template<IsComponent T, typename... Args> T*                    componentMake(Entity entity, Args&&... args);
+        template<IsComponent T, typename... Args> T*                    componentReplace(Entity entity, Args&&... args);
         template<IsComponent T, typename... Args> T*                    componentGetOrMake(Entity entity, Args&&... args);
         template<IsComponent T>                   [[nodiscard]] T*      componentGet(Entity entity);
         template<IsComponent T>                   [[nodiscard]] T*      componentTryGet(Entity entity);
-        template<IsComponent T>                   [[nodiscard]] bool    componentExists(Entity entity);
+        template<IsComponent T>                   [[nodiscard]] bool    componentHas(Entity entity);
         template<IsComponent T>                   bool                  componentDestroy(Entity entity);
 
         template<IsSystem T, typename... Args>    T*                    systemMake(Args&&... args);
@@ -123,21 +132,25 @@ export namespace ryn::service {
         template<IsComponent T, typename... Args> T*                    singletonGetOrMake(Args&&... args);
         template<IsComponent T>                   [[nodiscard]] T*      singletonGet();
         template<IsComponent T>                   [[nodiscard]] T*      singletonTryGet();
-        template<IsComponent T>                   [[nodiscard]] bool    singletonExists();
+        template<IsComponent T>                   [[nodiscard]] bool    singletonHas();
         template<IsComponent T>                   bool                  singletonDestroy();
 
         template<IsComponent T>                                          [[nodiscard]] Span<T>  all();
         template<IsInclTag Incl, IsExclTag Excl = Excl<>, typename Func> void                   foreach(Func&& func);
 
         // Signature for all callback Candidates must be: void(entt::registry&, entt::entity)
-        template<IsComponent T, auto Candidate>                void                             onComponentMade();
-        template<IsComponent T, auto Candidate>                void                             onComponentDestroyed();
-        template<IsComponent T, auto Candidate>                void                             offComponentMade();
-        template<IsComponent T, auto Candidate>                void                             offComponentDestroyed();
-        template<IsComponent T, auto Candidate, typename Type> [[nodiscard]] ObserverConnection onComponentMade(Type* instance);
-        template<IsComponent T, auto Candidate, typename Type> [[nodiscard]] ObserverConnection onComponentDestroyed(Type* instance);
-        template<IsComponent T, auto Candidate, typename Type> void                             offComponentMade(Type* instance);
-        template<IsComponent T, auto Candidate, typename Type> void                             offComponentDestroyed(Type* instance);
+        template<IsComponent T, auto Candidate>                void                             onComponentMake();
+        template<IsComponent T, auto Candidate>                void                             onComponentUpdate();
+        template<IsComponent T, auto Candidate>                void                             onComponentDestroy();
+        template<IsComponent T, auto Candidate>                void                             offComponentMake();
+        template<IsComponent T, auto Candidate>                void                             offComponentUpdate();
+        template<IsComponent T, auto Candidate>                void                             offComponentDestroy();
+        template<IsComponent T, auto Candidate, typename Type> [[nodiscard]] ObserverConnection onComponentMake(Type* instance);
+        template<IsComponent T, auto Candidate, typename Type> [[nodiscard]] ObserverConnection onComponentUpdate(Type* instance);
+        template<IsComponent T, auto Candidate, typename Type> [[nodiscard]] ObserverConnection onComponentDestroy(Type* instance);
+        template<IsComponent T, auto Candidate, typename Type> void                             offComponentMake(Type* instance);
+        template<IsComponent T, auto Candidate, typename Type> void                             offComponentUpdate(Type* instance);
+        template<IsComponent T, auto Candidate, typename Type> void                             offComponentDestroy(Type* instance);
         // clang-format on
 
     protected:
@@ -159,7 +172,7 @@ export namespace ryn::service {
         std::vector<SystemEntry>           m_Systems;
         std::unordered_map<TypeID, size_t> m_SystemIndexMap;
 
-        bool internal_systemMake(TypeID id, Box<ISystem>&& system);
+        bool internal_systemEmplace(TypeID id, Box<ISystem>&& system);
         bool internal_systemDestroy(TypeID id);
         bool internal_systemToggle(TypeID id, bool enable);
         void sweepSystems();
@@ -176,26 +189,57 @@ namespace ryn::service {
 
     template<IsComponent T, typename... Args>
     T* World::componentMake(Entity entity, Args&&... args) {
-        return &m_Registry.emplace<T>(entity, std::forward<Args>(args)...);
+        RYN_ASSERT(!componentHas<T>(entity), "Expected entity to NOT have component!");
+        if constexpr (std::is_empty_v<T>) {
+            m_Registry.emplace<T>(entity, std::forward<Args>(args)...);
+            return nullptr;
+        } else {
+            return &m_Registry.emplace<T>(entity, std::forward<Args>(args)...);
+        }
+    }
+
+    template<IsComponent T, typename... Args>
+    T* World::componentReplace(Entity entity, Args&&... args) {
+        RYN_ASSERT(componentHas<T>(entity), "Expected entity to have component!");
+        if constexpr (std::is_empty_v<T>) {
+            m_Registry.replace<T>(entity, std::forward<Args>(args)...);
+            return nullptr;
+        } else {
+            return &m_Registry.replace<T>(entity, std::forward<Args>(args)...);
+        }
     }
 
     template<IsComponent T, typename... Args>
     T* World::componentGetOrMake(Entity entity, Args&&... args) {
-        return &m_Registry.get_or_emplace<T>(entity, std::forward<Args>(args)...);
+        if constexpr (std::is_empty_v<T>) {
+            m_Registry.get_or_emplace<T>(entity, std::forward<Args>(args)...);
+            return nullptr;
+        } else {
+            return &m_Registry.get_or_emplace<T>(entity, std::forward<Args>(args)...);
+        }
     }
 
     template<IsComponent T>
     T* World::componentGet(Entity entity) {
-        return &m_Registry.get<T>(entity);
+        RYN_ASSERT(componentHas<T>(entity), "Expected entity to have component!");
+        if constexpr (std::is_empty_v<T>) {
+            return nullptr;
+        } else {
+            return &m_Registry.get<T>(entity);
+        }
     }
 
     template<IsComponent T>
     T* World::componentTryGet(Entity entity) {
-        return m_Registry.try_get<T>(entity);
+        if constexpr (std::is_empty_v<T>) {
+            return nullptr;
+        } else {
+            return m_Registry.try_get<T>(entity);
+        }
     }
 
     template<IsComponent T>
-    bool World::componentExists(Entity entity) {
+    bool World::componentHas(Entity entity) {
         return m_Registry.all_of<T>(entity);
     }
 
@@ -208,7 +252,8 @@ namespace ryn::service {
     T* World::systemMake(Args&&... args) {
         Box<ISystem> systemBox = Box<T>::template make<T>(std::forward<Args>(args)...);
         ISystem*     system    = systemBox.get();
-        return internal_systemMake(T::TYPE_ID, systemBox) ? static_cast<T*>(system) : nullptr;
+        system->m_World        = this;
+        return internal_systemEmplace(T::TYPE_ID, std::move(systemBox)) ? static_cast<T*>(system) : nullptr;
     }
 
     template<IsSystem T>
@@ -223,19 +268,26 @@ namespace ryn::service {
 
     template<IsComponent T, typename... Args>
     T* World::singletonMake(Args&&... args) {
-        return &m_Registry.ctx().emplace<T>(std::forward<Args>(args)...);
+        auto& res = m_Registry.ctx().emplace<T>(std::forward<Args>(args)...);
+        if constexpr (std::is_empty_v<T>) return nullptr;
+        else return &res;
     }
 
     template<IsComponent T, typename... Args>
     T* World::singletonGetOrMake(Args&&... args) {
         auto& ctx = m_Registry.ctx();
         if (T* ptr = ctx.find<T>()) return ptr;
-        return &ctx.emplace<T>(std::forward<Args>(args)...);
+
+        auto& res = ctx.emplace<T>(std::forward<Args>(args)...);
+        if constexpr (std::is_empty_v<T>) return nullptr;
+        else return &res;
     }
 
     template<IsComponent T>
     T* World::singletonGet() {
-        return &m_Registry.ctx().get<T>();
+        auto& res = m_Registry.ctx().get<T>();
+        if constexpr (std::is_empty_v<T>) return nullptr;
+        else return &res;
     }
 
     template<IsComponent T>
@@ -244,7 +296,7 @@ namespace ryn::service {
     }
 
     template<IsComponent T>
-    bool World::singletonExists() {
+    bool World::singletonHas() {
         return m_Registry.ctx().contains<T>();
     }
 
@@ -274,42 +326,71 @@ namespace ryn::service {
     }
 
     template<IsComponent T, auto Candidate>
-    void World::onComponentMade() {
+    void World::onComponentMake() {
         m_Registry.on_construct<T>().template connect<Candidate>();
     }
 
     template<IsComponent T, auto Candidate>
-    void World::onComponentDestroyed() {
+    void World::onComponentUpdate() {
+        m_Registry.on_update<T>().template connect<Candidate>();
+    }
+
+    template<IsComponent T, auto Candidate>
+    void World::onComponentDestroy() {
         m_Registry.on_destroy<T>().template connect<Candidate>();
     }
 
     template<IsComponent T, auto Candidate>
-    void World::offComponentMade() {
+    void World::offComponentMake() {
         m_Registry.on_construct<T>().template disconnect<Candidate>();
     }
 
     template<IsComponent T, auto Candidate>
-    void World::offComponentDestroyed() {
+    void World::offComponentUpdate() {
+        m_Registry.on_update<T>().template disconnect<Candidate>();
+    }
+
+    template<IsComponent T, auto Candidate>
+    void World::offComponentDestroy() {
         m_Registry.on_destroy<T>().template disconnect<Candidate>();
     }
 
     template<IsComponent T, auto Candidate, typename Type>
-    ObserverConnection World::onComponentMade(Type* instance) {
+    ObserverConnection World::onComponentMake(Type* instance) {
         return m_Registry.on_construct<T>().template connect<Candidate>(instance);
     }
 
     template<IsComponent T, auto Candidate, typename Type>
-    ObserverConnection World::onComponentDestroyed(Type* instance) {
+    ObserverConnection World::onComponentUpdate(Type* instance) {
+        return m_Registry.on_update<T>().template connect<Candidate>(instance);
+    }
+
+    template<IsComponent T, auto Candidate, typename Type>
+    ObserverConnection World::onComponentDestroy(Type* instance) {
         return m_Registry.on_destroy<T>().template connect<Candidate>(instance);
     }
 
     template<IsComponent T, auto Candidate, typename Type>
-    void World::offComponentMade(Type* instance) {
+    void World::offComponentMake(Type* instance) {
         m_Registry.on_construct<T>().template disconnect<Candidate>(instance);
     }
 
     template<IsComponent T, auto Candidate, typename Type>
-    void World::offComponentDestroyed(Type* instance) {
+    void World::offComponentUpdate(Type* instance) {
+        m_Registry.on_update<T>().template disconnect<Candidate>(instance);
+    }
+
+    template<IsComponent T, auto Candidate, typename Type>
+    void World::offComponentDestroy(Type* instance) {
         m_Registry.on_destroy<T>().template disconnect<Candidate>(instance);
     }
 }
+
+template<>
+struct std::formatter<ryn::service::Entity> {
+    constexpr auto parse(const std::format_parse_context& ctx) const { return ctx.begin(); }
+
+    inline auto format(const ryn::service::Entity entity, std::format_context& ctx) const {
+        return std::format_to(ctx.out(), "{}", static_cast<ENTT_ID_TYPE>(entity));
+    }
+};

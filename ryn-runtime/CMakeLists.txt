@@ -23,7 +23,7 @@ target_compile_definitions(RynRuntime
     GLM_FORCE_ALIGNED
     GLM_FORCE_DEPTH_ZERO_TO_ONE
     GLM_FORCE_LEFT_HANDED
-    ENTT_ID_TYPE=uint64_t
+    ENTT_ID_TYPE=uint32_t
     PRIVATE
     RYN_RUNTIME
 )
@@ -80,6 +80,9 @@ target_sources(RynRuntime
     source/service/Input.ixx
     source/service/Window.ixx
     source/service/World.ixx
+
+    source/game/__BUNDLE__.ixx
+    source/game/Hierarchy.ixx
 
     source/Log.ixx
     source/Ryntime.ixx
