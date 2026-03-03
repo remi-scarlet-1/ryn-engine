@@ -99,6 +99,19 @@ export namespace ryn {
         virtual IService* requestService(TypeID typeId, bool required) = 0;
         virtual void      notifyMissingService(TypeID typeId)          = 0;
     };
+
+    class RYN_API ServiceDiscovery : public IServiceLocator {
+    public:
+        explicit ServiceDiscovery(IServiceLocator& locator);
+        [[nodiscard]] inline bool wasSuccess() const noexcept { return m_Success; }
+
+    private:
+        IServiceLocator& m_ServiceLocator;
+        bool             m_Success = true;
+
+        IService* requestService(TypeID typeId, bool required) override;
+        void      notifyMissingService(TypeID typeId) override;
+    };
 }
 
 namespace ryn {

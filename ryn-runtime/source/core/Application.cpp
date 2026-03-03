@@ -52,7 +52,7 @@ namespace ryn {
     }
 
     void IApplication::onEventIntercept(EventListener& listener) {
-        listener.match<service::WindowCloseEvent>([this](service::WindowCloseEvent& event) {
+        listener.match<event::WindowClose>([this](event::WindowClose& event) {
             m_Running = false;
             event.consume();
         });

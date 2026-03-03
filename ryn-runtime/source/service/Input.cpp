@@ -22,7 +22,7 @@ namespace ryn::service {
     }
 
     void Input::onEvent(EventListener& listener) {
-        listener.match<WindowKeypressEvent>([this](WindowKeypressEvent& e) {
+        listener.match<event::WindowKeypress>([this](event::WindowKeypress& e) {
             const auto index = static_cast<size_t>(e.Keycode);
             if (index < MAX_KEYCODES) {
                 m_Keys.set(index, e.IsDown);
@@ -31,20 +31,20 @@ namespace ryn::service {
             e.consume();
         });
 
-        listener.match<WindowMouseButtonEvent>([this](WindowMouseButtonEvent& e) {
+        listener.match<event::WindowMouseButton>([this](event::WindowMouseButton& e) {
             const auto index = static_cast<size_t>(e.Button);
             m_MouseButtons.set(index, e.IsDown);
             (e.IsDown ? m_MouseButtonsJustDown : m_MouseButtonsJustUp).set(index, true);
             e.consume();
         });
 
-        listener.match<WindowMouseMoveEvent>([this](WindowMouseMoveEvent& e) {
+        listener.match<event::WindowMouseMove>([this](event::WindowMouseMove& e) {
             m_MousePosition = e.Position;
             m_MousePositionDelta += e.Delta;
             e.consume();
         });
 
-        listener.match<WindowMouseScrollEvent>([this](WindowMouseScrollEvent& e) {
+        listener.match<event::WindowMouseScroll>([this](event::WindowMouseScroll& e) {
             m_MouseScrollDelta += e.Delta;
             e.consume();
         });

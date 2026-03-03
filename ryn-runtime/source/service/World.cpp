@@ -9,24 +9,6 @@ module Ryntime.Service;
 RYN_SCOPE_FILE("Service|World");
 
 namespace ryn::service {
-    ServiceDiscovery::ServiceDiscovery(IServiceLocator& locator) : m_ServiceLocator(locator) {}
-
-    IService* ServiceDiscovery::requestService(TypeID typeId, bool required) {
-        auto* service = IServiceLocator::requestService(m_ServiceLocator, typeId, false);
-
-        // Handle required missing services manually
-        if (required && !service) {
-            m_Success = false;
-            this->notifyMissingService(typeId);
-        }
-
-        return service;
-    }
-
-    void ServiceDiscovery::notifyMissingService(TypeID typeId) {
-        RYN_WARN("System configuration failed. Couldn't find: {0}", TypeRegistry::queryType(typeId));
-    }
-
     ISystem::~ISystem() = default;
 
     void World::onAttach(IServiceLocator& locator) { m_ServiceLocator = &locator; }
@@ -56,7 +38,7 @@ namespace ryn::service {
         sweepSystems();
     }
 
-    bool World::internal_systemEmplace(TypeID id, Box<ISystem>&& system) {
+    bool World::emplaceSystem(TypeID id, Box<ISystem>&& system) {
         // Avoid duplicate entries
         if (m_SystemIndexMap.contains(id)) {
             RYN_ERROR("Cannot make duplicate systems! Second instance of system {0} will be destroyed.", TypeRegistry::queryType(id));
@@ -66,23 +48,23 @@ namespace ryn::service {
         // Setup service discovery
         ServiceDiscovery discovery(*m_ServiceLocator);
         system->onConfigure(discovery);
-        bool discoveryWasSuccessful = discovery.wasSuccess();
+        bool configSuccessful = discovery.wasSuccess();
 
         // Initialize
-        if (discoveryWasSuccessful) system->onEnable();
+        if (configSuccessful) system->onEnable();
 
         // Add entry
         m_SystemIndexMap[id] = m_Systems.size();
         m_Systems.push_back({
             .Instance     = std::move(system),
-            .CachedTypeID = id,
-            .IsEnabled    = discoveryWasSuccessful,
-            .IsConfigured = discoveryWasSuccessful,
+            .Id = id,
+            .IsEnabled    = configSuccessful,
+            .IsConfigured = configSuccessful,
         });
         return true;
     }
 
-    bool World::internal_systemDestroy(TypeID id) {
+    bool World::destroySystem(TypeID id) {
         auto it = m_SystemIndexMap.find(id);
         if (it == m_SystemIndexMap.end()) {
             RYN_WARN("Attempt to destroy system {0} failed. No instance of it's type existed!", TypeRegistry::queryType(id));
@@ -95,7 +77,7 @@ namespace ryn::service {
         return true;
     }
 
-    bool World::internal_systemToggle(TypeID id, bool enable) {
+    bool World::toggleSystem(TypeID id, bool enable) {
         auto it = m_SystemIndexMap.find(id);
         if (it == m_SystemIndexMap.end()) {
             RYN_WARN("Attempt to toggle system {0} failed. No instance of it's type existed!", TypeRegistry::queryType(id));
@@ -126,7 +108,7 @@ namespace ryn::service {
             m_Systems.erase(it, m_Systems.end());
             // Re-index only if we actually removed something
             for (size_t i = 0; i < m_Systems.size(); ++i)
-                m_SystemIndexMap[m_Systems[i].CachedTypeID] = i;
+                m_SystemIndexMap[m_Systems[i].Id] = i;
         }
     }
 }

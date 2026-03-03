@@ -81,8 +81,8 @@ target_sources(RynRuntime
     source/service/Window.ixx
     source/service/World.ixx
 
-    source/game/__BUNDLE__.ixx
-    source/game/Hierarchy.ixx
+    source/system/__BUNDLE__.ixx
+    source/system/Hierarchy.ixx
 
     source/Log.ixx
     source/Ryntime.ixx

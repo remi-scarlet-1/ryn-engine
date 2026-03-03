@@ -1,40 +1,47 @@
 module;
 #include "Prelude.h"
 
-export module Ryntime.Game:Hierarchy;
+export module Ryntime.System:Hierarchy;
 export import Ryntime.Service;
 export import Ryntime.Core.Reflection;
 
 using namespace ryn::service;
 using namespace ryn::reflection;
 
-RYN_SCOPE_FILE("Game|HierarchySystem");
+export namespace ryn::system {
+    class Hierarchy;
+}
 
-export namespace ryn::game {
-    class HierarchySystem;
+export namespace ryn::component {
+    struct HierarchyRoot : IComponent<"ryn::component::HierarchyRoot"> {};
 
-    struct HierarchyRootTag : IComponent<"ryn::game::HierarchyRootTag"> {};
-
-    struct HierarchyComponent : IComponent<"ryn::game::HierarchyComponent"> {
+    struct Hierarchy : IComponent<"ryn::component::Hierarchy"> {
         inline Entity getParent() const { return Parent; }
         inline Entity getFirstChild() const { return First; }
         inline Entity getNextSibling() const { return Next; }
         inline Entity getPrevSibling() const { return Prev; }
 
     private:
-        friend HierarchySystem;
+        friend system::Hierarchy;
         Entity Parent = Entity::Null;
         Entity First  = Entity::Null;
         Entity Next   = Entity::Null;
         Entity Prev   = Entity::Null;
     };
+}
 
-    class RYN_API HierarchySystem final : public DynamicType<ISystem, "ryn::game::HierarchySystem"> {
+RYN_TYPE_REFLECTION_KEEP(ryn::component::HierarchyRoot);
+RYN_TYPE_REFLECTION_KEEP(ryn::component::Hierarchy);
+
+RYN_SCOPE_FILE("System|Hierarchy");
+
+export namespace ryn::system {
+    class RYN_API Hierarchy final : public DynamicType<ISystem, "ryn::system::Hierarchy"> {
     public:
         static void setParent(World& world, Entity entity, Entity parent) {
             if (!entity) return;
 
-            auto currentComp = world.componentGetOrMake<HierarchyComponent>(entity);
+            auto currentComp = world.Component.getOrMake<component::Hierarchy>(entity);
             if (currentComp->Parent == parent) return;
 
             // Cycle detection
@@ -48,33 +55,33 @@ export namespace ryn::game {
             if (!parent) return; // Already detached, now a root.
 
             // Attach to new parent
-            auto* parentComp = world.componentGetOrMake<HierarchyComponent>(parent);
+            auto* parentComp = world.Component.getOrMake<component::Hierarchy>(parent);
 
             Entity oldFirst     = parentComp->First;
             currentComp->Parent = parent;
             currentComp->Next   = oldFirst;
             currentComp->Prev   = Entity::Null;
 
-            if (oldFirst) world.componentGet<HierarchyComponent>(oldFirst)->Prev = entity;
+            if (oldFirst) world.Component.get<component::Hierarchy>(oldFirst)->Prev = entity;
 
             parentComp->First = entity;
 
             // Remove root tag, no longer a root
-            world.componentDestroy<HierarchyRootTag>(entity);
+            world.Component.destroy<component::HierarchyRoot>(entity);
         }
 
         static void detachFromHierarchy(World& world, Entity entity) {
-            auto* current = world.componentTryGet<HierarchyComponent>(entity);
+            auto* current = world.Component.tryGet<component::Hierarchy>(entity);
             if (!current) return;
 
-            world.componentGetOrMake<HierarchyRootTag>(entity);
+            world.Component.getOrMake<component::HierarchyRoot>(entity);
             if (!current->Parent) return;
 
-            auto* parentComp = world.componentTryGet<HierarchyComponent>(current->Parent);
+            auto* parentComp = world.Component.tryGet<component::Hierarchy>(current->Parent);
             if (parentComp) {
                 if (parentComp->First == entity) parentComp->First = current->Next;
-                if (current->Prev) world.componentGet<HierarchyComponent>(current->Prev)->Next = current->Next;
-                if (current->Next) world.componentGet<HierarchyComponent>(current->Next)->Prev = current->Prev;
+                if (current->Prev) world.Component.get<component::Hierarchy>(current->Prev)->Next = current->Next;
+                if (current->Next) world.Component.get<component::Hierarchy>(current->Next)->Prev = current->Prev;
             }
 
             current->Parent = Entity::Null;
@@ -86,8 +93,8 @@ export namespace ryn::game {
             Entity current = descendant;
             while (current) {
                 if (current == ancestor) return true;
-                auto* comp = world.componentTryGet<HierarchyComponent>(current);
-                current    = comp ? comp->Parent : Entity::Null;
+                component::Hierarchy* comp = world.Component.tryGet<component::Hierarchy>(current);
+                current = comp ? comp->Parent : Entity::Null;
             }
             return false;
         }
@@ -98,44 +105,42 @@ export namespace ryn::game {
         ObserverConnection m_OnHierarchyDestroy;
 
         void onConfigure(ServiceDiscovery& discovery) override {
-            m_OnTagMake          = world().onComponentMake<HierarchyRootTag, &HierarchySystem::onTagMake>(this);
-            m_OnHierarchyMake    = world().onComponentMake<HierarchyComponent, &HierarchySystem::onHierarchyMake>(this);
-            m_OnHierarchyDestroy = world().onComponentDestroy<HierarchyComponent, &HierarchySystem::onHierarchyDestroy>(this);
+            m_OnTagMake          = m_World->Observer.onMake<component::HierarchyRoot, &Hierarchy::onTagMake>(this);
+            m_OnHierarchyMake    = m_World->Observer.onMake<component::Hierarchy, &Hierarchy::onHierarchyMake>(this);
+            m_OnHierarchyDestroy = m_World->Observer.onDestroy<component::Hierarchy, &Hierarchy::onHierarchyDestroy>(this);
         }
 
         void onTagMake(Entity entity) {
             // If wrong conditions, force root tag back off
-            auto* comp = world().componentTryGet<HierarchyComponent>(entity);
-            if (!comp || comp->Parent) world().componentDestroy<HierarchyRootTag>(entity);
+            component::Hierarchy* comp = m_World->Component.tryGet<component::Hierarchy>(entity);
+            if (!comp || comp->Parent) m_World->Component.destroy<component::HierarchyRoot>(entity);
         }
 
         void onHierarchyMake(Entity entity) {
             // New hierarchy components are root by default
-            world().componentGetOrMake<HierarchyRootTag>(entity);
+            m_World->Component.getOrMake<component::HierarchyRoot>(entity);
         }
 
         void onHierarchyDestroy(Entity entity) {
-            detachFromHierarchy(world(), entity);
+            detachFromHierarchy(*m_World, entity);
 
-            auto current = world().componentGet<HierarchyComponent>(entity);
+            auto current = m_World->Component.get<component::Hierarchy>(entity);
 
             Entity child = current->First;
             while (child) {
-                auto   childHierarchy = world().componentTryGet<HierarchyComponent>(child);
+                auto   childHierarchy = m_World->Component.tryGet<component::Hierarchy>(child);
                 Entity nextSibling    = childHierarchy ? childHierarchy->Next : Entity::Null;
 
                 // Destroying the entity will trigger this same callback for the child
-                world().entityDestroy(child);
+                m_World->Entity.destroy(child);
 
                 child = nextSibling;
             }
 
             // Cleanup root tag
-            world().componentDestroy<HierarchyRootTag>(entity);
+            m_World->Component.destroy<component::HierarchyRoot>(entity);
         }
     };
 }
 
-RYN_TYPE_REFLECTION_KEEP(ryn::game::HierarchyRootTag);
-RYN_TYPE_REFLECTION_KEEP(ryn::game::HierarchyComponent);
-RYN_TYPE_REFLECTION_KEEP(ryn::game::HierarchySystem);
+RYN_TYPE_REFLECTION_KEEP(ryn::system::Hierarchy);

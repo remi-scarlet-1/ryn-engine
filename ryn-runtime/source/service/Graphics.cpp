@@ -84,7 +84,7 @@ namespace ryn::service {
     void Graphics::onEndFrame([[maybe_unused]] const FrameTime& time) { m_Swapchain->Present(static_cast<uint32_t>(m_CurrentVSync)); }
 
     void Graphics::onEvent(EventListener& listener) {
-        listener.match<WindowFramebufferResizeEvent>([this](WindowFramebufferResizeEvent& e) {
+        listener.match<event::WindowFramebufferResize>([this](event::WindowFramebufferResize& e) {
             if (e.Resolution.x > 0 && e.Resolution.y > 0) {
                 RYN_TRACE("Resizing swapchain to {0}x{1}", e.Resolution.x, e.Resolution.y);
                 m_Swapchain->Resize(e.Resolution.x, e.Resolution.y);

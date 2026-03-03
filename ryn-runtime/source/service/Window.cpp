@@ -67,31 +67,31 @@ namespace ryn::service {
                 case SDL_EVENT_QUIT: {
                     RYN_TRACE("Close requested by operating system");
                     m_IsClosing = true;
-                    dispatchEvent(WindowCloseEvent());
+                    dispatchEvent(event::WindowClose());
                     break;
                 }
                 case SDL_EVENT_WINDOW_CLOSE_REQUESTED: {
                     if (event.window.windowID == SDL_GetWindowID(m_Window)) {
                         RYN_TRACE("Close requested by user");
                         m_IsClosing = true;
-                        dispatchEvent(WindowCloseEvent());
+                        dispatchEvent(event::WindowClose());
                     }
                     break;
                 }
                 case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED: {
                     RYN_TRACE("Resize detected {0}x{1}", event.window.data1, event.window.data2);
-                    dispatchEvent(WindowFramebufferResizeEvent(
+                    dispatchEvent(event::WindowFramebufferResize(
                         Vector2Int(event.window.data1, event.window.data2)
                     ));
                     break;
                 }
                 case SDL_EVENT_TEXT_INPUT: {
-                    dispatchEvent(WindowTextInputEvent(event.text.text));
+                    dispatchEvent(event::WindowTextInput(event.text.text));
                     break;
                 }
                 case SDL_EVENT_KEY_DOWN:
                 case SDL_EVENT_KEY_UP: {
-                    dispatchEvent(WindowKeypressEvent(
+                    dispatchEvent(event::WindowKeypress(
                         mapSDLScancodeToKeycode(event.key.scancode),
                         event.type == SDL_EVENT_KEY_DOWN,
                         event.key.repeat
@@ -100,7 +100,7 @@ namespace ryn::service {
                 }
                 case SDL_EVENT_MOUSE_BUTTON_DOWN:
                 case SDL_EVENT_MOUSE_BUTTON_UP: {
-                    dispatchEvent(WindowMouseButtonEvent(
+                    dispatchEvent(event::WindowMouseButton(
                         static_cast<MouseButton>(event.button.button),
                         event.type == SDL_EVENT_MOUSE_BUTTON_DOWN,
                         event.button.clicks,
@@ -109,7 +109,7 @@ namespace ryn::service {
                     break;
                 }
                 case SDL_EVENT_MOUSE_MOTION: {
-                    dispatchEvent(WindowMouseMoveEvent(
+                    dispatchEvent(event::WindowMouseMove(
                         Vector2(event.motion.x * dpiFactor.x, event.motion.y * dpiFactor.y),
                         Vector2(event.motion.xrel * dpiFactor.x, event.motion.yrel * dpiFactor.y)
                     ));
@@ -119,7 +119,7 @@ namespace ryn::service {
                     Vector2 delta(event.wheel.x, event.wheel.y);
                     if (event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED)
                         delta.x = -delta.x;
-                    dispatchEvent(WindowMouseScrollEvent(delta));
+                    dispatchEvent(event::WindowMouseScroll(delta));
                     break;
                 }
                 default: break;

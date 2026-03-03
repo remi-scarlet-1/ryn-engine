@@ -31,14 +31,16 @@ namespace rynd {
             getServiceStack().push<Editor>();
 
             // TODO: remove hierarchy system test
-            world->systemMake<ryn::game::HierarchySystem>();
+            world->System.make<ryn::system::Hierarchy>();
 
-            auto entity = world->entityCreate();
-            auto entity2 = world->entityCreate();
-            world->componentMake<ryn::game::HierarchyComponent>(entity);
-            world->componentMake<ryn::game::HierarchyComponent>(entity2);
+            auto entity = world->Entity.create();
+            auto entity2 = world->Entity.create();
+            world->Component.make<ryn::component::Hierarchy>(entity);
+            world->Component.make<ryn::component::Hierarchy>(entity2);
 
-            ryn::game::HierarchySystem::setParent(*world, entity, entity2);
+            ryn::system::Hierarchy::setParent(*world, entity, entity2);
+
+            [[maybe_unused]] auto test = world->Component.tryGet<ryn::component::HierarchyRoot>(entity);
         }
 
         void onShutdown() override {}

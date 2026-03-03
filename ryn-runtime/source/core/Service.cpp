@@ -12,6 +12,24 @@ namespace ryn {
     IServiceStack::~IServiceStack()     = default;
     IServiceLocator::~IServiceLocator() = default;
 
+    ServiceDiscovery::ServiceDiscovery(IServiceLocator& locator) : m_ServiceLocator(locator) {}
+
+    IService* ServiceDiscovery::requestService(TypeID typeId, bool required) {
+        auto* service = IServiceLocator::requestService(m_ServiceLocator, typeId, false);
+
+        // Handle required missing services manually
+        if (required && !service) {
+            m_Success = false;
+            this->notifyMissingService(typeId);
+        }
+
+        return service;
+    }
+
+    void ServiceDiscovery::notifyMissingService(TypeID typeId) {
+        RYN_WARN("Service discovery failed. Couldn't find: {0}", TypeRegistry::queryType(typeId));
+    }
+
     ServiceStack::ServiceStack() = default;
     ServiceStack::~ServiceStack() {
         RYN_INFO("Destroy Services...");
