@@ -136,5 +136,6 @@ export namespace ryn::game {
     };
 }
 
+RYN_TYPE_REFLECTION_KEEP(ryn::game::HierarchyRootTag);
 RYN_TYPE_REFLECTION_KEEP(ryn::game::HierarchyComponent);
 RYN_TYPE_REFLECTION_KEEP(ryn::game::HierarchySystem);
