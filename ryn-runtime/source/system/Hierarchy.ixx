@@ -94,15 +94,15 @@ export namespace ryn::system {
             while (current) {
                 if (current == ancestor) return true;
                 component::Hierarchy* comp = world.Component.tryGet<component::Hierarchy>(current);
-                current = comp ? comp->Parent : Entity::Null;
+                current                    = comp ? comp->Parent : Entity::Null;
             }
             return false;
         }
 
     private:
-        ObserverConnection m_OnTagMake;
-        ObserverConnection m_OnHierarchyMake;
-        ObserverConnection m_OnHierarchyDestroy;
+        World::ObserverAPI::Connection m_OnTagMake;
+        World::ObserverAPI::Connection m_OnHierarchyMake;
+        World::ObserverAPI::Connection m_OnHierarchyDestroy;
 
         void onConfigure(ServiceDiscovery& discovery) override {
             m_OnTagMake          = m_World->Observer.onMake<component::HierarchyRoot, &Hierarchy::onTagMake>(this);
