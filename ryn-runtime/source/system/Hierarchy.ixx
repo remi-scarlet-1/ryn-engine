@@ -72,10 +72,7 @@ export namespace ryn::system {
 
         static void detachFromHierarchy(World& world, Entity entity) {
             auto* current = world.Component.tryGet<component::Hierarchy>(entity);
-            if (!current) return;
-
-            world.Component.getOrMake<component::HierarchyRoot>(entity);
-            if (!current->Parent) return;
+            if (!current || !current->Parent) return;
 
             auto* parentComp = world.Component.tryGet<component::Hierarchy>(current->Parent);
             if (parentComp) {
@@ -87,6 +84,8 @@ export namespace ryn::system {
             current->Parent = Entity::Null;
             current->Next   = Entity::Null;
             current->Prev   = Entity::Null;
+
+            world.Component.getOrMake<component::HierarchyRoot>(entity);
         }
 
         static bool isAncestorOf(World& world, Entity ancestor, Entity descendant) {
@@ -101,19 +100,34 @@ export namespace ryn::system {
 
     private:
         World::ObserverAPI::Connection m_OnRootMake;
+        World::ObserverAPI::Connection m_OnRootDestroy;
         World::ObserverAPI::Connection m_OnHierarchyMake;
         World::ObserverAPI::Connection m_OnHierarchyDestroy;
 
         void onConfigure(ServiceDiscovery& discovery) override {
             m_OnRootMake         = m_World->Observer.onMake<component::HierarchyRoot, &Hierarchy::onRootMake>(this);
+            m_OnRootDestroy      = m_World->Observer.onDestroy<component::HierarchyRoot, &Hierarchy::onRootDestroy>(this);
             m_OnHierarchyMake    = m_World->Observer.onMake<component::Hierarchy, &Hierarchy::onHierarchyMake>(this);
             m_OnHierarchyDestroy = m_World->Observer.onDestroy<component::Hierarchy, &Hierarchy::onHierarchyDestroy>(this);
         }
 
         void onRootMake(Entity entity) {
-            // If wrong conditions, force root tag back off
+            // If Root tag is added, but missing Hierarchy component OR entity has a parent, kill the tag.
             component::Hierarchy* comp = m_World->Component.tryGet<component::Hierarchy>(entity);
-            if (!comp || comp->Parent) m_World->Component.destroy<component::HierarchyRoot>(entity);
+            if (!comp || comp->Parent) {
+                RYN_ERROR("Hierarchy Invariant Violated: Root tag added to entity {0} which is NOT a hierarchy root!", entity);
+                m_World->Component.destroy<component::HierarchyRoot>(entity);
+            }
+        }
+
+        void onRootDestroy(Entity entity) {
+            // If the tag is being removed but it's STILL a logical root:
+            auto* comp = m_World->Component.tryGet<component::Hierarchy>(entity);
+            if (comp) {
+                RYN_VERIFY(comp->getParent() != Entity::Null,
+                           "Hierarchy Invariant Violated: Root tag removed from a logical root entity {0}!",
+                           entity);
+            }
         }
 
         void onHierarchyMake(Entity entity) {
