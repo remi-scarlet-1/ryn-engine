@@ -100,17 +100,17 @@ export namespace ryn::system {
         }
 
     private:
-        World::ObserverAPI::Connection m_OnTagMake;
+        World::ObserverAPI::Connection m_OnRootMake;
         World::ObserverAPI::Connection m_OnHierarchyMake;
         World::ObserverAPI::Connection m_OnHierarchyDestroy;
 
         void onConfigure(ServiceDiscovery& discovery) override {
-            m_OnTagMake          = m_World->Observer.onMake<component::HierarchyRoot, &Hierarchy::onTagMake>(this);
+            m_OnRootMake         = m_World->Observer.onMake<component::HierarchyRoot, &Hierarchy::onRootMake>(this);
             m_OnHierarchyMake    = m_World->Observer.onMake<component::Hierarchy, &Hierarchy::onHierarchyMake>(this);
             m_OnHierarchyDestroy = m_World->Observer.onDestroy<component::Hierarchy, &Hierarchy::onHierarchyDestroy>(this);
         }
 
-        void onTagMake(Entity entity) {
+        void onRootMake(Entity entity) {
             // If wrong conditions, force root tag back off
             component::Hierarchy* comp = m_World->Component.tryGet<component::Hierarchy>(entity);
             if (!comp || comp->Parent) m_World->Component.destroy<component::HierarchyRoot>(entity);
