@@ -13,6 +13,17 @@ export namespace ryn::system {
 }
 
 export namespace ryn::component {
+    /**
+     * @struct  ryn::component::Hierarchy
+     * @brief   Provides vertical traversal data for the scene hierarchy.
+     *
+     * This component defines the primary parent-child relationship. It is optimized
+     * for top-down recursive updates (like Transform solving) by storing only the
+     * parent and the head of the children list.
+     *
+     * @note    Horizontal traversal (iterating through all children of a parent)
+     *          requires the @ref ryn::component::HierarchySibling component.
+     */
     struct Hierarchy : IComponent<"ryn::component::Hierarchy"> {
         inline Entity getParent() const { return Parent; }
         inline Entity getFirstChild() const { return FirstChild; }
@@ -23,6 +34,19 @@ export namespace ryn::component {
         Entity FirstChild = Entity::Null;
     };
 
+    /**
+     * @struct  ryn::component::HierarchySibling
+     * @brief   Provides horizontal traversal data for the scene hierarchy.
+     *
+     * This component forms a doubly-linked list among entities sharing the same parent.
+     * It is used to navigate between siblings once a parent's FirstChild has been reached.
+     *
+     * @warning Manual destruction of this component via the World component API (CRUD)
+     *          will bypass the HierarchySystem and invalidate the doubly-linked list.
+     *          This can lead to "lost" entities in the hierarchy or broken traversal loops.
+     *          Always use @ref ryn::system::Hierarchy::clearParent to safely modify
+     *          hierarchy structures.
+     */
     struct HierarchySibling : IComponent<"ryn.component::HierarchySibling"> {
         inline Entity getNext() const { return Next; }
         inline Entity getPrev() const { return Prev; }
@@ -105,6 +129,9 @@ export namespace ryn::system {
                 // Zero-out our pointers to sibligns
                 siblings->Prev = Entity::Null;
                 siblings->Next = Entity::Null;
+
+                // Remove sibling component (we aren't parented anymore = cannot have siblings)
+                world.Component.destroy<component::HierarchySibling>(entity);
             }
         }
 
