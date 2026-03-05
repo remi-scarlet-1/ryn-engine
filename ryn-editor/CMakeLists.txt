@@ -20,18 +20,22 @@ target_link_libraries(RynEditor
 
 target_sources(RynEditor
     PRIVATE FILE_SET CXX_MODULES BASE_DIRS source FILES
-    source/other/ImGuiBackend.ixx
+    source/detail/__BUNDLE__.ixx
+    source/detail/ImGuiBackend.ixx
 
     source/panel/__BUNDLE__.ixx
     source/panel/Hierarchy.ixx
+    source/panel/IPanel.ixx
     source/panel/Registry.ixx
 
-    source/Editor.ixx
+    source/service/__BUNDLE__.ixx
+    source/service/Editor.ixx
 
     PRIVATE
-    source/other/FontEmbeddings.inl
-    source/other/ImGuiBackend.cpp
+    source/detail/FontEmbeddings.inl
+    source/detail/ImGuiBackend.cpp
 
-    source/Editor.cpp
+    source/service/Editor.cpp
+
     source/Main.cpp
 )

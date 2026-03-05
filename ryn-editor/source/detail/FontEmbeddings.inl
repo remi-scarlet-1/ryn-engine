@@ -1,6 +1,6 @@
 #pragma once
 
-namespace rynd::other {
+namespace rynd::detail {
     static constexpr unsigned int JETBRAIN_MONO_COMPRESSED_SIZE = 178631;
     static constexpr unsigned char JETBRAIN_MONO_COMPRESSED_DATA[178631] = {
         87,188,0,0,0,0,0,0,0,4,45,196,0,4,0,0,37,0,1,0,0,0,17,130,4,8,62,4,0,16,71,68,69,70,20,220,5,146,0,3,165,172,0,0,2,42,71,80,79,83,30,164,142,233,0,3,167,216,0,0,35,216,71,83,85,66,

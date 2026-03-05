@@ -4,7 +4,7 @@ module;
 #include <imgui.h>
 #include <vector>
 
-module Ryndition.ImGuiBackend;
+module Ryndition.Detail.ImGuiBackend;
 
 namespace {
     constexpr auto HLSL_VERTEX_SHADER = R"(
@@ -64,7 +64,7 @@ namespace {
     void          destroyTexture(ImTextureData* imTextureData);
 }
 
-namespace rynd::other {
+namespace rynd::detail {
     ImGuiBackend::ImGuiBackend(const service::Graphics& graphicsService) {
         // Retrieve devices (assume caller ensures the validity of the graphics layer during lifetime)
         m_Device    = &graphicsService.getDevice();
@@ -85,7 +85,7 @@ namespace rynd::other {
 
     ImGuiBackend::~ImGuiBackend() { invalidateDeviceObjects(); }
 
-    void ImGuiBackend::newFrame() {
+    void ImGuiBackend::beginFrame() {
         // Ensure graphics resources are valid
         if (!m_PSO) createDeviceObjects();
 

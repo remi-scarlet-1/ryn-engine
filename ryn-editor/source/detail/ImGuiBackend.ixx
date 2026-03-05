@@ -2,19 +2,19 @@ module;
 #include "Prelude.h"
 #include <cstdint>
 
-export module Ryndition.ImGuiBackend;
+export module Ryndition.Detail.ImGuiBackend;
 export import Ryntime;
 
 using namespace ryn::graphics;
 using namespace ryn;
 
-export namespace rynd::other {
+export namespace rynd::detail {
     class ImGuiBackend {
     public:
         explicit ImGuiBackend(const service::Graphics& graphicsService);
         ~ImGuiBackend();
 
-        void newFrame();
+        void beginFrame();
         void render();
         void createDeviceObjects();
         void invalidateDeviceObjects();

@@ -1,13 +1,12 @@
 module;
+#include "../detail/FontEmbeddings.inl"
 #include "Prelude.h"
-#include "other/FontEmbeddings.inl"
 #include <algorithm>
 #include <cmath>
 #include <imgui.h>
 #include <memory>
 
-module Ryndition;
-import Ryndition.Panel;
+module Ryndition.Service;
 
 RYN_SCOPE_FILE("Service|Editor");
 
@@ -15,84 +14,37 @@ namespace {
     constexpr ImGuiKey mapKeycodeToImGuiKey(ryn::Keycode keycode);
 }
 
-namespace rynd {
+namespace rynd::service {
     void Editor::onAttach(ryn::IServiceLocator& locator) {
-        locator.require(m_WindowService);
-        locator.require(m_GraphicsService);
+        m_ServiceLocator = &locator;
+        locator.require(m_Window);
+        locator.require(m_Graphics);
 
-        // Create ImGui context
-        IMGUI_CHECKVERSION();
-        ImGui::CreateContext();
-        ImGui::StyleColorsDark();
+        imGuiInit();
 
-        ImGuiIO& io    = ImGui::GetIO();
-        io.IniFilename = nullptr;
-        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-
-        // Upload font
-        io.Fonts->Clear();
-
-        ImFontConfig fontConfig;
-        fontConfig.PixelSnapH  = true;
-        fontConfig.OversampleH = 2;
-        fontConfig.OversampleV = 1;
-
-        m_Font = io.Fonts->AddFontFromMemoryCompressedTTF(other::JETBRAIN_MONO_COMPRESSED_DATA,
-                                                                 other::JETBRAIN_MONO_COMPRESSED_SIZE,
-                                                                 24,
-                                                                 &fontConfig);
-        RYN_VERIFY(m_Font != nullptr, "Failed to upload default font!");
-
-        // Create ImGui backend
-        m_Backend = std::make_unique<other::ImGuiBackend>(*m_GraphicsService);
-
-        // Create panels
-        m_Panels.emplace_back(std::make_unique<panel::Registry>());
+        makePanel<panel::Registry>();
+        makePanel<panel::Hierarchy>();
     }
 
-    void Editor::onDetach() {
-        m_Backend.reset();
-        ImGui::DestroyContext();
-    }
-
-    void Editor::onBeginFrame(const ryn::FrameTime& time) {
-        const auto framebufferSize = m_WindowService->getFramebufferSize();
-
-        // Update ImGui context
-        ImGuiIO& io                = ImGui::GetIO();
-        io.DeltaTime               = static_cast<float>(time.Delta);
-        io.DisplaySize             = ImVec2(static_cast<float>(framebufferSize.x), static_cast<float>(framebufferSize.y));
-        io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
-        if (io.WantTextInput) m_WindowService->maintainTextInput();
-
-        // Prepare ImGui backend new frame
-        m_Backend->newFrame();
-        ImGui::NewFrame();
-    }
-
-    void Editor::onEndFrame(const ryn::FrameTime& time) { ImGui::EndFrame(); }
+    void Editor::onDetach() { imGuiCleanup(); }
 
     void Editor::onUpdate(const ryn::FrameTime& time) {
-        // Create ImGui dockspace
-        static constexpr ImGuiDockNodeFlags DOCK_NODE_FLAGS = ImGuiDockNodeFlags_PassthruCentralNode;
-        ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), DOCK_NODE_FLAGS);
-
-        // Update panels
-        for (const auto& panel : m_Panels)
-            if (panel->isOpen())
-                panel->onUpdate(time);
+        imGuiBeginFrame(time);
 
         // Draw panels
-        for (const auto& panel : m_Panels)
-            if (ImGui::Begin(panel->getName()), panel->isOpen()) {
-                panel->onDraw(time);
-                ImGui::End();
-            }
+        for (const auto& panel : m_Panels) {
+            if (!panel.IsConfigured) continue;
 
-        // Finalize and render frame
-        ImGui::Render();
-        m_Backend->render();
+            ImGui::SetNextWindowSizeConstraints(ImVec2(200, 150), ImVec2(FLT_MAX, FLT_MAX));
+
+            static constexpr bool IS_OPEN = true;
+            if (ImGui::Begin(panel.Instance->getName()), &IS_OPEN)
+                panel.Instance->onDraw(time);
+
+            ImGui::End();
+        }
+
+        imGuiEndFrame();
     }
 
     void Editor::onEvent(ryn::EventListener& listener) {
@@ -125,6 +77,80 @@ namespace rynd {
             io.AddInputCharactersUTF8(e.Text);
             if (io.WantCaptureKeyboard) e.consume();
         });
+    }
+
+    void Editor::imGuiInit() {
+        // Create context
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        ImGui::StyleColorsDark();
+
+        ImGuiIO& io    = ImGui::GetIO();
+        io.IniFilename = nullptr;
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
+        // Upload font
+        ImFontConfig fontConfig;
+        fontConfig.PixelSnapH  = true;
+        fontConfig.OversampleH = 2;
+        fontConfig.OversampleV = 1;
+
+        io.Fonts->Clear();
+        io.Fonts->AddFontFromMemoryCompressedTTF(detail::JETBRAIN_MONO_COMPRESSED_DATA, detail::JETBRAIN_MONO_COMPRESSED_SIZE, 24, &fontConfig);
+
+        // Create backend
+        m_ImGuiBackend = std::make_unique<detail::ImGuiBackend>(*m_Graphics);
+    }
+
+    void Editor::imGuiCleanup() {
+        // Cleanup backend
+        m_ImGuiBackend.reset();
+
+        // Cleanup context
+        ImGui::DestroyContext();
+    }
+
+    void Editor::imGuiBeginFrame(const ryn::FrameTime& time) {
+        const auto resolution = m_Window->getFramebufferSize();
+
+        // Update context
+        ImGuiIO& io                = ImGui::GetIO();
+        io.DeltaTime               = static_cast<float>(time.Delta);
+        io.DisplaySize             = ImVec2(static_cast<float>(resolution.x), static_cast<float>(resolution.y));
+        io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
+        if (io.WantTextInput) m_Window->maintainTextInput();
+
+        // Prepare backend
+        m_ImGuiBackend->beginFrame();
+
+        // Prepare context
+        ImGui::NewFrame();
+
+        // Draw dockspace
+        static constexpr ImGuiDockNodeFlags DOCK_NODE_FLAGS = ImGuiDockNodeFlags_PassthruCentralNode;
+        ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), DOCK_NODE_FLAGS);
+    }
+
+    void Editor::imGuiEndFrame() {
+        // Finalize frame context
+        ImGui::Render();
+
+        // Finalize frame backend
+        m_ImGuiBackend->render();
+        ImGui::EndFrame();
+    }
+
+    Editor::PanelEntry Editor::setupPanel(std::unique_ptr<panel::IPanel> panel) {
+        ryn::ServiceDiscovery discovery(*m_ServiceLocator);
+        panel->onConfigure(discovery);
+
+        if (discovery.wasSuccess())
+            panel->onEnable();
+        else
+            RYN_WARN("Disabled '{0}' panel because it's required services couldn't be discovered!", panel->getName());
+
+        return PanelEntry{.Instance = std::move(panel), .IsConfigured = discovery.wasSuccess()};
     }
 }
 

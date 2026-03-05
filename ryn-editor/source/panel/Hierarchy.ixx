@@ -2,22 +2,18 @@ module;
 #include "Prelude.h"
 
 export module Ryndition.Panel:Hierarchy;
-export import Ryndition;
+export import Ryntime;
+export import :IPanel;
 
 export namespace rynd::panel {
-    class Hierarchy : public IEditorPanel {
+    class Hierarchy : public IPanel {
     public:
-        Hierarchy() = default;
+        Hierarchy()           = default;
         ~Hierarchy() override = default;
 
-        void onUpdate(const ryn::FrameTime& time) override {
-
-        }
-
-        void onDraw(const ryn::FrameTime& time) override {
-            
-        }
-
         const char* getName() const override { return "Hierarchy"; }
+
+        void onConfigure(ryn::ServiceDiscovery& discovery) override {}
+        void onDraw(const ryn::FrameTime& time) override {}
     };
 }

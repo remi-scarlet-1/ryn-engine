@@ -6,15 +6,19 @@ module;
 #include <string>
 
 export module Ryndition.Panel:Registry;
-export import Ryndition;
-export import Ryntime.Core.Reflection;
+export import Ryntime;
+export import :IPanel;
 
 using namespace ryn::reflection;
 
 export namespace rynd::panel {
-    class Registry : public IEditorPanel {
+    class Registry : public IPanel {
     public:
         Registry() { m_Filters.fill(true); }
+
+        const char* getName() const override { return "Registry"; }
+
+        void onConfigure(ryn::ServiceDiscovery& discovery) override {}
 
         void onDraw(const ryn::FrameTime& time) override {
             drawFilters();
@@ -25,8 +29,6 @@ export namespace rynd::panel {
                 drawCategoryGroup(typeCategoryToString(category), category, m_Filters[i]);
             }
         }
-
-        const char* getName() const override { return "Registry"; }
 
     private:
         std::array<bool, static_cast<size_t>(TypeCategory::Count)> m_Filters;
