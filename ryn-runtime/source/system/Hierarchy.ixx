@@ -13,146 +13,137 @@ export namespace ryn::system {
 }
 
 export namespace ryn::component {
-    struct HierarchyRoot : IComponent<"ryn::component::HierarchyRoot"> {};
-
     struct Hierarchy : IComponent<"ryn::component::Hierarchy"> {
         inline Entity getParent() const { return Parent; }
-        inline Entity getFirstChild() const { return First; }
-        inline Entity getNextSibling() const { return Next; }
-        inline Entity getPrevSibling() const { return Prev; }
+        inline Entity getFirstChild() const { return FirstChild; }
 
     private:
         friend system::Hierarchy;
-        Entity Parent = Entity::Null;
-        Entity First  = Entity::Null;
-        Entity Next   = Entity::Null;
-        Entity Prev   = Entity::Null;
+        Entity Parent     = Entity::Null;
+        Entity FirstChild = Entity::Null;
+    };
+
+    struct HierarchySibling : IComponent<"ryn.component::HierarchySibling"> {
+        inline Entity getNext() const { return Next; }
+        inline Entity getPrev() const { return Prev; }
+
+    private:
+        friend system::Hierarchy;
+        Entity Next = Entity::Null;
+        Entity Prev = Entity::Null;
     };
 }
 
-RYN_TYPE_REFLECTION_KEEP(ryn::component::HierarchyRoot);
 RYN_TYPE_REFLECTION_KEEP(ryn::component::Hierarchy);
+RYN_TYPE_REFLECTION_KEEP(ryn::component::HierarchySibling);
 
 RYN_SCOPE_FILE("System|Hierarchy");
 
 export namespace ryn::system {
     class RYN_API Hierarchy final : public DynamicType<ISystem, "ryn::system::Hierarchy"> {
     public:
-        static void setParent(World& world, Entity entity, Entity parent) {
-            if (!entity) return;
+        static void setParent(World& world, Entity entity, Entity newParent) {
+            RYN_SCOPE_LOCAL("System|Hierarchy::setParent");
 
-            auto currentComp = world.Component.getOrMake<component::Hierarchy>(entity);
-            if (currentComp->Parent == parent) return;
-
-            // Cycle detection
-            if (parent && isAncestorOf(world, entity, parent)) {
-                RYN_WARN("Circular hierarchy detected. Operation aborted.");
+            if (!entity) {
+                RYN_WARN("Entity {0} passed isn't valid!", entity);
                 return;
             }
 
-            // Detach from current hierarchy
-            detachFromHierarchy(world, entity);
-            if (!parent) return; // Already detached, now a root.
-
-            // Attach to new parent
-            auto* parentComp = world.Component.getOrMake<component::Hierarchy>(parent);
-
-            Entity oldFirst     = parentComp->First;
-            currentComp->Parent = parent;
-            currentComp->Next   = oldFirst;
-            currentComp->Prev   = Entity::Null;
-
-            if (oldFirst) world.Component.get<component::Hierarchy>(oldFirst)->Prev = entity;
-
-            parentComp->First = entity;
-
-            // Remove root tag, no longer a root
-            world.Component.destroy<component::HierarchyRoot>(entity);
-        }
-
-        static void detachFromHierarchy(World& world, Entity entity) {
-            auto* current = world.Component.tryGet<component::Hierarchy>(entity);
-            if (!current || !current->Parent) return;
-
-            auto* parentComp = world.Component.tryGet<component::Hierarchy>(current->Parent);
-            if (parentComp) {
-                if (parentComp->First == entity) parentComp->First = current->Next;
-                if (current->Prev) world.Component.get<component::Hierarchy>(current->Prev)->Next = current->Next;
-                if (current->Next) world.Component.get<component::Hierarchy>(current->Next)->Prev = current->Prev;
+            auto current = world.Component.getOrMake<component::Hierarchy>(entity);
+            if (current->Parent == newParent) {
+                RYN_WARN("Entity {0} is already parented to entity {1}!", entity, newParent);
+                return;
             }
 
-            current->Parent = Entity::Null;
-            current->Next   = Entity::Null;
-            current->Prev   = Entity::Null;
+            if (isAncestorOf(world, entity, newParent)) {
+                RYN_WARN("Circular hierarchy detected! Cannot parent {0} to it's own child {1}.", entity, newParent);
+                return;
+            }
 
-            world.Component.getOrMake<component::HierarchyRoot>(entity);
+            // Clear parent before setting new one
+            clearParent(world, entity);
+            if (newParent == Entity::Null) return; // newParent isn't a valid entity, assume the user simply wanted to clear current parent
+
+            // Attach to new parent
+            auto parent         = world.Component.getOrMake<component::Hierarchy>(newParent);
+            auto currentSibling = world.Component.getOrMake<component::HierarchySibling>(entity);
+
+            Entity oldFirstChild = parent->FirstChild;
+
+            current->Parent      = newParent;
+            currentSibling->Next = oldFirstChild;
+            currentSibling->Prev = Entity::Null;
+
+            // If the newParent already had a old first child we need to insert ourself into it's silbing.Prev field
+            if (oldFirstChild) world.Component.get<component::HierarchySibling>(oldFirstChild)->Prev = entity;
+
+            parent->FirstChild = entity;
         }
 
-        static bool isAncestorOf(World& world, Entity ancestor, Entity descendant) {
-            Entity current = descendant;
-            while (current) {
-                if (current == ancestor) return true;
-                component::Hierarchy* comp = world.Component.tryGet<component::Hierarchy>(current);
-                current                    = comp ? comp->Parent : Entity::Null;
+        static void clearParent(World& world, Entity entity) {
+            auto current = world.Component.tryGet<component::Hierarchy>(entity);
+            if (!current || !current->Parent) return;
+
+            // Fix parent's first pointer if needed
+            if (auto parent = world.Component.tryGet<component::Hierarchy>(current->Parent))
+                if (parent->FirstChild == entity) {
+                    auto siblings      = world.Component.tryGet<component::HierarchySibling>(entity);
+                    parent->FirstChild = siblings ? siblings->Next : Entity::Null;
+                }
+
+            // Zero-out our pointer to parent
+            current->Parent = Entity::Null;
+
+            // Fix siblings if needed
+            if (auto siblings = world.Component.tryGet<component::HierarchySibling>(entity)) {
+                if (siblings->Prev)
+                    if (auto prev = world.Component.tryGet<component::HierarchySibling>(siblings->Prev)) prev->Next = siblings->Next;
+                if (siblings->Next)
+                    if (auto next = world.Component.tryGet<component::HierarchySibling>(siblings->Next)) next->Prev = siblings->Prev;
+
+                // Zero-out our pointers to sibligns
+                siblings->Prev = Entity::Null;
+                siblings->Next = Entity::Null;
+            }
+        }
+
+        static bool isAncestorOf(World& world, Entity ancestor, Entity entityToTest) {
+            Entity walker = entityToTest;
+            while (walker) {
+                if (walker == ancestor) return true;
+                auto current = world.Component.tryGet<component::Hierarchy>(walker);
+                walker       = current ? current->Parent : Entity::Null;
             }
             return false;
         }
 
     private:
-        World::ObserverAPI::Connection m_OnRootMake;
-        World::ObserverAPI::Connection m_OnRootDestroy;
-        World::ObserverAPI::Connection m_OnHierarchyMake;
         World::ObserverAPI::Connection m_OnHierarchyDestroy;
 
         void onConfigure(ServiceDiscovery& discovery) override {
-            m_OnRootMake         = m_World->Observer.onMake<component::HierarchyRoot, &Hierarchy::onRootMake>(this);
-            m_OnRootDestroy      = m_World->Observer.onDestroy<component::HierarchyRoot, &Hierarchy::onRootDestroy>(this);
-            m_OnHierarchyMake    = m_World->Observer.onMake<component::Hierarchy, &Hierarchy::onHierarchyMake>(this);
             m_OnHierarchyDestroy = m_World->Observer.onDestroy<component::Hierarchy, &Hierarchy::onHierarchyDestroy>(this);
         }
 
-        void onRootMake(Entity entity) {
-            // If Root tag is added, but missing Hierarchy component OR entity has a parent, kill the tag.
-            component::Hierarchy* comp = m_World->Component.tryGet<component::Hierarchy>(entity);
-            if (!comp || comp->Parent) {
-                RYN_ERROR("Hierarchy Invariant Violated: Root tag added to entity {0} which is NOT a hierarchy root!", entity);
-                m_World->Component.destroy<component::HierarchyRoot>(entity);
-            }
-        }
-
-        void onRootDestroy(Entity entity) {
-            // If the tag is being removed but it's STILL a logical root:
-            auto* comp = m_World->Component.tryGet<component::Hierarchy>(entity);
-            if (comp) {
-                RYN_VERIFY(comp->getParent() != Entity::Null,
-                           "Hierarchy Invariant Violated: Root tag removed from a logical root entity {0}!",
-                           entity);
-            }
-        }
-
-        void onHierarchyMake(Entity entity) {
-            // New hierarchy components are root by default
-            m_World->Component.getOrMake<component::HierarchyRoot>(entity);
-        }
-
+        // When a hierarchy (component) is destroyed we must kill the associated entity's children and promote it to a hierarchy root
         void onHierarchyDestroy(Entity entity) {
-            detachFromHierarchy(*m_World, entity);
-
             auto current = m_World->Component.get<component::Hierarchy>(entity);
 
-            Entity child = current->First;
-            while (child) {
-                auto   childHierarchy = m_World->Component.tryGet<component::Hierarchy>(child);
-                Entity nextSibling    = childHierarchy ? childHierarchy->Next : Entity::Null;
+            // Kill children
+            Entity walker = current->FirstChild;
+            while (walker) {
+                auto child       = m_World->Component.tryGet<component::HierarchySibling>(walker);
+                auto nextSibling = child ? child->Next : Entity::Null;
 
-                // Destroying the entity will trigger this same callback for the child
-                m_World->Entity.destroy(child);
+                // Destroying the child's entity causes the same onHierarchyDestroy callback to be triggered for it; effectively making
+                // this a depth-first recursive destruction
+                m_World->Entity.destroy(walker);
 
-                child = nextSibling;
+                walker = nextSibling;
             }
 
-            // Cleanup root tag
-            m_World->Component.destroy<component::HierarchyRoot>(entity);
+            // Promote to hierarchy root
+            clearParent(*m_World, entity);
         }
     };
 }
