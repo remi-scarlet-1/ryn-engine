@@ -108,16 +108,7 @@ export namespace rynd::panel {
             });
 
             endRegion();
-
-            if (ImGui::BeginDragDropTarget()) {
-                if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY_GROUP")) {
-                    size_t entityCount = payload->DataSize / sizeof(Entity);
-                    auto*  entities    = static_cast<Entity*>(payload->Data);
-                    for (size_t i = 0; i < entityCount; i++)
-                        system::Hierarchy::setParent(*m_World, entities[i], Entity::Null);
-                }
-                ImGui::EndDragDropTarget();
-            }
+            handleEntityDragDropTarget(Entity::Null);
         }
 
         void drawOrphans() {
@@ -146,33 +137,9 @@ export namespace rynd::panel {
             // Selection
             if (ImGui::IsItemHovered()) { handleSelection(e); }
 
-            // Drag source
-            if (ImGui::BeginDragDropSource()) {
-                std::vector<Entity> entities;
-
-                if (isSelected(e)) entities.assign(m_Selection.begin(), m_Selection.end());
-                else entities.push_back(e);
-
-                ImGui::SetDragDropPayload("ENTITY_GROUP", entities.data(), sizeof(Entity) * entities.size());
-                ImGui::Text("Moving %zu entity(s)", entities.size());
-                ImGui::EndDragDropSource();
-            }
-
-            // Drop target
-            if (ImGui::BeginDragDropTarget()) {
-                if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY_GROUP")) {
-
-                    size_t entityCount = payload->DataSize / sizeof(Entity);
-                    auto*  entities    = static_cast<Entity*>(payload->Data);
-
-                    for (size_t i = 0; i < entityCount; i++) {
-                        Entity dragged = entities[i];
-                        if (dragged != e) system::Hierarchy::setParent(*m_World, dragged, e);
-                    }
-                }
-
-                ImGui::EndDragDropTarget();
-            }
+            // Drag & drop
+            handleEntityDragDropSource(e);
+            handleEntityDragDropTarget(e);
 
             // Right click context menu
             if (ImGui::BeginPopupContextItem()) {
@@ -189,10 +156,39 @@ export namespace rynd::panel {
             return open;
         }
 
+        void handleEntityDragDropSource(Entity e) {
+            if (ImGui::BeginDragDropSource()) {
+                std::vector<Entity> entities;
+                if (isSelected(e)) entities.assign(m_Selection.begin(), m_Selection.end());
+                else entities.push_back(e);
+
+                ImGui::SetDragDropPayload("ENTITY_GROUP", entities.data(), sizeof(Entity) * entities.size());
+                ImGui::Text("Moving %zu entity(s)", entities.size());
+                ImGui::EndDragDropSource();
+            }
+        }
+
+        void handleEntityDragDropTarget(Entity newParent) {
+            if (ImGui::BeginDragDropTarget()) {
+                if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY_GROUP")) {
+                    size_t entityCount = payload->DataSize / sizeof(Entity);
+                    auto*  entities    = static_cast<Entity*>(payload->Data);
+
+                    for (size_t i = 0; i < entityCount; i++) {
+                        auto entity = entities[i];
+                        if (entity != newParent)
+                            m_World->Component.make<component::HierarchyParentRequest>(entity, {.NewParent = newParent});
+                    }
+                }
+
+                ImGui::EndDragDropTarget();
+            }
+        }
+
         Entity createEntity(Entity parent = Entity::Null) {
             auto entity = createOrphan();
             m_World->Component.make<component::Hierarchy>(entity);
-            if (parent != Entity::Null) system::Hierarchy::setParent(*m_World, entity, parent);
+            if (parent != Entity::Null) m_World->Component.make<component::HierarchyParentRequest>(entity, {.NewParent = parent});
             return entity;
         }
 
