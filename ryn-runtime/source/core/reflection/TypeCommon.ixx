@@ -38,11 +38,12 @@ export namespace ryn::reflection {
     };
 
     enum class TypeCategory : uint16_t {
-        None      = 0,
-        Service   = 1,
-        Event     = 2,
-        Component = 3,
-        System    = 4,
+        None             = 0,
+        Service          = 1,
+        Event            = 2,
+        System           = 3,
+        Component        = 4,
+        ComponentRequest = 5,
         Count
     };
 
@@ -51,8 +52,9 @@ export namespace ryn::reflection {
             case TypeCategory::None: return "Other";
             case TypeCategory::Service: return "Service";
             case TypeCategory::Event: return "Event";
-            case TypeCategory::Component: return "Component";
             case TypeCategory::System: return "System";
+            case TypeCategory::Component: return "Component";
+            case TypeCategory::ComponentRequest: return "ComponentRequest";
             case TypeCategory::Count: return "<internal_counter>";
         }
         return "<undefined>";
