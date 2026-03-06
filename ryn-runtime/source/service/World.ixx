@@ -48,8 +48,8 @@ namespace ryn::service {
 
     struct ComponentTag {};
 
-    export template<TypeName Name>
-    struct IComponent : StaticType<TypeCategory::Component, Name>, ComponentTag {};
+    export template<TypeName Name, bool IsRequest = false>
+    struct IComponent : StaticType<IsRequest ? TypeCategory::Component : TypeCategory::ComponentRequest, Name>, ComponentTag {};
 
     export template<typename T>
     concept IsComponent = std::derived_from<T, ComponentTag> && IsType<T>;
@@ -108,14 +108,21 @@ export namespace ryn::service {
 
         struct ComponentAPI {
             World& self;
-            template<IsComponent T, typename... Args> T*                 make(Entity entity, Args&&... args);
-            template<IsComponent T, typename... Args> T*                 replaceOrMake(Entity entity, Args&&... args);
-            template<IsComponent T, typename... Args> T*                 replace(Entity entity, Args&&... args);
-            template<IsComponent T, typename... Args> T*                 getOrMake(Entity entity, Args&&... args);
-            template<IsComponent T>                   [[nodiscard]] T*   get(Entity entity);
-            template<IsComponent T>                   [[nodiscard]] T*   tryGet(Entity entity);
-            template<IsComponent T>                   [[nodiscard]] bool exists(Entity entity);
-            template<IsComponent T>                   bool               destroy(Entity entity);
+            template<IsComponent T> T*                 make(Entity entity);
+            template<IsComponent T> T*                 make(Entity entity, T newData);
+            template<IsComponent T> T*                 replaceOrMake(Entity entity);
+            template<IsComponent T> T*                 replaceOrMake(Entity entity, T newData);
+            template<IsComponent T> T*                 replace(Entity entity);
+            template<IsComponent T> T*                 replace(Entity entity, T newData);
+            template<IsComponent T, typename Func> T*  patch(Entity entity, Func&& func); // Use with lambdas like [](auto& c) { ... }
+            template<IsComponent T>                T*  patch(Entity entity); // Just triggers onUpdate for the component
+            template<IsComponent T> T*                 getOrMake(Entity entity);
+            template<IsComponent T> T*                 getOrMake(Entity entity, T newData);
+            template<IsComponent T> [[nodiscard]] T*   get(Entity entity);
+            template<IsComponent T> [[nodiscard]] T*   tryGet(Entity entity);
+            template<IsComponent T> [[nodiscard]] bool exists(Entity entity);
+            template<IsComponent T> bool               destroy(Entity entity);
+            template<IsComponent T> void               clear();
         };
 
         struct SingletonAPI {
@@ -130,9 +137,7 @@ export namespace ryn::service {
 
         struct ObserverAPI {
             World& self;
-
             using Connection = entt::scoped_connection;
-
             template<IsComponent T, auto Candidate>                void                     onMake();
             template<IsComponent T, auto Candidate>                void                     onUpdate();
             template<IsComponent T, auto Candidate>                void                     onDestroy();
@@ -234,26 +239,60 @@ namespace ryn::service {
         return self.toggleSystem(T::TYPE_ID, enable);
     }
 
-    template<IsComponent T, typename... Args>
-    T* World::ComponentAPI::make(service::Entity entity, Args&&... args) {
+    template<IsComponent T>
+    T* World::ComponentAPI::make(service::Entity entity) {
         RYN_ASSERT(!exists<T>(entity), "Expected entity {0} to NOT have a '{1}' component!", entity, T::TYPE_NAME);
-        return entt_ptr_call<T>([&] -> decltype(auto) { return self.m_Registry.emplace<T>(entity, std::forward<Args>(args)...); });
+        return entt_ptr_call<T>([&] -> decltype(auto) { return self.m_Registry.emplace<T>(entity); });
     }
 
-    template<IsComponent T, typename... Args>
-    T* World::ComponentAPI::replaceOrMake(service::Entity entity, Args&&... args) {
-        return entt_ptr_call<T>([&] -> decltype(auto) { return self.m_Registry.emplace_or_replace<T>(entity, std::forward<Args>(args)...); });
+    template<IsComponent T>
+    T* World::ComponentAPI::make(service::Entity entity, T newData) {
+        RYN_ASSERT(!exists<T>(entity), "Expected entity {0} to NOT have a '{1}' component!", entity, T::TYPE_NAME);
+        return entt_ptr_call<T>([&] -> decltype(auto) { return self.m_Registry.emplace<T>(entity, std::move(newData)); });
     }
 
-    template<IsComponent T, typename... Args>
-    T* World::ComponentAPI::replace(service::Entity entity, Args&&... args) {
+    template<IsComponent T>
+    T* World::ComponentAPI::replaceOrMake(service::Entity entity) {
+        return entt_ptr_call<T>([&] -> decltype(auto) { return self.m_Registry.emplace_or_replace<T>(entity); });
+    }
+
+    template<IsComponent T>
+    T* World::ComponentAPI::replaceOrMake(service::Entity entity, T newData) {
+        return entt_ptr_call<T>([&] -> decltype(auto) { return self.m_Registry.emplace_or_replace<T>(entity, std::move(newData)); });
+    }
+
+    template<IsComponent T>
+    T* World::ComponentAPI::replace(service::Entity entity) {
         RYN_ASSERT(exists<T>(entity), "Expected entity {0} to have a '{1}' component!", entity, T::TYPE_NAME);
-        return entt_ptr_call<T>([&] -> decltype(auto) { return self.m_Registry.replace<T>(entity, std::forward<Args>(args)...); });
+        return entt_ptr_call<T>([&] -> decltype(auto) { return self.m_Registry.replace<T>(entity); });
     }
 
-    template<IsComponent T, typename... Args>
-    T* World::ComponentAPI::getOrMake(service::Entity entity, Args&&... args) {
-        return entt_ptr_call<T>([&] -> decltype(auto) { return self.m_Registry.get_or_emplace<T>(entity, std::forward<Args>(args)...); });
+    template<IsComponent T>
+    T* World::ComponentAPI::replace(service::Entity entity, T newData) {
+        RYN_ASSERT(exists<T>(entity), "Expected entity {0} to have a '{1}' component!", entity, T::TYPE_NAME);
+        return entt_ptr_call<T>([&] -> decltype(auto) { return self.m_Registry.replace<T>(entity, std::move(newData)); });
+    }
+
+    template<IsComponent T, typename Func>
+    T* World::ComponentAPI::patch(service::Entity entity, Func&& func) {
+        RYN_ASSERT(exists<T>(entity), "Expected entity {0} to have a '{1}' component to patch!", entity, T::TYPE_NAME);
+        return entt_ptr_call<T>([&] -> decltype(auto) { return self.m_Registry.patch<T>(entity, std::forward<Func>(func)); });
+    }
+
+    template<IsComponent T>
+    T* World::ComponentAPI::patch(service::Entity entity) {
+        RYN_ASSERT(exists<T>(entity), "Expected entity {0} to have a '{1}' component to patch!", entity, T::TYPE_NAME);
+        return entt_ptr_call<T>([&] -> decltype(auto) { return self.m_Registry.patch<T>(entity); });
+    }
+
+    template<IsComponent T>
+    T* World::ComponentAPI::getOrMake(service::Entity entity) {
+        return entt_ptr_call<T>([&] -> decltype(auto) { return self.m_Registry.get_or_emplace<T>(entity); });
+    }
+
+    template<IsComponent T>
+    T* World::ComponentAPI::getOrMake(service::Entity entity, T newData) {
+        return entt_ptr_call<T>([&] -> decltype(auto) { return self.m_Registry.get_or_emplace<T>(entity, std::move(newData)); });
     }
 
     template<IsComponent T>
@@ -276,6 +315,11 @@ namespace ryn::service {
     template<IsComponent T>
     bool World::ComponentAPI::destroy(service::Entity entity) {
         return self.m_Registry.remove<T>(entity) > 0;
+    }
+
+    template<IsComponent T>
+    void World::ComponentAPI::clear() {
+        self.m_Registry.clear<T>();
     }
 
     template<IsComponent T, typename... Args>
