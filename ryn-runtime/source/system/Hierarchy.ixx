@@ -75,7 +75,7 @@ export namespace ryn::system {
             }
 
             auto current = world.Component.getOrMake<component::Hierarchy>(entity);
-            if (current->Parent == newParent) {
+            if (newParent && current->Parent == newParent) {
                 RYN_WARN("Entity {0} is already parented to entity {1}!", entity, newParent);
                 return;
             }
@@ -116,9 +116,6 @@ export namespace ryn::system {
                     parent->FirstChild = siblings ? siblings->Next : Entity::Null;
                 }
 
-            // Zero-out our pointer to parent
-            current->Parent = Entity::Null;
-
             // Fix siblings if needed
             if (auto siblings = world.Component.tryGet<component::HierarchySibling>(entity)) {
                 if (siblings->Prev)
@@ -133,6 +130,9 @@ export namespace ryn::system {
                 // Remove sibling component (we aren't parented anymore = cannot have siblings)
                 world.Component.destroy<component::HierarchySibling>(entity);
             }
+
+            // Zero-out our pointer to parent
+            current->Parent = Entity::Null;
         }
 
         static bool isAncestorOf(World& world, Entity ancestor, Entity entityToTest) {
