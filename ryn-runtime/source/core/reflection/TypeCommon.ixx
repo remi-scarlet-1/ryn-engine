@@ -43,7 +43,7 @@ export namespace ryn::reflection {
         Event            = 2,
         System           = 3,
         Component        = 4,
-        ComponentRequest = 5,
+        ComponentAction = 5,
         Count
     };
 
@@ -54,7 +54,7 @@ export namespace ryn::reflection {
             case TypeCategory::Event: return "Event";
             case TypeCategory::System: return "System";
             case TypeCategory::Component: return "Component";
-            case TypeCategory::ComponentRequest: return "ComponentRequest";
+            case TypeCategory::ComponentAction: return "ComponentAction";
             case TypeCategory::Count: return "<internal_counter>";
         }
         return "<undefined>";

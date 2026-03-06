@@ -48,11 +48,23 @@ namespace ryn::service {
 
     struct ComponentTag {};
 
-    export template<TypeName Name, bool IsRequest = false>
-    struct IComponent : StaticType<IsRequest ? TypeCategory::Component : TypeCategory::ComponentRequest, Name>, ComponentTag {};
+    export template<TypeName Name>
+    struct IComponent : StaticType<TypeCategory::Component, Name>, ComponentTag {};
+
+    export template<TypeName Name>
+    struct IComponentAction : StaticType<TypeCategory::ComponentAction, Name>, ComponentTag {};
 
     export template<typename T>
     concept IsComponent = std::derived_from<T, ComponentTag> && IsType<T>;
+
+    // clang-format off
+    export template<IsComponent...> struct Incl {};
+    export template<IsComponent...> struct Excl {};
+    template<typename T>        struct is_incl              : std::false_type {};
+    template<IsComponent... I>  struct is_incl<Incl<I...>> : std::true_type {};
+    template<typename T>        struct is_excl              : std::false_type {};
+    template<IsComponent... E>  struct is_excl<Excl<E...>>  : std::true_type {};
+    // clang-format on
 
     export class RYN_API ISystem : public DynamicBase<TypeCategory::System> {
     public:
@@ -73,6 +85,8 @@ namespace ryn::service {
 
     export template<typename T>
     concept IsSystem = std::derived_from<T, ISystem> && IsType<T>;
+
+    export using WorldConnection = entt::scoped_connection;
 }
 
 template<>
@@ -108,16 +122,16 @@ export namespace ryn::service {
 
         struct ComponentAPI {
             World& self;
-            template<IsComponent T> T*                 make(Entity entity);
-            template<IsComponent T> T*                 make(Entity entity, T newData);
-            template<IsComponent T> T*                 replaceOrMake(Entity entity);
-            template<IsComponent T> T*                 replaceOrMake(Entity entity, T newData);
+            template<IsComponent T> T*                 add(Entity entity);
+            template<IsComponent T> T*                 add(Entity entity, T newData);
+            template<IsComponent T> T*                 ensure(Entity entity);
+            template<IsComponent T> T*                 ensure(Entity entity, T newData);
             template<IsComponent T> T*                 replace(Entity entity);
             template<IsComponent T> T*                 replace(Entity entity, T newData);
+            template<IsComponent T> T*                 set(Entity entity);
+            template<IsComponent T> T*                 set(Entity entity, T newData);
             template<IsComponent T, typename Func> T*  patch(Entity entity, Func&& func); // Use with lambdas like [](auto& c) { ... }
-            template<IsComponent T>                T*  patch(Entity entity); // Just triggers onUpdate for the component
-            template<IsComponent T> T*                 getOrMake(Entity entity);
-            template<IsComponent T> T*                 getOrMake(Entity entity, T newData);
+            template<IsComponent T>                T*  patch(Entity entity);              // Just triggers onUpdate for the component
             template<IsComponent T> [[nodiscard]] T*   get(Entity entity);
             template<IsComponent T> [[nodiscard]] T*   tryGet(Entity entity);
             template<IsComponent T> [[nodiscard]] bool exists(Entity entity);
@@ -137,29 +151,28 @@ export namespace ryn::service {
 
         struct ObserverAPI {
             World& self;
-            using Connection = entt::scoped_connection;
-            template<IsComponent T, auto Candidate>                void                     onMake();
-            template<IsComponent T, auto Candidate>                void                     onUpdate();
-            template<IsComponent T, auto Candidate>                void                     onDestroy();
-            template<IsComponent T, auto Candidate, typename Type> [[nodiscard]] Connection onMake(Type* instance);
-            template<IsComponent T, auto Candidate, typename Type> [[nodiscard]] Connection onUpdate(Type* instance);
-            template<IsComponent T, auto Candidate, typename Type> [[nodiscard]] Connection onDestroy(Type* instance);
-            template<IsComponent T, auto Candidate>                void                     offMake();
-            template<IsComponent T, auto Candidate>                void                     offUpdate();
-            template<IsComponent T, auto Candidate>                void                     offDestroy();
-            template<IsComponent T, auto Candidate, typename Type> void                     offMake(Type* instance);
-            template<IsComponent T, auto Candidate, typename Type> void                     offUpdate(Type* instance);
-            template<IsComponent T, auto Candidate, typename Type> void                     offDestroy(Type* instance);
+            template<IsComponent T, auto Candidate>                void                          onMake();
+            template<IsComponent T, auto Candidate>                void                          onUpdate();
+            template<IsComponent T, auto Candidate>                void                          onDestroy();
+            template<IsComponent T, auto Candidate, typename Type> [[nodiscard]] WorldConnection onMake(Type* instance);
+            template<IsComponent T, auto Candidate, typename Type> [[nodiscard]] WorldConnection onUpdate(Type* instance);
+            template<IsComponent T, auto Candidate, typename Type> [[nodiscard]] WorldConnection onDestroy(Type* instance);
+            template<IsComponent T, auto Candidate>                void                          offMake();
+            template<IsComponent T, auto Candidate>                void                          offUpdate();
+            template<IsComponent T, auto Candidate>                void                          offDestroy();
+            template<IsComponent T, auto Candidate, typename Type> void                          offMake(Type* instance);
+            template<IsComponent T, auto Candidate, typename Type> void                          offUpdate(Type* instance);
+            template<IsComponent T, auto Candidate, typename Type> void                          offDestroy(Type* instance);
         };
 
         struct QueryAPI {
             World& self;
+            template<IsComponent T>                                    [[nodiscard]] Span<T>  all();
+            template<typename T1, typename T2 = Excl<>, typename Func> void                   foreach(Func&& func);
 
-            template<typename... T> requires(IsComponent<T> && ...) struct Incl {};
-            template<typename... T> requires(IsComponent<T> && ...) struct Excl {};
-
-            template<IsComponent T>                                        [[nodiscard]] Span<T> all();
-            template<typename Incl, typename Excl = Excl<>, typename Func> void                  foreach (Func&& func);
+        private:
+            template<IsComponent... I, IsComponent... E, typename Func>
+            void executeForeach(Incl<I...>, Excl<E...>, Func&& func);
         };
         // clang-format on
 
@@ -240,25 +253,25 @@ namespace ryn::service {
     }
 
     template<IsComponent T>
-    T* World::ComponentAPI::make(service::Entity entity) {
+    T* World::ComponentAPI::add(service::Entity entity) {
         RYN_ASSERT(!exists<T>(entity), "Expected entity {0} to NOT have a '{1}' component!", entity, T::TYPE_NAME);
         return entt_ptr_call<T>([&] -> decltype(auto) { return self.m_Registry.emplace<T>(entity); });
     }
 
     template<IsComponent T>
-    T* World::ComponentAPI::make(service::Entity entity, T newData) {
+    T* World::ComponentAPI::add(service::Entity entity, T newData) {
         RYN_ASSERT(!exists<T>(entity), "Expected entity {0} to NOT have a '{1}' component!", entity, T::TYPE_NAME);
         return entt_ptr_call<T>([&] -> decltype(auto) { return self.m_Registry.emplace<T>(entity, std::move(newData)); });
     }
 
     template<IsComponent T>
-    T* World::ComponentAPI::replaceOrMake(service::Entity entity) {
-        return entt_ptr_call<T>([&] -> decltype(auto) { return self.m_Registry.emplace_or_replace<T>(entity); });
+    T* World::ComponentAPI::ensure(service::Entity entity) {
+        return entt_ptr_call<T>([&] -> decltype(auto) { return self.m_Registry.get_or_emplace<T>(entity); });
     }
 
     template<IsComponent T>
-    T* World::ComponentAPI::replaceOrMake(service::Entity entity, T newData) {
-        return entt_ptr_call<T>([&] -> decltype(auto) { return self.m_Registry.emplace_or_replace<T>(entity, std::move(newData)); });
+    T* World::ComponentAPI::ensure(service::Entity entity, T newData) {
+        return entt_ptr_call<T>([&] -> decltype(auto) { return self.m_Registry.get_or_emplace<T>(entity, std::move(newData)); });
     }
 
     template<IsComponent T>
@@ -273,6 +286,16 @@ namespace ryn::service {
         return entt_ptr_call<T>([&] -> decltype(auto) { return self.m_Registry.replace<T>(entity, std::move(newData)); });
     }
 
+    template<IsComponent T>
+    T* World::ComponentAPI::set(service::Entity entity) {
+        return entt_ptr_call<T>([&] -> decltype(auto) { return self.m_Registry.emplace_or_replace<T>(entity); });
+    }
+
+    template<IsComponent T>
+    T* World::ComponentAPI::set(service::Entity entity, T newData) {
+        return entt_ptr_call<T>([&] -> decltype(auto) { return self.m_Registry.emplace_or_replace<T>(entity, std::move(newData)); });
+    }
+
     template<IsComponent T, typename Func>
     T* World::ComponentAPI::patch(service::Entity entity, Func&& func) {
         RYN_ASSERT(exists<T>(entity), "Expected entity {0} to have a '{1}' component to patch!", entity, T::TYPE_NAME);
@@ -283,16 +306,6 @@ namespace ryn::service {
     T* World::ComponentAPI::patch(service::Entity entity) {
         RYN_ASSERT(exists<T>(entity), "Expected entity {0} to have a '{1}' component to patch!", entity, T::TYPE_NAME);
         return entt_ptr_call<T>([&] -> decltype(auto) { return self.m_Registry.patch<T>(entity); });
-    }
-
-    template<IsComponent T>
-    T* World::ComponentAPI::getOrMake(service::Entity entity) {
-        return entt_ptr_call<T>([&] -> decltype(auto) { return self.m_Registry.get_or_emplace<T>(entity); });
-    }
-
-    template<IsComponent T>
-    T* World::ComponentAPI::getOrMake(service::Entity entity, T newData) {
-        return entt_ptr_call<T>([&] -> decltype(auto) { return self.m_Registry.get_or_emplace<T>(entity, std::move(newData)); });
     }
 
     template<IsComponent T>
@@ -372,17 +385,17 @@ namespace ryn::service {
     }
 
     template<IsComponent T, auto Candidate, typename Type>
-    World::ObserverAPI::Connection World::ObserverAPI::onMake(Type* instance) {
+    WorldConnection World::ObserverAPI::onMake(Type* instance) {
         return self.m_Registry.on_construct<T>().template connect<Candidate>(instance);
     }
 
     template<IsComponent T, auto Candidate, typename Type>
-    World::ObserverAPI::Connection World::ObserverAPI::onUpdate(Type* instance) {
+    WorldConnection World::ObserverAPI::onUpdate(Type* instance) {
         return self.m_Registry.on_update<T>().template connect<Candidate>(instance);
     }
 
     template<IsComponent T, auto Candidate, typename Type>
-    World::ObserverAPI::Connection World::ObserverAPI::onDestroy(Type* instance) {
+    WorldConnection World::ObserverAPI::onDestroy(Type* instance) {
         return self.m_Registry.on_destroy<T>().template connect<Candidate>(instance);
     }
 
@@ -422,27 +435,28 @@ namespace ryn::service {
         return Span<T>{storage.data(), storage.size()};
     }
 
-    template<typename T1, typename T2>
-    struct ViewExtractor;
-
-    template<typename... I, typename... E>
-    struct ViewExtractor<World::QueryAPI::Incl<I...>, World::QueryAPI::Excl<E...>> {
-        static auto get(entt::registry& reg) { return reg.view<I...>(entt::exclude<E...>); }
-    };
-
-    template<typename... I>
-    struct ViewExtractor<World::QueryAPI::Incl<I...>, World::QueryAPI::Excl<>> {
-        static auto get(entt::registry& reg) { return reg.view<I...>(); }
-    };
-
-    template<typename... E>
-    struct ViewExtractor<World::QueryAPI::Excl<E...>, World::QueryAPI::Excl<>> {
-        static auto get(entt::registry& reg) { return reg.view<entt::entity>(entt::exclude<E...>); }
-    };
-
-    template<typename Incl, typename Excl, typename Func>
+    template<typename T1, typename T2 = Excl<>, typename Func>
     void World::QueryAPI::foreach (Func&& func) {
-        auto view = ViewExtractor<Incl, Excl>::get(self.m_Registry);
+        if constexpr (IsComponent<T1>) {
+            // Case: T1 is a single component
+            executeForeach(Incl<T1>{}, T2{}, std::forward<Func>(func));
+        } else if constexpr (is_excl<T1>::value) {
+            // Case: T1 is an Excl tag (assume Inclusion is empty)
+            executeForeach(Incl{}, T1{}, std::forward<Func>(func));
+        } else {
+            // Standard Case: T1 is Incl, T2 is Excl
+            executeForeach(T1{}, T2{}, std::forward<Func>(func));
+        }
+    }
+
+    template<IsComponent... I, IsComponent... E, typename Func>
+    void World::QueryAPI::executeForeach(Incl<I...>, Excl<E...>, Func&& func) {
+        // Create the EnTT view based on whether we have inclusions or just exclusions
+        auto view = [&] {
+            if constexpr (sizeof...(I) == 0) return self.m_Registry.view<entt::entity>(entt::exclude<E...>);
+            else return self.m_Registry.view<I...>(entt::exclude<E...>);
+        }();
+
         view.each(std::forward<Func>(func));
     }
 }

@@ -5,6 +5,7 @@ module;
 #include <imgui.h>
 #include <string>
 #include <unordered_set>
+#include <vector>
 
 export module Ryndition.Panel:Hierarchy;
 export import :IPanel;
@@ -33,7 +34,7 @@ export namespace rynd::panel {
             float availableHeight = ImGui::GetContentRegionAvail().y;
 
             drawHierarchy();
-            splitter(availableHeight);
+            regionSplitter(availableHeight);
             drawOrphans();
 
             if (!m_PendingDeletes.empty()) {
@@ -58,35 +59,17 @@ export namespace rynd::panel {
             if (ImGui::Button("Create Orphan")) createOrphan();
         }
 
-        void beginRegion(const char* name, ImVec2 size = ImVec2(0, 0)) {
-            ImGui::TextDisabled("%s", name);
-            ImGui::Separator();
-            ImGui::BeginChild(name, size, ImGuiChildFlags_None, ImGuiWindowFlags_None);
-        }
-
-        void endRegion() { ImGui::EndChild(); }
-
-        void splitter(float totalHeight) {
-            ImGui::Button("##splitter", ImVec2(-1, SPLITTER_HEIGHT));
-            if (ImGui::IsItemActive()) m_SplitterHeight += ImGui::GetIO().MouseDelta.y;
-
-            const float maxHeight = totalHeight - SPLITTER_MIN_HEIGHT - SPLITTER_HEIGHT;
-            if (m_SplitterHeight < SPLITTER_MIN_HEIGHT) m_SplitterHeight = SPLITTER_MIN_HEIGHT;
-            if (m_SplitterHeight > maxHeight) m_SplitterHeight = maxHeight;
-
-            if (ImGui::IsItemHovered()) ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeNS);
-        }
-
         void drawHierarchy() {
-            beginRegion("Hierarchy", ImVec2(0, m_SplitterHeight));
+            regionBegin("Hierarchy", ImVec2(0, m_SplitterHeight));
 
             ImGuiTreeNodeFlags baseFlags{};
             baseFlags |= ImGuiTreeNodeFlags_SpanAvailWidth;
             baseFlags |= ImGuiTreeNodeFlags_OpenOnArrow;
             baseFlags |= ImGuiTreeNodeFlags_DefaultOpen;
+            baseFlags |= ImGuiTreeNodeFlags_DrawLinesToNodes;
 
             auto recursiveDraw = [&](auto&& self, Entity e) -> void {
-                auto& h = *m_World->Component.get<component::Hierarchy>(e);
+                auto& h = *m_World->Component.get<comp::Hierarchy>(e);
 
                 bool isLeaf = (h.getFirstChild() == Entity::Null);
                 if (!drawTreeNode(e, isLeaf, baseFlags)) return;
@@ -95,32 +78,32 @@ export namespace rynd::panel {
                 while (child != Entity::Null) {
                     self(self, child); // recursion here
 
-                    auto* sibling = m_World->Component.get<component::HierarchySibling>(child);
+                    auto* sibling = m_World->Component.get<comp::HierarchySibling>(child);
                     child         = sibling ? sibling->getNext() : Entity::Null;
                 }
 
                 ImGui::TreePop();
             };
 
-            m_World->Query.foreach<World::QueryAPI::Incl<component::Hierarchy>>([&](Entity e, component::Hierarchy& h) {
+            m_World->Query.foreach<comp::Hierarchy>([&](Entity e, auto& h) {
                 if (h.getParent() != Entity::Null) return;
                 recursiveDraw(recursiveDraw, e);
             });
 
-            endRegion();
-            handleEntityDragDropTarget(Entity::Null);
+            regionEnd();
+            makeDragDropEntityTarget(Entity::Null);
         }
 
         void drawOrphans() {
-            beginRegion("Orphans");
+            regionBegin("Orphans");
 
             ImGuiTreeNodeFlags baseFlags{};
             baseFlags |= ImGuiTreeNodeFlags_SpanAvailWidth;
             baseFlags |= ImGuiTreeNodeFlags_NoTreePushOnOpen;
 
-            m_World->Query.foreach<World::QueryAPI::Excl<component::Hierarchy>>([&](Entity e) { drawTreeNode(e, true, baseFlags); });
+            m_World->Query.foreach<Excl<comp::Hierarchy>>([&](Entity e) { drawTreeNode(e, true, baseFlags); });
 
-            endRegion();
+            regionEnd();
         }
 
         bool drawTreeNode(Entity e, bool isLeaf, ImGuiTreeNodeFlags baseFlags) {
@@ -138,64 +121,36 @@ export namespace rynd::panel {
             if (ImGui::IsItemHovered()) { handleSelection(e); }
 
             // Drag & drop
-            handleEntityDragDropSource(e);
-            handleEntityDragDropTarget(e);
+            makeDragDropEntitySource(e);
+            makeDragDropEntityTarget(e);
 
-            // Right click context menu
-            if (ImGui::BeginPopupContextItem()) {
-                if (ImGui::MenuItem("Delete")) {
-                    for (Entity selected : m_Selection)
-                        m_PendingDeletes.push_back(selected);
-                    m_Selection.clear();
-                    m_SelectionLatest = Entity::Null;
-                }
-                ImGui::EndPopup();
-            }
+            // Make context menu
+            makeContextMenu();
 
             ImGui::PopID();
             return open;
         }
 
-        void handleEntityDragDropSource(Entity e) {
-            if (ImGui::BeginDragDropSource()) {
-                std::vector<Entity> entities;
-                if (isSelected(e)) entities.assign(m_Selection.begin(), m_Selection.end());
-                else entities.push_back(e);
-
-                ImGui::SetDragDropPayload("ENTITY_GROUP", entities.data(), sizeof(Entity) * entities.size());
-                ImGui::Text("Moving %zu entity(s)", entities.size());
-                ImGui::EndDragDropSource();
-            }
+        void regionBegin(const char* name, ImVec2 size = ImVec2(0, 0)) {
+            ImGui::TextDisabled("%s", name);
+            ImGui::Separator();
+            ImGui::BeginChild(name, size, ImGuiChildFlags_None, ImGuiWindowFlags_None);
         }
 
-        void handleEntityDragDropTarget(Entity newParent) {
-            if (ImGui::BeginDragDropTarget()) {
-                if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY_GROUP")) {
-                    size_t entityCount = payload->DataSize / sizeof(Entity);
-                    auto*  entities    = static_cast<Entity*>(payload->Data);
+        void regionEnd() { ImGui::EndChild(); }
 
-                    for (size_t i = 0; i < entityCount; i++) {
-                        auto entity = entities[i];
-                        if (entity != newParent)
-                            m_World->Component.make<component::HierarchyParentRequest>(entity, {.NewParent = newParent});
-                    }
-                }
+        void regionSplitter(float totalHeight) {
+            ImGui::Button("##splitter", ImVec2(-1, SPLITTER_HEIGHT));
+            if (ImGui::IsItemActive()) m_SplitterHeight += ImGui::GetIO().MouseDelta.y;
 
-                ImGui::EndDragDropTarget();
-            }
+            const float maxHeight = totalHeight - SPLITTER_MIN_HEIGHT - SPLITTER_HEIGHT;
+            if (m_SplitterHeight < SPLITTER_MIN_HEIGHT) m_SplitterHeight = SPLITTER_MIN_HEIGHT;
+            if (m_SplitterHeight > maxHeight) m_SplitterHeight = maxHeight;
+
+            if (ImGui::IsItemHovered()) ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeNS);
         }
 
-        Entity createEntity(Entity parent = Entity::Null) {
-            auto entity = createOrphan();
-            m_World->Component.make<component::Hierarchy>(entity);
-            if (parent != Entity::Null) m_World->Component.make<component::HierarchyParentRequest>(entity, {.NewParent = parent});
-            return entity;
-        }
-
-        Entity createOrphan() {
-            auto entity = m_World->Entity.create();
-            return entity;
-        }
+        bool isSelected(Entity e) const { return m_Selection.contains(e); }
 
         void handleSelection(Entity entity) {
             ImGuiIO& io = ImGui::GetIO();
@@ -247,8 +202,8 @@ export namespace rynd::panel {
         }
 
         bool tryRangeSelect(Entity e1, Entity e2) {
-            auto* h1 = m_World->Component.tryGet<component::Hierarchy>(e1);
-            auto* h2 = m_World->Component.tryGet<component::Hierarchy>(e2);
+            auto* h1 = m_World->Component.tryGet<comp::Hierarchy>(e1);
+            auto* h2 = m_World->Component.tryGet<comp::Hierarchy>(e2);
 
             bool bothHierarchy = h1 && h2;
             bool bothOrphans   = !h1 && !h2;
@@ -259,7 +214,7 @@ export namespace rynd::panel {
             if (bothHierarchy)
                 if (h1->getParent() == Entity::Null) { // Case: Range selection over roots
                     bool capturing = false;
-                    m_World->Query.foreach<World::QueryAPI::Incl<component::Hierarchy>>([&](Entity walker, component::Hierarchy& h) {
+                    m_World->Query.foreach<comp::Hierarchy>([&](Entity walker, auto& h) {
                         if (h.getParent() != Entity::Null) return;
                         bool isBoundary = (walker == e1 || walker == e2);
                         if (isBoundary) capturing = !capturing;
@@ -267,19 +222,19 @@ export namespace rynd::panel {
                     });
                 } else { // Case: Range selection over siblings/children
                     bool   capturing = false;
-                    Entity child     = m_World->Component.get<component::Hierarchy>(h1->getParent())->getFirstChild();
+                    Entity child     = m_World->Component.get<comp::Hierarchy>(h1->getParent())->getFirstChild();
                     while (child != Entity::Null) {
                         bool isBoundary = (child == e1 || child == e2);
                         if (isBoundary) capturing = !capturing;
                         if (capturing || isBoundary) m_Selection.insert(child);
 
-                        auto* sibling = m_World->Component.get<component::HierarchySibling>(child);
+                        auto* sibling = m_World->Component.get<comp::HierarchySibling>(child);
                         child         = sibling ? sibling->getNext() : Entity::Null;
                     }
                 }
             else if (bothOrphans) { // Case: Range selection over orphans (entities not belonging to the hierarchy)
                 bool capturing = false;
-                m_World->Query.foreach<World::QueryAPI::Excl<component::Hierarchy>>([&](Entity walker) {
+                m_World->Query.foreach<Excl<comp::Hierarchy>>([&](Entity walker) {
                     bool isBoundary = (walker == e1 || walker == e2);
                     if (isBoundary) capturing = !capturing;
                     if (capturing || isBoundary) m_Selection.insert(walker);
@@ -291,6 +246,56 @@ export namespace rynd::panel {
             return true;
         }
 
-        bool isSelected(Entity e) const { return m_Selection.contains(e); }
+        void makeDragDropEntitySource(Entity e) {
+            if (ImGui::BeginDragDropSource()) {
+                std::vector<Entity> entities;
+                if (isSelected(e)) entities.assign(m_Selection.begin(), m_Selection.end());
+                else entities.push_back(e);
+
+                ImGui::SetDragDropPayload("ENTITY_GROUP", entities.data(), sizeof(Entity) * entities.size());
+                ImGui::Text("Moving %zu entity(s)", entities.size());
+                ImGui::EndDragDropSource();
+            }
+        }
+
+        void makeDragDropEntityTarget(Entity newParent) {
+            if (ImGui::BeginDragDropTarget()) {
+                if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY_GROUP")) {
+                    size_t entityCount = payload->DataSize / sizeof(Entity);
+                    auto*  entities    = static_cast<Entity*>(payload->Data);
+
+                    for (size_t i = 0; i < entityCount; i++) {
+                        auto entity = entities[i];
+                        if (entity != newParent) m_World->Component.set<comp::HierarchyParentRequest>(entity, {.NewParent = newParent});
+                    }
+                }
+
+                ImGui::EndDragDropTarget();
+            }
+        }
+
+        void makeContextMenu() {
+            if (ImGui::BeginPopupContextItem()) {
+                if (ImGui::MenuItem("Delete")) {
+                    for (Entity selected : m_Selection)
+                        m_PendingDeletes.push_back(selected);
+                    m_Selection.clear();
+                    m_SelectionLatest = Entity::Null;
+                }
+                ImGui::EndPopup();
+            }
+        }
+
+        Entity createEntity(Entity parent = Entity::Null) {
+            auto entity = createOrphan();
+            m_World->Component.add<comp::Hierarchy>(entity);
+            if (parent != Entity::Null) m_World->Component.add<comp::HierarchyParentRequest>(entity, {.NewParent = parent});
+            return entity;
+        }
+
+        Entity createOrphan() {
+            auto entity = m_World->Entity.create();
+            return entity;
+        }
     };
 }
