@@ -30,17 +30,18 @@ namespace ryn::service {
     export class World;
 
     export struct RYN_API Entity {
+        using IDType = ENTT_ID_TYPE;
         static const Entity Null;
 
-        constexpr Entity(entt::entity e) noexcept : id(static_cast<ENTT_ID_TYPE>(e)) {}
+        constexpr Entity(entt::entity e) noexcept : id(static_cast<IDType>(e)) {}
         constexpr operator entt::entity() const noexcept { return static_cast<entt::entity>(id); }
-        constexpr operator ENTT_ID_TYPE() const noexcept { return id; }
+        constexpr operator IDType() const noexcept { return id; }
 
         auto               operator<=>(const Entity&) const = default;
-        explicit constexpr operator bool() const noexcept { return id != static_cast<ENTT_ID_TYPE>(entt::null); }
+        explicit constexpr operator bool() const noexcept { return id != static_cast<IDType>(entt::null); }
 
     private:
-        ENTT_ID_TYPE id = entt::null;
+        IDType id = entt::null;
     };
 
     constexpr Entity Entity::Null{static_cast<entt::entity>(entt::null)};
@@ -81,6 +82,11 @@ struct std::formatter<ryn::service::Entity> {
     inline auto format(const ryn::service::Entity entity, std::format_context& ctx) const {
         return std::format_to(ctx.out(), "[ID: {}]", static_cast<ENTT_ID_TYPE>(entity));
     }
+};
+
+template<>
+struct std::hash<ryn::service::Entity> {
+    size_t operator()(const ryn::service::Entity& e) const noexcept { return std::hash<ryn::service::Entity::IDType>{}(e); }
 };
 
 export namespace ryn::service {
@@ -372,12 +378,22 @@ namespace ryn::service {
         return Span<T>{storage.data(), storage.size()};
     }
 
-    template<typename Incl, typename Excl>
+    template<typename T1, typename T2>
     struct ViewExtractor;
 
     template<typename... I, typename... E>
     struct ViewExtractor<World::QueryAPI::Incl<I...>, World::QueryAPI::Excl<E...>> {
         static auto get(entt::registry& reg) { return reg.view<I...>(entt::exclude<E...>); }
+    };
+
+    template<typename... I>
+    struct ViewExtractor<World::QueryAPI::Incl<I...>, World::QueryAPI::Excl<>> {
+        static auto get(entt::registry& reg) { return reg.view<I...>(); }
+    };
+
+    template<typename... E>
+    struct ViewExtractor<World::QueryAPI::Excl<E...>, World::QueryAPI::Excl<>> {
+        static auto get(entt::registry& reg) { return reg.view<entt::entity>(entt::exclude<E...>); }
     };
 
     template<typename Incl, typename Excl, typename Func>
