@@ -35,7 +35,7 @@ namespace rynd::service {
         for (const auto& panel : m_Panels) {
             if (!panel.IsConfigured) continue;
 
-            ImGui::SetNextWindowSizeConstraints(ImVec2(200, 150), ImVec2(FLT_MAX, FLT_MAX));
+            ImGui::SetNextWindowSizeConstraints(ImVec2(400, 600), ImVec2(FLT_MAX, FLT_MAX));
 
             static constexpr bool IS_OPEN = true;
             if (ImGui::Begin(panel.Instance->getName()), &IS_OPEN)
