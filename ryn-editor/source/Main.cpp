@@ -27,10 +27,20 @@ protected:
         getServiceStack().push<ryn::service::Window>(windowConfig);
         getServiceStack().push<ryn::service::Input>();
         getServiceStack().push<ryn::service::Graphics>(graphicsConfig);
-        getServiceStack().push<ryn::service::World>();
+        auto world = getServiceStack().push<ryn::service::World>();
         getServiceStack().push<rynd::service::Editor>();
+
+        // TODO: remove hardcoded ECS system initialization after the engine has a canon workflow for them
+        world->System.make<ryn::system::Hierarchy>();
     }
 
     void onShutdown() override {}
 };
 ryn::Box<ryn::IApplication> createApplication() { return ryn::Box<EditorApplication>::make(); }
+
+// TODO: HOLY MADINING ISSUES. Never again static APIs in ECS Systems. The hierarchies clear/set parent static APIs MUST be replaced
+//  with request components. Actions should be handled through component system callbacks and DATA!!!
+//  I SPEND 2H debugging this system and it wasn't even REGISTERED IN THE WORLD. THE STATIC METHODS ALLOWED ME TO IGNORE IT LONG ENOUGH
+
+// TODO: We TOTALLY need some default ECS systems loadout that get preloaded into the world. I need to draft the actual engine workflow of
+//  ECS systems, perhaps implement a systems panel for the editor AND THEN, THEN I need to autoload systems
