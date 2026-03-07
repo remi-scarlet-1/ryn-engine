@@ -40,10 +40,6 @@ export namespace rynd::service {
         void imGuiBeginFrame(const ryn::FrameTime& time);
         void imGuiEndFrame();
 
-        // TODO: improve panel API
-        //  - move IPanels to reflection system
-        //  - have a titlebar which automatically discovers all available panels and allows to make/close(destry) them on the fly
-
         template<panel::IsPanel T, typename... Args>
         void makePanel(Args&&... args) {
             auto panel = std::make_unique<T>(std::forward<Args>(args)...);

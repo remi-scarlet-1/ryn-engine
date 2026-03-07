@@ -9,6 +9,10 @@ export import Ryntime;
 //  - setup a structure for panels to cache local and persistent state
 //  - allow saving of panel layout (with the help of the ImGui .ini thing)
 
+// TODO: improve panel API
+//  - move IPanels to reflection system
+//  - have a titlebar which automatically discovers all available panels and allows to make/close(destry) them on the fly
+
 export namespace rynd::panel {
     class IPanel {
     public:
