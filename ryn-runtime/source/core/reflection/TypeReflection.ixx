@@ -13,9 +13,9 @@ namespace ryn::reflection {
     class RYN_API ITypeReflection {
     public:
         virtual ~ITypeReflection()                                 = default;
-        [[nodiscard]] virtual const char*  getTypeName() const     = 0;
         [[nodiscard]] virtual TypeID       getTypeID() const       = 0;
         [[nodiscard]] virtual TypeCategory getTypeCategory() const = 0;
+        [[nodiscard]] virtual const char*  getTypeName() const     = 0;
     };
 }
 
@@ -27,6 +27,15 @@ export namespace ryn::reflection {
         [[nodiscard]] static TypeInfo                    queryType(TypeID typeId);
         [[nodiscard]] static Span<const TypeInfo* const> queryTypesByCategory(TypeCategory category);
 
+        template<typename Func>
+        static void forEachCategory(Func&& func) {
+            auto&            self = instance();
+            std::shared_lock lock(self.m_Mutex);
+            for (auto const& [cat, types] : self.m_TypesByCategory) {
+                func(cat, types);
+            }
+        }
+
     private:
         TypeRegistry()  = default;
         ~TypeRegistry() = default;
@@ -35,6 +44,18 @@ export namespace ryn::reflection {
         std::unordered_map<TypeID, TypeInfo>                           m_Types;
         std::unordered_map<TypeCategory, std::vector<const TypeInfo*>> m_TypesByCategory;
     };
+
+    template<typename T>
+    concept IsStaticType = requires { typename T::StaticTypeMarker; };
+
+    template<typename T>
+    concept IsDynamicBase = requires { typename T::DynamicBaseMarker; };
+
+    template<typename T>
+    concept IsDynamicType = requires { typename T::DynamicTypeMarker; };
+
+    template<typename T>
+    concept IsType = IsStaticType<T> || IsDynamicType<T>;
 
     template<size_t N>
     struct TypeName {
@@ -46,29 +67,17 @@ export namespace ryn::reflection {
         [[nodiscard]] constexpr const char* data() const { return value; }
     };
 
-    template<typename T>
-    concept IsStaticType = requires { typename T::StaticTypeAnchor; } && std::derived_from<T, typename T::StaticTypeAnchor>;
-
-    template<typename T>
-    concept IsDynamicBase = requires { typename T::DynamicBaseAnchor; } && std::derived_from<T, typename T::DynamicBaseAnchor>;
-
-    template<typename T>
-    concept IsDynamicType = requires { typename T::DynamicTypeAnchor; } && std::derived_from<T, typename T::DynamicTypeAnchor>;
-
-    template<typename T>
-    concept IsType = IsStaticType<T> || IsDynamicType<T>;
-
     template<TypeCategory Category, TypeName Name, bool IsDynamic = false>
     struct StaticType {
-        using StaticTypeAnchor = StaticType<Category, Name>;
+        using StaticTypeMarker = void;
 
-        static constexpr const char*  TYPE_NAME     = Name.data();
-        static constexpr TypeID       TYPE_ID       = TypeID::generateHash(Name.data());
+        static constexpr TypeID       TYPE_ID       = TypeID::generate(Name.data());
         static constexpr TypeCategory TYPE_CATEGORY = Category;
+        static constexpr const char*  TYPE_NAME     = Name.data();
         static constexpr bool         IS_DYNAMIC    = IsDynamic;
 
         static bool getTypeStatus() {
-            TypeRegistry::registerType({.Name = TYPE_NAME, .ID = TYPE_ID, .Category = TYPE_CATEGORY, .IsDynamic = IS_DYNAMIC});
+            TypeRegistry::registerType({.ID = TYPE_ID, .Category = TYPE_CATEGORY, .Name = TYPE_NAME, .IsDynamic = IS_DYNAMIC});
             return true;
         }
     };
@@ -76,8 +85,7 @@ export namespace ryn::reflection {
     template<TypeCategory Category>
     class DynamicBase : public ITypeReflection {
     public:
-        using DynamicBaseAnchor = DynamicBase<Category>;
-
+        using DynamicBaseMarker = void;
         static constexpr TypeCategory TYPE_CATEGORY = Category;
 
         [[nodiscard]] TypeCategory getTypeCategory() const final { return Category; }
@@ -86,7 +94,7 @@ export namespace ryn::reflection {
     template<IsDynamicBase Base, TypeName Name>
     class DynamicType : public Base, public StaticType<Base::TYPE_CATEGORY, Name, true> {
     public:
-        using DynamicTypeAnchor = DynamicType<Base, Name>;
+        using DynamicTypeMarker = void;
         using Meta              = StaticType<Base::TYPE_CATEGORY, Name, true>;
 
         using Meta::getTypeStatus;
@@ -95,8 +103,8 @@ export namespace ryn::reflection {
         using Meta::TYPE_ID;
         using Meta::TYPE_NAME;
 
-        [[nodiscard]] const char* getTypeName() const final { return TYPE_NAME; }
         [[nodiscard]] TypeID      getTypeID() const final { return TYPE_ID; }
+        [[nodiscard]] const char* getTypeName() const final { return TYPE_NAME; }
 
     protected:
         constexpr DynamicType() noexcept { (void)s_Registered; }

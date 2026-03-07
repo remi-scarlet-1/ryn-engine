@@ -1,9 +1,11 @@
 module;
 #include "Prelude.h"
-#include <array>
+#include <algorithm>
 #include <format>
 #include <imgui.h>
-#include <string>
+#include <string_view>
+#include <vector>
+#include <unordered_map>
 
 export module Ryndition.Panel:Registry;
 export import Ryntime;
@@ -14,53 +16,79 @@ using namespace ryn::reflection;
 export namespace rynd::panel {
     class Registry : public IPanel {
     public:
-        Registry() { m_Filters.fill(true); }
-
         const char* getName() const override { return "Registry"; }
 
         void onConfigure(ryn::ServiceDiscovery& discovery) override {}
 
         void onDraw(const ryn::FrameTime& time) override {
+            // Synchronize our UI state with the Registry's dynamic categories
+            syncAndSort();
+
+            // Draw global filter controls
             drawFilters();
             ImGui::Separator();
 
-            for (uint32_t i = 0; i < static_cast<uint32_t>(TypeCategory::Count); ++i) {
-                const auto category = static_cast<TypeCategory>(i);
-                drawCategoryGroup(typeCategoryToString(category), category, m_Filters[i]);
+            // Draw the groups in alphabetical order
+            // We iterate our sorted list and fetch the types from the Registry
+            for (const auto& category : m_SortedCategories) {
+                if (m_Filters[category]) {
+                    auto types = TypeRegistry::queryTypesByCategory(category);
+                    drawCategoryGroup(category, types);
+                }
             }
         }
 
     private:
-        std::array<bool, static_cast<size_t>(TypeCategory::Count)> m_Filters;
+        // We store the sorted list and the filter state
+        std::vector<TypeCategory>              m_SortedCategories;
+        std::unordered_map<TypeCategory, bool> m_Filters;
+
+        void syncAndSort() {
+            bool needsSort = false;
+
+            // Use the callback to discover categories
+            TypeRegistry::forEachCategory([&](const auto& category, const auto& types) {
+                if (!m_Filters.contains(category)) {
+                    m_Filters[category] = true; // Default to visible
+                    m_SortedCategories.push_back(category);
+                    needsSort = true;
+                }
+            });
+
+            if (needsSort) {
+                std::ranges::sort(m_SortedCategories, [](const auto& a, const auto& b) {
+                    return std::string_view(a.Name) < std::string_view(b.Name);
+                });
+            }
+        }
 
         void drawFilters() {
-            int activeCount = 0;
-            for (bool filter : m_Filters)
-                if (filter) activeCount++;
+            uint64_t activeCount = 0;
+            for (const auto& cat : m_SortedCategories) if (m_Filters[cat]) activeCount++;
 
-            auto preview = activeCount == static_cast<int>(TypeCategory::Count) ? "All Categories" : "Filtered Selection...";
+            const char* preview = (activeCount == m_SortedCategories.size()) ? "All Categories" : "Filtered Selection...";
 
             if (ImGui::BeginCombo("##CategoryFilter", preview)) {
-                for (uint16_t i = 0; i < static_cast<uint16_t>(TypeCategory::Count); ++i)
-                    ImGui::Selectable(typeCategoryToString(static_cast<TypeCategory>(i)), &m_Filters[i], ImGuiSelectableFlags_DontClosePopups);
+                for (const auto& cat : m_SortedCategories) {
+                    ImGui::Selectable(cat.Name, &m_Filters[cat], ImGuiSelectableFlags_DontClosePopups);
+                }
                 ImGui::EndCombo();
             }
         }
 
-        void drawCategoryGroup(const char* label, TypeCategory category, bool isVisible) {
-            if (!isVisible) return;
-
-            auto types = TypeRegistry::queryTypesByCategory(category);
+        void drawCategoryGroup(const TypeCategory& category, ryn::Span<const TypeInfo* const> types) {
             if (types.isEmpty()) return;
 
-            if (ImGui::CollapsingHeader(label, ImGuiTreeNodeFlags_DefaultOpen)) {
-                static constexpr ImGuiTableFlags tableFlags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable |
-                                                              ImGuiTableFlags_Hideable;
+            if (ImGui::CollapsingHeader(category.Name, ImGuiTreeNodeFlags_DefaultOpen)) {
+                static constexpr ImGuiTableFlags tableFlags =
+                    ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg |
+                    ImGuiTableFlags_Resizable | ImGuiTableFlags_Hideable;
 
-                if (ImGui::BeginTable(label, 3, tableFlags)) {
+                if (ImGui::BeginTable(category.Name, 3, tableFlags)) {
                     const ImVec4& idColor       = ImGui::GetStyle().Colors[ImGuiCol_TextDisabled];
                     const float   idColumnWidth = ImGui::CalcTextSize("0x0000000000000000").x + ImGui::GetStyle().ItemSpacing.x * 2.0f;
                     const float   em            = ImGui::GetFontSize();
+
                     ImGui::TableSetupColumn("Type ID", ImGuiTableColumnFlags_WidthFixed, idColumnWidth);
                     ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
                     ImGui::TableSetupColumn("Dynamic", ImGuiTableColumnFlags_WidthFixed, em * 3.25f);
@@ -69,19 +97,19 @@ export namespace rynd::panel {
                     for (const auto* info : types) {
                         ImGui::TableNextRow();
 
-                        // Column 0 ID
+                        // Column 0: ID (Formatted via your TypeID formatter)
                         char idBuffer[20];
                         auto [out, _] = std::format_to_n(idBuffer, sizeof(idBuffer) - 1, "{}", info->ID);
-                        *out          = '\0';
+                        *out = '\0';
 
                         ImGui::TableSetColumnIndex(0);
                         ImGui::TextColored(idColor, "%s", idBuffer);
 
-                        // Column 1 Name
+                        // Column 1: Name
                         ImGui::TableSetColumnIndex(1);
                         ImGui::TextUnformatted(info->Name);
 
-                        // Column 2 Dynamic Flag
+                        // Column 2: Dynamic Flag
                         ImGui::TableSetColumnIndex(2);
                         if (info->IsDynamic) ImGui::TextColored(idColor, "[x]");
                         else ImGui::TextColored(idColor, "[ ]");

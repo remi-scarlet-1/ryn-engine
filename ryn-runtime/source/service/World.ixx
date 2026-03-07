@@ -16,7 +16,7 @@ namespace entt {
     template<typename T>
     requires IsType<T>
     struct type_hash<T> {
-        static constexpr id_type value() noexcept { return static_cast<id_type>(T::TYPE_ID.value()); }
+        static constexpr id_type value() noexcept { return static_cast<id_type>(T::TYPE_ID.Hash); }
     };
 
     template<typename T>

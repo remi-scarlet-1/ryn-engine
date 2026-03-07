@@ -8,8 +8,15 @@ export module Ryntime.Core.Reflection:TypeCommon;
 
 export namespace ryn::reflection {
     struct TypeID {
+    public:
+        static constexpr uint64_t INVALID_HASH = 0xDEADBEEFDEADBEEFull;
+        uint64_t                  Hash         = INVALID_HASH;
+
+        constexpr TypeID() = default;
+        constexpr explicit TypeID(const uint64_t hash) : Hash(hash) {}
+
         static constexpr TypeID invalid() { return TypeID{}; }
-        static consteval TypeID generateHash(const char* str) {
+        static consteval TypeID generate(const char* str) {
             uint64_t hash = 0xcbf29ce484222325;
             while (*str) {
                 hash ^= static_cast<uint64_t>(*str++);
@@ -19,58 +26,74 @@ export namespace ryn::reflection {
             return TypeID(hash);
         }
 
-        [[nodiscard]] constexpr uint64_t value() const { return Hash; }
+        constexpr bool     operator==(const TypeID& other) const { return Hash == other.Hash; }
+        constexpr auto     operator<=>(const TypeID& other) const { return Hash <=> other.Hash; }
+        explicit constexpr operator bool() const { return Hash != INVALID_HASH; }
+    };
 
-        constexpr bool     operator==(const TypeID& other) const noexcept { return Hash == other.Hash; }
-        constexpr bool     operator!=(const TypeID& other) const noexcept { return Hash != other.Hash; }
-        constexpr bool     operator<(const TypeID& other) const noexcept { return Hash < other.Hash; }
-        constexpr bool     operator<=(const TypeID& other) const noexcept { return Hash <= other.Hash; }
-        constexpr bool     operator>(const TypeID& other) const noexcept { return Hash > other.Hash; }
-        constexpr bool     operator>=(const TypeID& other) const noexcept { return Hash >= other.Hash; }
+    struct TypeCategory {
+    public:
+        static constexpr uint32_t INVALID_HASH = 0xDEADBEEF;
+        uint32_t                  Hash         = INVALID_HASH;
+        char                      Name[60]     = "<invalid>";
+
+        consteval TypeCategory() = default;
+
+        static constexpr TypeCategory invalid() { return TypeCategory{}; }
+        static consteval TypeCategory generate(const char* str) {
+            TypeCategory cat{};
+            cat.Hash = 0x811c9dc5;
+
+            int i = 0;
+            while (str[i]) {
+                cat.Hash ^= static_cast<uint32_t>(str[i]);
+                cat.Hash *= 0x01000193;
+
+                // Copy string into the fixed buffer, leave room for null terminator
+                if (i < 59) cat.Name[i] = str[i];
+                i++;
+            }
+            cat.Name[i < 59 ? i : 59] = '\0';
+
+            return cat;
+        }
+
+        constexpr bool     operator==(const TypeCategory& other) const { return Hash == other.Hash; }
+        constexpr auto     operator<=>(const TypeCategory& other) const { return Hash <=> other.Hash; }
         explicit constexpr operator bool() const { return Hash != INVALID_HASH; }
 
-    private:
-        static constexpr uint64_t INVALID_HASH = 0xDEADBEEFDEADBEEFull;
-        uint64_t                  Hash         = INVALID_HASH;
-
-        constexpr TypeID() = default;
-        constexpr explicit TypeID(const uint64_t hash) : Hash(hash) {}
+        /* Well known engine type categories */
+        static const TypeCategory None;
+        static const TypeCategory Service;
+        static const TypeCategory Event;
+        static const TypeCategory System;
+        static const TypeCategory Component;
+        static const TypeCategory ComponentAction;
     };
 
-    enum class TypeCategory : uint16_t {
-        None             = 0,
-        Service          = 1,
-        Event            = 2,
-        System           = 3,
-        Component        = 4,
-        ComponentAction = 5,
-        Count
-    };
-
-    [[nodiscard]] constexpr const char* typeCategoryToString(TypeCategory category) noexcept {
-        switch (category) {
-            case TypeCategory::None: return "Other";
-            case TypeCategory::Service: return "Service";
-            case TypeCategory::Event: return "Event";
-            case TypeCategory::System: return "System";
-            case TypeCategory::Component: return "Component";
-            case TypeCategory::ComponentAction: return "ComponentAction";
-            case TypeCategory::Count: return "<internal_counter>";
-        }
-        return "<undefined>";
-    }
+    constexpr TypeCategory TypeCategory::None{generate("Ryn.None")};
+    constexpr TypeCategory TypeCategory::Service{generate("Ryn.Service")};
+    constexpr TypeCategory TypeCategory::Event{generate("Ryn.Event")};
+    constexpr TypeCategory TypeCategory::System{generate("Ryn.System")};
+    constexpr TypeCategory TypeCategory::Component{generate("Ryn.Component")};
+    constexpr TypeCategory TypeCategory::ComponentAction{generate("Ryn.ComponentAction")};
 
     struct TypeInfo {
-        const char*  Name      = "<invalid>";
         TypeID       ID        = TypeID::invalid();
         TypeCategory Category  = TypeCategory::None;
+        const char*  Name      = "<anonymous>";
         bool         IsDynamic = false;
     };
 }
 
 template<>
 struct std::hash<ryn::reflection::TypeID> {
-    inline size_t operator()(const ryn::reflection::TypeID& id) const noexcept { return id.value(); }
+    inline size_t operator()(const ryn::reflection::TypeID& id) const noexcept { return id.Hash; }
+};
+
+template<>
+struct std::hash<ryn::reflection::TypeCategory> {
+    inline size_t operator()(const ryn::reflection::TypeCategory& category) const noexcept { return category.Hash; }
 };
 
 template<>
@@ -78,7 +101,7 @@ struct std::formatter<ryn::reflection::TypeID> {
     constexpr auto parse(const std::format_parse_context& ctx) const { return ctx.begin(); }
 
     inline auto format(const ryn::reflection::TypeID& id, std::format_context& ctx) const {
-        return std::format_to(ctx.out(), "0x{:X}", id.value());
+        return std::format_to(ctx.out(), "0x{:X}", id.Hash);
     }
 };
 
@@ -87,7 +110,7 @@ struct std::formatter<ryn::reflection::TypeCategory> {
     constexpr auto parse(const std::format_parse_context& ctx) const { return ctx.begin(); }
 
     inline auto format(const ryn::reflection::TypeCategory cat, std::format_context& ctx) const {
-        return std::format_to(ctx.out(), "{}", ryn::reflection::typeCategoryToString(cat));
+        return std::format_to(ctx.out(), "{}", cat.Name);
     }
 };
 
@@ -97,7 +120,7 @@ struct std::formatter<ryn::reflection::TypeInfo> {
 
     inline auto format(const ryn::reflection::TypeInfo& info, std::format_context& ctx) const {
         const char* name     = info.Name ? info.Name : "<undefined>";
-        const char* category = ryn::reflection::typeCategoryToString(info.Category);
+        const char* category = info.Category.Name;
         return std::format_to(ctx.out(), "[ID: {}, Category: {}, Name: {}]", info.ID, category, name);
     }
 };
