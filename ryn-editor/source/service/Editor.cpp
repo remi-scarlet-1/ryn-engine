@@ -1,5 +1,5 @@
 module;
-#include "../detail/FontEmbeddings.inl"
+#include "detail/FontEmbeddings.inl"
 #include "Prelude.h"
 #include <algorithm>
 #include <cmath>
@@ -38,8 +38,7 @@ namespace rynd::service {
             ImGui::SetNextWindowSizeConstraints(ImVec2(400, 600), ImVec2(FLT_MAX, FLT_MAX));
 
             static constexpr bool IS_OPEN = true;
-            if (ImGui::Begin(panel.Instance->getName()), &IS_OPEN)
-                panel.Instance->onDraw(time);
+            if (ImGui::Begin(panel.Instance->getDisplayName()), &IS_OPEN) panel.Instance->onDraw(time, m_EditorSettings, m_EditorContext);
 
             ImGui::End();
         }
@@ -141,14 +140,12 @@ namespace rynd::service {
         ImGui::EndFrame();
     }
 
-    Editor::PanelEntry Editor::setupPanel(std::unique_ptr<panel::IPanel> panel) {
+    Editor::PanelEntry Editor::setupPanel(std::unique_ptr<core::IEditorPanel> panel) {
         ryn::ServiceDiscovery discovery(*m_ServiceLocator);
         panel->onConfigure(discovery);
 
-        if (discovery.wasSuccess())
-            panel->onEnable();
-        else
-            RYN_WARN("Disabled '{0}' panel because it's required services couldn't be discovered!", panel->getName());
+        if (!discovery.wasSuccess())
+            RYN_WARN("Disabled '{0}' panel because it's required services couldn't be discovered!", panel->getTypeName());
 
         return PanelEntry{.Instance = std::move(panel), .IsConfigured = discovery.wasSuccess()};
     }

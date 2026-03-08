@@ -8,19 +8,19 @@ module;
 #include <unordered_map>
 
 export module Ryndition.Panel:Registry;
-export import Ryntime;
-export import :IPanel;
+export import Ryndition.Core;
+import Ryntime;
 
 using namespace ryn::reflection;
 
 export namespace rynd::panel {
-    class Registry : public IPanel {
+    class Registry final : public DynamicType<core::IEditorPanel, "rynd::panel::Registry"> {
     public:
-        const char* getName() const override { return "Registry"; }
+        const char* getDisplayName() const override { return "Registry"; }
 
         void onConfigure(ryn::ServiceDiscovery& discovery) override {}
 
-        void onDraw(const ryn::FrameTime& time) override {
+        void onDraw(const ryn::FrameTime& time, core::EditorSettings& settings, core::EditorContext& ctx) override {
             // Synchronize our UI state with the Registry's dynamic categories
             syncAndSort();
 

@@ -20,15 +20,17 @@ export namespace rynd::service {
 
     private:
         struct PanelEntry {
-            std::unique_ptr<panel::IPanel> Instance;
-            bool                           IsConfigured;
+            std::unique_ptr<core::IEditorPanel> Instance;
+            bool                                IsConfigured;
         };
 
         ryn::IServiceLocator*         m_ServiceLocator = nullptr;
-        ryn::service::Window*         m_Window         = nullptr;
-        ryn::service::Graphics*       m_Graphics       = nullptr;
-        std::unique_ptr<ImGuiBackend> m_ImGuiBackend   = nullptr;
+        ryn::service::Window*         m_Window       = nullptr;
+        ryn::service::Graphics*       m_Graphics     = nullptr;
+        std::unique_ptr<ImGuiBackend> m_ImGuiBackend = nullptr;
         std::vector<PanelEntry>       m_Panels;
+        core::EditorSettings          m_EditorSettings;
+        core::EditorContext           m_EditorContext;
 
         void onAttach(ryn::IServiceLocator& locator) override;
         void onDetach() override;
@@ -40,13 +42,13 @@ export namespace rynd::service {
         void imGuiBeginFrame(const ryn::FrameTime& time);
         void imGuiEndFrame();
 
-        template<panel::IsPanel T, typename... Args>
+        template<core::IsPanel T, typename... Args>
         void makePanel(Args&&... args) {
             auto panel = std::make_unique<T>(std::forward<Args>(args)...);
             m_Panels.emplace_back(setupPanel(std::move(panel)));
         }
 
-        PanelEntry setupPanel(std::unique_ptr<panel::IPanel> panel);
+        PanelEntry setupPanel(std::unique_ptr<core::IEditorPanel> panel);
     };
 }
 

@@ -20,12 +20,15 @@ target_link_libraries(RynEditor
 
 target_sources(RynEditor
     PRIVATE FILE_SET CXX_MODULES BASE_DIRS source FILES
+    source/core/__BUNDLE__.ixx
+    source/core/EditorPanel.ixx
+    source/core/TypeCategory.ixx
+
     source/detail/__BUNDLE__.ixx
     source/detail/ImGuiBackend.ixx
 
     source/panel/__BUNDLE__.ixx
     source/panel/Hierarchy.ixx
-    source/panel/IPanel.ixx
     source/panel/Registry.ixx
 
     source/service/__BUNDLE__.ixx

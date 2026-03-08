@@ -1,6 +1,5 @@
 module;
 #include "Prelude.h"
-
 #include <cstdint>
 #include <imgui.h>
 #include <string>
@@ -8,26 +7,24 @@ module;
 #include <vector>
 
 export module Ryndition.Panel:Hierarchy;
-export import :IPanel;
+export import Ryndition.Core;
 import Ryntime;
-import Ryntime.System;
 
-using namespace ryn;
+using namespace ryn::reflection;
 using namespace ryn::service;
-
-RYN_SCOPE_FILE("Test");
+namespace comp = ryn::comp;
 
 export namespace rynd::panel {
-    class Hierarchy : public IPanel {
+    class Hierarchy final : public DynamicType<core::IEditorPanel, "rynd::panel::Hierarchy"> {
     public:
         Hierarchy()           = default;
         ~Hierarchy() override = default;
 
-        const char* getName() const override { return "Hierarchy"; }
+        const char* getDisplayName() const override { return "Hierarchy"; }
 
-        void onConfigure(ServiceDiscovery& discovery) override { discovery.require(m_World); }
+        void onConfigure(ryn::ServiceDiscovery& discovery) override { discovery.require(m_World); }
 
-        void onDraw(const FrameTime& time) override {
+        void onDraw(const ryn::FrameTime& time, core::EditorSettings& settings, core::EditorContext& ctx) override {
             drawToolbar();
             ImGui::Separator();
 
