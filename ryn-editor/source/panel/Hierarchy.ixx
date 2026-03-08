@@ -28,9 +28,8 @@ export namespace rynd::panel {
             ImGui::Separator();
 
             float availableHeight = ImGui::GetContentRegionAvail().y;
-
-            drawHierarchy();
-            regionSplitter(availableHeight);
+            drawHierarchy(settings, availableHeight);
+            regionSash(settings, availableHeight);
             drawOrphans();
 
             if (!m_PendingDeletes.empty()) {
@@ -41,11 +40,8 @@ export namespace rynd::panel {
         }
 
     private:
-        World*                     m_World             = nullptr;
-        static constexpr float     SPLITTER_HEIGHT     = 6.0; // 6px
-        static constexpr float     SPLITTER_MIN_HEIGHT = 100;
-        float                      m_SplitterHeight    = 300.0f;
-        Entity                     m_SelectionLatest   = Entity::Null;
+        World*                     m_World           = nullptr;
+        Entity                     m_SelectionLatest = Entity::Null;
         std::unordered_set<Entity> m_Selection;
         std::vector<Entity>        m_PendingDeletes;
 
@@ -55,8 +51,8 @@ export namespace rynd::panel {
             if (ImGui::Button("Create Orphan")) createOrphan();
         }
 
-        void drawHierarchy() {
-            regionBegin("Hierarchy", ImVec2(0, m_SplitterHeight));
+        void drawHierarchy(EditorSettings& settings, float availableHeight) {
+            regionBegin("Hierarchy", ImVec2(0, settings.Inspector.SashRatio * availableHeight));
 
             ImGuiTreeNodeFlags baseFlags{};
             baseFlags |= ImGuiTreeNodeFlags_SpanAvailWidth;
@@ -135,14 +131,23 @@ export namespace rynd::panel {
 
         void regionEnd() { ImGui::EndChild(); }
 
-        void regionSplitter(float totalHeight) {
-            ImGui::Button("##splitter", ImVec2(-1, SPLITTER_HEIGHT));
-            if (ImGui::IsItemActive()) m_SplitterHeight += ImGui::GetIO().MouseDelta.y;
+        void regionSash(EditorSettings& settings, float availableHeight) {
+            // Draw button
+            ImGui::Button("##sash", ImVec2(-1, settings.Inspector.SashHeight));
 
-            const float maxHeight = totalHeight - SPLITTER_MIN_HEIGHT - SPLITTER_HEIGHT;
-            if (m_SplitterHeight < SPLITTER_MIN_HEIGHT) m_SplitterHeight = SPLITTER_MIN_HEIGHT;
-            if (m_SplitterHeight > maxHeight) m_SplitterHeight = maxHeight;
+            // Handle Interaction
+            if (ImGui::IsItemActive()) {
+                // Calculate how much the mouse moved as a percentage of the total height
+                float deltaRatio = ImGui::GetIO().MouseDelta.y / availableHeight;
+                settings.Inspector.SashRatio += deltaRatio;
 
+                // Clamp the ratio (0.0 to 1.0)
+                float padding = settings.Inspector.SashPadding / availableHeight;
+                if (settings.Inspector.SashRatio < padding) settings.Inspector.SashRatio = padding;
+                if (settings.Inspector.SashRatio > 1.0f - padding) settings.Inspector.SashRatio = 1.0f - padding;
+            }
+
+            // Cursor feedback
             if (ImGui::IsItemHovered()) ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeNS);
         }
 

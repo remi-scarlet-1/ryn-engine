@@ -19,7 +19,9 @@ using ryn::service::Entity;
 export namespace rynd {
     struct EditorSettings {
         struct {
-            float SashRatio = 0.75f; // TODO: this sash thing might be abstractable to re-use
+            const float SashHeight = 6.0f; // px
+            const float SashPadding = 100.0f; // px
+            float SashRatio = 0.5f; // TODO: this sash thing might be abstractable to re-use
         } Inspector;
 
         struct {
