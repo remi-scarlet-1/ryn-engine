@@ -180,7 +180,7 @@ namespace {
                               const Diligent::Char*                  function,
                               const Diligent::Char*                  file,
                               int                                    line) {
-        RYN_SCOPE_LOCAL("Service|Graphics|Diligent");
+        RYN_SCOPE_LOCAL("Diligent");
         switch (severity) {
             case Diligent::DEBUG_MESSAGE_SEVERITY_INFO: RYN_TRACE("{0}", message); break;
             case Diligent::DEBUG_MESSAGE_SEVERITY_WARNING: RYN_WARN("{0}", message); break;

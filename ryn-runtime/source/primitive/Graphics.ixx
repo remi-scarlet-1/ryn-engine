@@ -37,7 +37,7 @@ module;
 #include <RenderDevice.h>
 #include <SwapChain.h>
 
-export module Ryntime.Core.Primitive:Graphics;
+export module Ryntime.Primitive:Graphics;
 
 /* OTHER DILIGENT ALIASES */
 export namespace ryn::graphics {

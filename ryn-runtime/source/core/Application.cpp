@@ -8,9 +8,9 @@ RYN_SCOPE_FILE("Application");
 
 namespace ryn {
     void IApplication::bootstrap(int argc, char** argv, Box<IApplication> appBox) {
-        RYN_SCOPE_LOCAL("Entrypoint");
+        RYN_SCOPE_LOCAL("bootstrap");
 #if defined(RYN_ENABLE_LOGGING)
-        Log::init();
+        Logger::init();
 #endif
 
         RYN_INFO("Bootstrap application...");
@@ -20,7 +20,7 @@ namespace ryn {
         appBox.reset();
 
 #if defined(RYN_ENABLE_LOGGING)
-        Log::shutdown();
+        Logger::shutdown();
 #endif
     }
 

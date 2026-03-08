@@ -16,14 +16,14 @@
     #endif
 
 #else
-    #define RYN_API
+    #error "Unknown platform. Shared library exports are undefined for this platform."
 #endif
 
 /* Configurations & Features */
 #if defined(RYN_CONFIG_DEBUG)
     #define RYN_ENABLE_LOGGING
-    #define RYN_ENABLE_ASSERTS
     #define RYN_ENABLE_VERIFY
+    #define RYN_ENABLE_ASSERTS
 
 #elif defined(RYN_CONFIG_RELEASE)
     #define RYN_ENABLE_LOGGING
@@ -33,72 +33,99 @@
     #define RYN_ENABLE_VERIFY
 
 #else
-    #error "Undefined configuration! Check CMake."
+    #error "Unknown configuration. Check CMake."
 #endif
 
 /* Feature: Logging */
 #if defined(RYN_ENABLE_LOGGING)
 // clang-format off
-    namespace ryn {
-        struct DebugScopeTag {};
-
+    namespace ryn::debug {
         namespace {
             template<typename T = void>
-            struct DebugScopeName {
+            struct ScopeFileName {
                 static constexpr auto value = "Unknown";
             };
         }
 
+        struct ScopeLocalTag {};
+
         template<typename T = void>
-        [[maybe_unused]] static consteval const char* resolveDebugScope(DebugScopeTag) { return DebugScopeName<T>::value; }
-        [[maybe_unused]] static consteval const char* resolveDebugScope(const char* s) { return s; }
+        [[maybe_unused]] static consteval const char* resolveScopeFile() {
+            return ScopeFileName<T>::value;
+        }
+        [[maybe_unused]] static consteval const char* resolveScopeLocal(ScopeLocalTag) { return nullptr; }
+        [[maybe_unused]] static consteval const char* resolveScopeLocal(const char* s) { return s; }
     }
 
-    static constexpr ::ryn::DebugScopeTag s_RynDebugScope;
+    static constexpr ::ryn::debug::ScopeLocalTag s_RynScopeLocal;
 // clang-format on
 
-    #if defined(RYN_PLATFORM_WIN)
-        #define RYN_DISABLE_SHADOW_WARNING __pragma(warning(push)) __pragma(warning(disable : 4459))
-        #define RYN_ENABLE_SHADOW_WARNING  __pragma(warning(pop))
-    #elif defined(RYN_PLATFORM_LINUX)
-        #define RYN_DISABLE_SHADOW_WARNING _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wshadow\"")
-        #define RYN_ENABLE_SHADOW_WARNING  _Pragma("GCC diagnostic pop")
+    #if defined(_MSC_VER)
+        #define RYN_COMPILER_WARNING_DISABLE_SHADOW __pragma(warning(push)) __pragma(warning(disable : 4459))
+        #define RYN_COMPILER_WARNING_ENABLE_SHADOW  __pragma(warning(pop))
+    #elif defined(__GNUC__) || defined(__clang__)
+        #define RYN_COMPILER_WARNING_DISABLE_SHADOW _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wshadow\"")
+        #define RYN_COMPILER_WARNING_ENABLE_SHADOW  _Pragma("GCC diagnostic pop")
     #else
-        #define RYN_DISABLE_SHADOW_WARNING
-        #define RYN_ENABLE_SHADOW_WARNING
+        #define RYN_COMPILER_WARNING_DISABLE_SHADOW
+        #define RYN_COMPILER_WARNING_ENABLE_SHADOW
     #endif
 
     #define RYN_SCOPE_FILE(Name)                                                                                                           \
-        namespace ryn {                                                                                                                    \
+        namespace ryn::debug {                                                                                                             \
             namespace {                                                                                                                    \
                 template<>                                                                                                                 \
-                struct DebugScopeName<void> {                                                                                              \
+                struct ScopeFileName<void> {                                                                                               \
                     [[maybe_unused]] static constexpr const char* value = Name;                                                            \
                 };                                                                                                                         \
             }                                                                                                                              \
         }
 
     #define RYN_SCOPE_LOCAL(Name)                                                                                                          \
-        RYN_DISABLE_SHADOW_WARNING                                                                                                         \
-        [[maybe_unused]] static constexpr const char* s_RynDebugScope = Name;                                                              \
-        RYN_ENABLE_SHADOW_WARNING
+        RYN_COMPILER_WARNING_DISABLE_SHADOW                                                                                                \
+        [[maybe_unused]] static constexpr const char* s_RynScopeLocal = Name;                                                              \
+        RYN_COMPILER_WARNING_ENABLE_SHADOW
 
-    #include <format>
+    #define RYN_LOG(Level, Fmt, ...)                                                                                                       \
+        do {                                                                                                                               \
+            static constexpr const char* primary   = ::ryn::debug::resolveScopeFile();                                                     \
+            static constexpr const char* secondary = ::ryn::debug::resolveScopeLocal(s_RynScopeLocal);                                     \
+            if constexpr (secondary == nullptr) {                                                                                          \
+                ::ryn::Logger::message(Level, primary, Fmt __VA_OPT__(, ) __VA_ARGS__);                                                    \
+            } else {                                                                                                                       \
+                ::ryn::Logger::messageLocal(Level, primary, secondary, Fmt __VA_OPT__(, ) __VA_ARGS__);                                    \
+            }                                                                                                                              \
+        } while (0)
 
-    #define RYN_TRACE(...)    ::ryn::Log::trace(::ryn::resolveDebugScope(s_RynDebugScope), std::format(__VA_ARGS__).c_str())
-    #define RYN_INFO(...)     ::ryn::Log::info(::ryn::resolveDebugScope(s_RynDebugScope), std::format(__VA_ARGS__).c_str())
-    #define RYN_WARN(...)     ::ryn::Log::warn(::ryn::resolveDebugScope(s_RynDebugScope), std::format(__VA_ARGS__).c_str())
-    #define RYN_ERROR(...)    ::ryn::Log::error(::ryn::resolveDebugScope(s_RynDebugScope), std::format(__VA_ARGS__).c_str())
-    #define RYN_CRITICAL(...) ::ryn::Log::critical(::ryn::resolveDebugScope(s_RynDebugScope), std::format(__VA_ARGS__).c_str())
+    #define RYN_TRACE(Fmt, ...)    RYN_LOG(ryn::LogLevel::Trace, Fmt __VA_OPT__(, ) __VA_ARGS__)
+    #define RYN_INFO(Fmt, ...)     RYN_LOG(ryn::LogLevel::Info, Fmt __VA_OPT__(, ) __VA_ARGS__)
+    #define RYN_WARN(Fmt, ...)     RYN_LOG(ryn::LogLevel::Warn, Fmt __VA_OPT__(, ) __VA_ARGS__)
+    #define RYN_ERROR(Fmt, ...)    RYN_LOG(ryn::LogLevel::Error, Fmt __VA_OPT__(, ) __VA_ARGS__)
+    #define RYN_CRITICAL(Fmt, ...) RYN_LOG(ryn::LogLevel::Critical, Fmt __VA_OPT__(, ) __VA_ARGS__)
 #else
     #define RYN_SCOPE_FILE(Name)
     #define RYN_SCOPE_LOCAL(Name)
 
-    #define RYN_TRACE(...)    (void)0
-    #define RYN_INFO(...)     (void)0
-    #define RYN_WARN(...)     (void)0
-    #define RYN_ERROR(...)    (void)0
-    #define RYN_CRITICAL(...) (void)0
+    #define RYN_TRACE(Fmt, ...)    (void)0
+    #define RYN_INFO(Fmt, ...)     (void)0
+    #define RYN_WARN(Fmt, ...)     (void)0
+    #define RYN_ERROR(Fmt, ...)    (void)0
+    #define RYN_CRITICAL(Fmt, ...) (void)0
+#endif
+
+/* Feature: Verify */
+#if defined(RYN_ENABLE_VERIFY)
+    #include <cstdlib>
+
+    #define RYN_VERIFY(Check, ...)                                                                                                         \
+        do {                                                                                                                               \
+            if (!(Check)) {                                                                                                                \
+                RYN_CRITICAL("Verify Failed" __VA_OPT__(": ") __VA_ARGS__);                                                                \
+                std::abort();                                                                                                              \
+            }                                                                                                                              \
+        } while (0)
+#else
+    #define RYN_VERIFY(Check, ...) (void)(Check)
 #endif
 
 /* Feature: Asserts */
@@ -141,17 +168,14 @@
     #define RYN_ASSERT(Check, ...)
 #endif
 
-/* Feature: Verify */
-#if defined(RYN_ENABLE_VERIFY)
-    #include <cstdlib>
+/* Other Macros */
+#define RYN_CONCAT_DEFINE_IMPL(a, b) a##b
+#define RYN_CONCAT_DEFINE(a, b)      RYN_CONCAT_DEFINE_IMPL(a, b)
 
-    #define RYN_VERIFY(Check, ...)                                                                                                         \
-        do {                                                                                                                               \
-            if (!(Check)) {                                                                                                                \
-                RYN_CRITICAL("Verify Failed" __VA_OPT__(": ") __VA_ARGS__);                                                                \
-                std::abort();                                                                                                              \
-            }                                                                                                                              \
-        } while (0)
-#else
-    #define RYN_VERIFY(Check, ...) (void)(Check)
-#endif
+#define RYN_KEEP_REFLECTED_TYPE(Type)                                                                                                      \
+    static_assert(::ryn::IsType<Type>,                                                                                                     \
+                  "REFLECTION ERROR: " #Type " is not TypeReflectable. "                                                                   \
+                  "Ensure it inherits either from ryn::StaticType or ryn::DynamicType");                                                   \
+    namespace {                                                                                                                            \
+        static const bool RYN_CONCAT_DEFINE(ryn_type_reflection_keep_, __LINE__) = Type::registerType();                                   \
+    }

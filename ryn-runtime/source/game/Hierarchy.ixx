@@ -1,9 +1,9 @@
 module;
 #include "Prelude.h"
 
-export module Ryntime.System:Hierarchy;
-export import Ryntime.Service;
-export import Ryntime.Core.Reflection;
+export module Ryntime.Game:Hierarchy;
+export import Ryntime.Service.World;
+export import Ryntime.Reflect;
 
 using namespace ryn::service;
 
@@ -104,7 +104,7 @@ export namespace ryn::game {
         }
 
         void setParent(Entity entity, Entity newParent) {
-            RYN_SCOPE_LOCAL("Game|Hierarchy::setParent");
+            RYN_SCOPE_LOCAL("setParent");
 
             auto current = m_World->Component.ensure<Hierarchy>(entity);
             if (newParent && current->Parent == newParent) {
@@ -176,7 +176,7 @@ export namespace ryn::game {
     };
 }
 
-RYN_TYPE_REFLECTION_KEEP(ryn::game::Hierarchy);
-RYN_TYPE_REFLECTION_KEEP(ryn::game::HierarchySibling);
-RYN_TYPE_REFLECTION_KEEP(ryn::game::HierarchyParentRequest);
-RYN_TYPE_REFLECTION_KEEP(ryn::game::HierarchySystem);
+RYN_KEEP_REFLECTED_TYPE(ryn::game::Hierarchy);
+RYN_KEEP_REFLECTED_TYPE(ryn::game::HierarchySibling);
+RYN_KEEP_REFLECTED_TYPE(ryn::game::HierarchyParentRequest);
+RYN_KEEP_REFLECTED_TYPE(ryn::game::HierarchySystem);

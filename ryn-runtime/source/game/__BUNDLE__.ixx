@@ -1,2 +1,2 @@
-export module Ryntime.System;
+export module Ryntime.Game;
 export import :Hierarchy;

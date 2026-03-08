@@ -5,8 +5,8 @@ module;
 #include <unordered_map>
 #include <vector>
 
-export module Ryntime.Core.Reflection:TypeReflection;
-export import Ryntime.Core.Container;
+export module Ryntime.Reflect:TypeReflection;
+export import Ryntime.Container;
 export import :TypeCommon;
 
 namespace ryn {
@@ -66,7 +66,7 @@ export namespace ryn {
         static constexpr const char*  TYPE_NAME     = Name.data();
         static constexpr bool         IS_DYNAMIC    = IsDynamic;
 
-        static bool getTypeStatus() {
+        static bool registerType() {
             TypeRegistry::registerType({.ID = TYPE_ID, .Category = TYPE_CATEGORY, .Name = TYPE_NAME, .IsDynamic = IS_DYNAMIC});
             return true;
         }
@@ -87,7 +87,7 @@ export namespace ryn {
         using DynamicTypeMarker = void;
         using Meta              = StaticType<Base::TYPE_CATEGORY, Name, true>;
 
-        using Meta::getTypeStatus;
+        using Meta::registerType;
         using Meta::IS_DYNAMIC;
         using Meta::TYPE_CATEGORY;
         using Meta::TYPE_ID;
@@ -100,6 +100,6 @@ export namespace ryn {
         constexpr DynamicType() noexcept { (void)s_Registered; }
 
     private:
-        static inline bool s_Registered = getTypeStatus();
+        static inline bool s_Registered = registerType();
     };
 }

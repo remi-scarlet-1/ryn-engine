@@ -7,10 +7,11 @@ module;
 #include <vector>
 
 export module Ryntime.Core:Service;
-export import :Event;
-export import Ryntime.Core.Reflection;
-export import Ryntime.Core.Primitive;
-export import Ryntime.Core.Container;
+export import Ryntime.Reflect;
+export import Ryntime.Primitive;
+export import Ryntime.Container;
+export import :ServiceEvent;
+export import :Time;
 
 export namespace ryn {
     class IServiceLocator;

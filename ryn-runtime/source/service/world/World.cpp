@@ -4,7 +4,7 @@ module;
 #include <unordered_map>
 #include <vector>
 
-module Ryntime.Service;
+module Ryntime.Service.World;
 
 RYN_SCOPE_FILE("Service|World");
 

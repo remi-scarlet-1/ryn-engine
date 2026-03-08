@@ -2,9 +2,9 @@ module;
 #include "Prelude.h"
 
 export module Ryntime.Core:Application;
-export import :Event;
+export import Ryntime.Container;
+export import :ServiceEvent;
 export import :Service;
-export import Ryntime.Core.Container;
 
 export namespace ryn {
     class RYN_API IApplication {

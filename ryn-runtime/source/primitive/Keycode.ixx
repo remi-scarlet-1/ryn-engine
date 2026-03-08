@@ -1,7 +1,7 @@
 module;
 #include <cstdint>
 
-export module Ryntime.Core.Primitive:Keycode;
+export module Ryntime.Primitive:Keycode;
 
 export namespace ryn {
     // clang-format off

@@ -3,7 +3,7 @@ module;
 #include <chrono>
 #include <cstdint>
 
-export module Ryntime.Core.Primitive:Time;
+export module Ryntime.Core:Time;
 
 export namespace ryn {
     class Timer {

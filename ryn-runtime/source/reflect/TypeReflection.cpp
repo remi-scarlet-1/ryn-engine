@@ -5,7 +5,7 @@ module;
 #include <unordered_map>
 #include <vector>
 
-module Ryntime.Core.Reflection;
+module Ryntime.Reflect;
 
 RYN_SCOPE_FILE("TypeReflection");
 

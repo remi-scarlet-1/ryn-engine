@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Defines.h"
+
+import Ryntime.Container;
 import Ryntime.Core;
 
 #if !defined(RYN_RUNTIME)

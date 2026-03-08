@@ -5,7 +5,7 @@ module;
 
 export module Ryntime.Service:Input;
 export import Ryntime.Core;
-export import Ryntime.Core.Reflection;
+export import Ryntime.Reflect;
 
 export namespace ryn::service {
     class RYN_API Input final : public DynamicType<IService, "ryn::service::Input"> {
@@ -44,4 +44,4 @@ export namespace ryn::service {
     };
 }
 
-RYN_TYPE_REFLECTION_KEEP(ryn::service::Input);
+RYN_KEEP_REFLECTED_TYPE(ryn::service::Input);

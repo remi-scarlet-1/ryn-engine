@@ -5,7 +5,7 @@ module;
 
 export module Ryntime.Service:Graphics;
 export import Ryntime.Core;
-export import Ryntime.Core.Reflection;
+export import Ryntime.Reflect;
 
 export namespace ryn::service {
     enum class GraphicsBackend : uint8_t {
@@ -57,4 +57,4 @@ export namespace ryn::service {
     };
 }
 
-RYN_TYPE_REFLECTION_KEEP(ryn::service::Graphics);
+RYN_KEEP_REFLECTED_TYPE(ryn::service::Graphics);

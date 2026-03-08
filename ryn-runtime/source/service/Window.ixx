@@ -5,7 +5,7 @@ module;
 
 export module Ryntime.Service:Window;
 export import Ryntime.Core;
-export import Ryntime.Core.Reflection;
+export import Ryntime.Reflect;
 
 export namespace ryn::service {
     enum class WindowNativeType : uint64_t {
@@ -116,11 +116,11 @@ export namespace ryn::event {
     };
 }
 
-RYN_TYPE_REFLECTION_KEEP(ryn::service::Window);
-RYN_TYPE_REFLECTION_KEEP(ryn::event::WindowClose);
-RYN_TYPE_REFLECTION_KEEP(ryn::event::WindowFramebufferResize);
-RYN_TYPE_REFLECTION_KEEP(ryn::event::WindowTextInput);
-RYN_TYPE_REFLECTION_KEEP(ryn::event::WindowKeypress);
-RYN_TYPE_REFLECTION_KEEP(ryn::event::WindowMouseButton);
-RYN_TYPE_REFLECTION_KEEP(ryn::event::WindowMouseMove);
-RYN_TYPE_REFLECTION_KEEP(ryn::event::WindowMouseScroll);
+RYN_KEEP_REFLECTED_TYPE(ryn::service::Window);
+RYN_KEEP_REFLECTED_TYPE(ryn::event::WindowClose);
+RYN_KEEP_REFLECTED_TYPE(ryn::event::WindowFramebufferResize);
+RYN_KEEP_REFLECTED_TYPE(ryn::event::WindowTextInput);
+RYN_KEEP_REFLECTED_TYPE(ryn::event::WindowKeypress);
+RYN_KEEP_REFLECTED_TYPE(ryn::event::WindowMouseButton);
+RYN_KEEP_REFLECTED_TYPE(ryn::event::WindowMouseMove);
+RYN_KEEP_REFLECTED_TYPE(ryn::event::WindowMouseScroll);

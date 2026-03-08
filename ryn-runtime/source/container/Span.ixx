@@ -2,12 +2,11 @@ module;
 #include "Prelude.h"
 #include <cstdint>
 
-export module Ryntime.Core.Container:Span;
+export module Ryntime.Container:Span;
 
 export namespace ryn {
     template<typename T>
-    class [[nodiscard]] Span {
-    public:
+    struct [[nodiscard]] Span {
         using ValueType = T;
 
         constexpr Span() noexcept = default;

@@ -2,8 +2,8 @@ module;
 #include "Prelude.h"
 #include <concepts>
 
-export module Ryntime.Core:Event;
-export import Ryntime.Core.Reflection;
+export module Ryntime.Core:ServiceEvent;
+export import Ryntime.Reflect;
 
 export namespace ryn {
     class RYN_API IEvent : public DynamicBase<TypeCategory::Event> {

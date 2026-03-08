@@ -3,12 +3,11 @@ module;
 #include <concepts>
 #include <utility>
 
-export module Ryntime.Core.Container:Box;
+export module Ryntime.Container:Box;
 
 export namespace ryn {
     template<typename T>
-    class [[nodiscard]] Box {
-    public:
+    struct [[nodiscard]] Box {
         using Pointer = T*;
         using Deleter = void (*)(void*);
 
@@ -85,7 +84,7 @@ export namespace ryn {
     private:
         // Required for converting move constructors
         template<typename U>
-        friend class Box;
+        friend struct Box;
 
         // Internal constructor used by make
         constexpr Box(Pointer ptr, Deleter deleter) noexcept : m_Pointer(ptr), m_Deleter(deleter) {}

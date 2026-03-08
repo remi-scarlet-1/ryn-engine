@@ -52,52 +52,56 @@ target_sources(RynRuntime
     PUBLIC FILE_SET HEADERS BASE_DIRS source FILES
     source/Defines.h
     source/Entrypoint.h
-    source/Macros.h
     source/Prelude.h
 
     PUBLIC FILE_SET CXX_MODULES BASE_DIRS source FILES
-    source/core/container/__BUNDLE__.ixx
-    source/core/container/Box.ixx
-    source/core/container/Span.ixx
-
-    source/core/primitive/__BUNDLE__.ixx
-    source/core/primitive/Graphics.ixx
-    source/core/primitive/Keycode.ixx
-    source/core/primitive/Math.ixx
-    source/core/primitive/Time.ixx
-
-    source/core/reflection/__BUNDLE__.ixx
-    source/core/reflection/TypeCommon.ixx
-    source/core/reflection/TypeReflection.ixx
+    source/container/__BUNDLE__.ixx
+    source/container/Box.ixx
+    source/container/Identity.ixx
+    source/container/Span.ixx
 
     source/core/__BUNDLE__.ixx
     source/core/Application.ixx
-    source/core/Event.ixx
+    source/core/Memory.ixx
     source/core/Service.ixx
+    source/core/ServiceEvent.ixx
+    source/core/Time.ixx
 
     source/game/__BUNDLE__.ixx
     source/game/Hierarchy.ixx
+
+    source/primitive/__BUNDLE__.ixx
+    source/primitive/Graphics.ixx
+    source/primitive/Keycode.ixx
+    source/primitive/Math.ixx
+
+    source/reflect/__BUNDLE__.ixx
+    source/reflect/TypeCommon.ixx
+    source/reflect/TypeReflection.ixx
 
     source/service/__BUNDLE__.ixx
     source/service/Graphics.ixx
     source/service/Input.ixx
     source/service/Window.ixx
-    source/service/World.ixx
-    
-    source/Log.ixx
+
+    source/service/world/__BUNDLE__.ixx
+    source/service/world/World.ixx
+
+    source/Logger.ixx
     source/Ryntime.ixx
 
     PRIVATE
-    source/core/reflection/TypeReflection.cpp
-
     source/core/Application.cpp
-    source/core/Event.cpp
     source/core/Service.cpp
+    source/core/ServiceEvent.cpp
+
+    source/reflect/TypeReflection.cpp
 
     source/service/Graphics.cpp
     source/service/Input.cpp
     source/service/Window.cpp
-    source/service/World.cpp
 
-    source/Log.cpp
+    source/service/world/World.cpp
+
+    source/Logger.cpp
 )

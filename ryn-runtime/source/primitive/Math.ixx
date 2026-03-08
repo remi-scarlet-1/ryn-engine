@@ -2,7 +2,7 @@ module;
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-export module Ryntime.Core.Primitive:Math;
+export module Ryntime.Primitive:Math;
 
 namespace ryn {
     template<typename GLMType, typename T>

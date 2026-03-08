@@ -6,8 +6,8 @@ module;
 #include <unordered_map>
 #include <vector>
 
-export module Ryntime.Service:World;
-export import Ryntime.Core.Reflection;
+export module Ryntime.Service.World:World;
+export import Ryntime.Reflect;
 export import Ryntime.Core;
 
 RYN_SCOPE_FILE("Service|World");
@@ -220,7 +220,7 @@ export namespace ryn::service {
     };
 }
 
-RYN_TYPE_REFLECTION_KEEP(ryn::service::World);
+RYN_KEEP_REFLECTED_TYPE(ryn::service::World);
 
 /* ===== Inline API Implementations ===== */
 namespace ryn::service {

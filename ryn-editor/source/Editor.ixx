@@ -1,5 +1,4 @@
 module;
-#include "Macros.h"
 #include "Prelude.h"
 #include <imgui.h>
 #include <memory>
@@ -63,4 +62,4 @@ export namespace rynd {
     };
 }
 
-RYN_TYPE_REFLECTION_KEEP(rynd::Editor);
+RYN_KEEP_REFLECTED_TYPE(rynd::Editor);
