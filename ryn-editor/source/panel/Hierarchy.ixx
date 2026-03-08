@@ -14,7 +14,7 @@ using namespace ryn::service;
 namespace comp = ryn::game;
 
 export namespace rynd::panel {
-    class Hierarchy final : public ryn::DynamicType<core::IEditorPanel, "rynd::panel::Hierarchy"> {
+    class Hierarchy final : public ryn::DynamicType<IEditorPanel, "rynd::panel::Hierarchy"> {
     public:
         Hierarchy()           = default;
         ~Hierarchy() override = default;
@@ -23,7 +23,7 @@ export namespace rynd::panel {
 
         void onConfigure(ryn::ServiceDiscovery& discovery) override { discovery.require(m_World); }
 
-        void onDraw(const ryn::Time& time, core::EditorSettings& settings, core::EditorContext& ctx) override {
+        void onDraw(const ryn::Time& time, EditorSettings& settings, EditorContext& ctx) override {
             drawToolbar();
             ImGui::Separator();
 

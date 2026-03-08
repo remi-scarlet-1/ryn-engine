@@ -6,16 +6,15 @@ module;
 
 export module Ryndition.Core:EditorPanel;
 export import Ryntime;
-import :TypeCategory;
+import :EditorTypeCategory;
 
 // TODO: expand IEditorPanel:
 //  - allow saving of panel layout (with the help of the ImGui .ini thing)
 //  - have a titlebar which automatically discovers all available panels and allows to make/close(destry) them on the fly
 
-using namespace ryn;
 using ryn::service::Entity;
 
-export namespace rynd::core {
+export namespace rynd {
     struct EditorSettings {
         struct {
             float SashRatio = 0.75f; // TODO: this sash thing might be abstractable to re-use
@@ -28,18 +27,19 @@ export namespace rynd::core {
 
     struct EditorContext {
         struct {
-            Entity              Primary = Entity::Null;
-            std::vector<Entity> Multi{};
+            Entity              SelectionPrimary = Entity::Null;
+            std::vector<Entity> SelectionAll{};
         } Inspector;
     };
 
-    class IEditorPanel : public DynamicBase<EditorTypeCategory::Panel> {
+    class IEditorPanel : public ryn::DynamicBase<EditorTypeCategory::Panel> {
     public:
         ~IEditorPanel() override = default;
 
-        virtual const char* getDisplayName() const = 0;
+        virtual const char*     getDisplayName() const = 0;
+        virtual ryn::Vector2Int getWindowMinSize() { return ryn::Vector2Int(600, 400); }
 
-        virtual void onConfigure(ryn::ServiceDiscovery& discovery) = 0;
+        virtual void onConfigure(ryn::ServiceDiscovery& discovery)                               = 0;
         virtual void onDraw(const ryn::Time& time, EditorSettings& settings, EditorContext& ctx) = 0;
     };
 

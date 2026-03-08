@@ -213,7 +213,7 @@ export namespace ryn::service {
         void onDetach() override;
         void onUpdate(const Time& time) override;
 
-        bool emplaceSystem(TypeID id, Box<ISystem>&& system);
+        bool makeSystem(TypeID id, Box<ISystem>&& system);
         bool destroySystem(TypeID id);
         bool toggleSystem(TypeID id, bool enable);
         void sweepSystems();
@@ -245,7 +245,7 @@ namespace ryn::service {
         Box<ISystem> systemBox = Box<T>::template make<T>(std::forward<Args>(args)...);
         ISystem*     system    = systemBox.get();
         system->m_World        = &self;
-        return self.emplaceSystem(T::TYPE_ID, std::move(systemBox)) ? static_cast<T*>(system) : nullptr;
+        return self.makeSystem(T::TYPE_ID, std::move(systemBox)) ? static_cast<T*>(system) : nullptr;
     }
 
     template<IsSystem T>

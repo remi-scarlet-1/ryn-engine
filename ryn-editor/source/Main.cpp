@@ -1,7 +1,7 @@
 #include "Entrypoint.h"
 #include "Prelude.h"
 import Ryntime;
-import Ryndition.Service;
+import Ryndition.Editor;
 
 RYN_SCOPE_FILE("Main");
 
@@ -28,7 +28,7 @@ protected:
         getServiceStack().push<ryn::service::Input>();
         getServiceStack().push<ryn::service::Graphics>(graphicsConfig);
         auto world = getServiceStack().push<ryn::service::World>();
-        getServiceStack().push<rynd::service::Editor>();
+        getServiceStack().push<rynd::Editor>();
 
         // TODO: remove hardcoded ECS system initialization after the engine has a canon workflow for them
         //  We TOTALLY need some default ECS systems loadout that get preloaded into the world. I need to draft the actual engine workflow of

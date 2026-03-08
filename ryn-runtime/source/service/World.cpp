@@ -38,7 +38,7 @@ namespace ryn::service {
         sweepSystems();
     }
 
-    bool World::emplaceSystem(TypeID id, Box<ISystem>&& system) {
+    bool World::makeSystem(TypeID id, Box<ISystem>&& system) {
         // Avoid duplicate entries
         if (m_SystemIndexMap.contains(id)) {
             RYN_ERROR("Cannot make duplicate systems! Second instance of system {0} will be destroyed.", TypeRegistry::queryType(id));

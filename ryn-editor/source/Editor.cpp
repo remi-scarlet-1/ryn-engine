@@ -1,24 +1,24 @@
 module;
-#include "detail/FontEmbeddings.inl"
 #include "Prelude.h"
+#include "detail/FontEmbeddings.inl"
 #include <algorithm>
 #include <cmath>
 #include <imgui.h>
 #include <memory>
 
-module Ryndition.Service;
+module Ryndition.Editor;
 
-RYN_SCOPE_FILE("Service|Editor");
+RYN_SCOPE_FILE("Editor");
 
 namespace {
     constexpr ImGuiKey mapKeycodeToImGuiKey(ryn::Keycode keycode);
 }
 
-namespace rynd::service {
+namespace rynd {
     void Editor::onAttach(ryn::IServiceLocator& locator) {
         m_ServiceLocator = &locator;
-        locator.require(m_Window);
-        locator.require(m_Graphics);
+        locator.require(m_ServiceWindow);
+        locator.require(m_ServiceGraphics);
 
         imGuiInit();
 
@@ -31,14 +31,14 @@ namespace rynd::service {
     void Editor::onUpdate(const ryn::Time& time) {
         imGuiBeginFrame(time);
 
-        // Draw panels
-        for (const auto& panel : m_Panels) {
-            if (!panel.IsConfigured) continue;
+        for (auto& [id, entry] : m_Panels) {
+            if (!entry.IsConfigured || !entry.IsEnabled) continue;
 
-            ImGui::SetNextWindowSizeConstraints(ImVec2(400, 600), ImVec2(FLT_MAX, FLT_MAX));
+            auto windowMinSize = entry.Instance->getWindowMinSize();
+            ImGui::SetNextWindowSizeConstraints(ImVec2(windowMinSize.x, windowMinSize.y), ImVec2(FLT_MAX, FLT_MAX));
 
-            static constexpr bool IS_OPEN = true;
-            if (ImGui::Begin(panel.Instance->getDisplayName()), &IS_OPEN) panel.Instance->onDraw(time, m_EditorSettings, m_EditorContext);
+            if (ImGui::Begin(entry.Instance->getDisplayName(), &entry.IsEnabled))
+                entry.Instance->onDraw(time, m_EditorSettings, m_EditorContext);
 
             ImGui::End();
         }
@@ -78,6 +78,31 @@ namespace rynd::service {
         });
     }
 
+    void Editor::internal_makePanel(ryn::TypeID id, ryn::Box<IEditorPanel>&& panel) {
+        if (m_Panels.contains(id)) {
+            RYN_ERROR("Cannot make duplicate panels! Second instance of panel '{0}' will be destroyed.", panel->getTypeName());
+            return;
+        }
+
+        ryn::ServiceDiscovery discovery(*m_ServiceLocator);
+        panel->onConfigure(discovery);
+        bool configSuccess = discovery.wasSuccess();
+
+        if (!configSuccess)
+            RYN_WARN("Disabled '{0}' panel because it's required services couldn't be discovered!", panel->getTypeName());
+
+        m_Panels[id] = PanelEntry{.Instance = std::move(panel), .IsConfigured = configSuccess, .IsEnabled = true};
+    }
+
+    void Editor::internal_togglePanel(ryn::TypeID id, bool enable) {
+        if (!m_Panels.contains(id)) {
+            RYN_ERROR("Cannot toggle a non-existant panel! No panel of type '{0}' found.", ryn::TypeRegistry::queryType(id));
+            return;
+        }
+
+        m_Panels[id].IsEnabled = enable;
+    }
+
     void Editor::imGuiInit() {
         // Create context
         IMGUI_CHECKVERSION();
@@ -99,29 +124,29 @@ namespace rynd::service {
         io.Fonts->AddFontFromMemoryCompressedTTF(detail::JETBRAIN_MONO_COMPRESSED_DATA, detail::JETBRAIN_MONO_COMPRESSED_SIZE, 24, &fontConfig);
 
         // Create backend
-        m_ImGuiBackend = std::make_unique<detail::ImGuiBackend>(*m_Graphics);
+        m_Backend = std::make_unique<ImGuiBackend>(*m_ServiceGraphics);
     }
 
     void Editor::imGuiCleanup() {
         // Cleanup backend
-        m_ImGuiBackend.reset();
+        m_Backend.reset();
 
         // Cleanup context
         ImGui::DestroyContext();
     }
 
     void Editor::imGuiBeginFrame(const ryn::Time& time) {
-        const auto resolution = m_Window->getFramebufferSize();
+        const auto resolution = m_ServiceWindow->getFramebufferSize();
 
         // Update context
         ImGuiIO& io                = ImGui::GetIO();
         io.DeltaTime               = static_cast<float>(time.Delta);
         io.DisplaySize             = ImVec2(static_cast<float>(resolution.x), static_cast<float>(resolution.y));
         io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
-        if (io.WantTextInput) m_Window->maintainTextInput();
+        if (io.WantTextInput) m_ServiceWindow->maintainTextInput();
 
         // Prepare backend
-        m_ImGuiBackend->beginFrame();
+        m_Backend->beginFrame();
 
         // Prepare context
         ImGui::NewFrame();
@@ -136,18 +161,8 @@ namespace rynd::service {
         ImGui::Render();
 
         // Finalize frame backend
-        m_ImGuiBackend->render();
+        m_Backend->render();
         ImGui::EndFrame();
-    }
-
-    Editor::PanelEntry Editor::setupPanel(std::unique_ptr<core::IEditorPanel> panel) {
-        ryn::ServiceDiscovery discovery(*m_ServiceLocator);
-        panel->onConfigure(discovery);
-
-        if (!discovery.wasSuccess())
-            RYN_WARN("Disabled '{0}' panel because it's required services couldn't be discovered!", panel->getTypeName());
-
-        return PanelEntry{.Instance = std::move(panel), .IsConfigured = discovery.wasSuccess()};
     }
 }
 
