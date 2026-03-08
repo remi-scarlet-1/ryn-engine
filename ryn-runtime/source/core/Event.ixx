@@ -5,8 +5,6 @@ module;
 export module Ryntime.Core:Event;
 export import Ryntime.Core.Reflection;
 
-using namespace ryn::reflection;
-
 export namespace ryn {
     class RYN_API IEvent : public DynamicBase<TypeCategory::Event> {
     public:

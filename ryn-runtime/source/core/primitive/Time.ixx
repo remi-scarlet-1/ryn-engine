@@ -6,9 +6,9 @@ module;
 export module Ryntime.Core.Primitive:Time;
 
 export namespace ryn {
-    class Clock {
+    class Timer {
     public:
-        inline Clock() noexcept : m_Start(now()) {}
+        inline Timer() noexcept : m_Start(now()) {}
 
         [[nodiscard]] static inline double now() noexcept {
             auto now = std::chrono::steady_clock::now().time_since_epoch();
@@ -23,7 +23,7 @@ export namespace ryn {
         double m_Start;
     };
 
-    struct FrameTime {
+    struct Time {
         double   Total      = 0.0;
         double   Delta      = 0.0;
         uint64_t FrameCount = 0;

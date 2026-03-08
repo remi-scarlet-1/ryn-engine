@@ -73,7 +73,7 @@ namespace ryn::service {
         m_Device.Release();
     }
 
-    void Graphics::onBeginFrame([[maybe_unused]] const FrameTime& time) {
+    void Graphics::onBeginFrame([[maybe_unused]] const Time& time) {
         static constexpr float CLEAR_COLOR[4] = {0.0f, 0.0f, 0.0f, 1.0f};
         auto*                  colorView      = m_Swapchain->GetCurrentBackBufferRTV();
 
@@ -81,7 +81,7 @@ namespace ryn::service {
         m_Context->ClearRenderTarget(colorView, CLEAR_COLOR, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
     }
 
-    void Graphics::onEndFrame([[maybe_unused]] const FrameTime& time) { m_Swapchain->Present(static_cast<uint32_t>(m_CurrentVSync)); }
+    void Graphics::onEndFrame([[maybe_unused]] const Time& time) { m_Swapchain->Present(static_cast<uint32_t>(m_CurrentVSync)); }
 
     void Graphics::onEvent(EventListener& listener) {
         listener.match<event::WindowFramebufferResize>([this](event::WindowFramebufferResize& e) {

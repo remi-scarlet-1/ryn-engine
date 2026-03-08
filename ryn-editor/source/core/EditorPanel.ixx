@@ -12,7 +12,7 @@ import :TypeCategory;
 //  - allow saving of panel layout (with the help of the ImGui .ini thing)
 //  - have a titlebar which automatically discovers all available panels and allows to make/close(destry) them on the fly
 
-using namespace ryn::reflection;
+using namespace ryn;
 using ryn::service::Entity;
 
 export namespace rynd::core {
@@ -40,7 +40,7 @@ export namespace rynd::core {
         virtual const char* getDisplayName() const = 0;
 
         virtual void onConfigure(ryn::ServiceDiscovery& discovery) = 0;
-        virtual void onDraw(const ryn::FrameTime& time, EditorSettings& settings, EditorContext& ctx) = 0;
+        virtual void onDraw(const ryn::Time& time, EditorSettings& settings, EditorContext& ctx) = 0;
     };
 
     template<typename T>

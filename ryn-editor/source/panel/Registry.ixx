@@ -11,7 +11,7 @@ export module Ryndition.Panel:Registry;
 export import Ryndition.Core;
 import Ryntime;
 
-using namespace ryn::reflection;
+using namespace ryn;
 
 export namespace rynd::panel {
     class Registry final : public DynamicType<core::IEditorPanel, "rynd::panel::Registry"> {
@@ -20,7 +20,7 @@ export namespace rynd::panel {
 
         void onConfigure(ryn::ServiceDiscovery& discovery) override {}
 
-        void onDraw(const ryn::FrameTime& time, core::EditorSettings& settings, core::EditorContext& ctx) override {
+        void onDraw(const ryn::Time& time, core::EditorSettings& settings, core::EditorContext& ctx) override {
             // Synchronize our UI state with the Registry's dynamic categories
             syncAndSort();
 
@@ -47,7 +47,7 @@ export namespace rynd::panel {
             bool needsSort = false;
 
             // Use the callback to discover categories
-            TypeRegistry::forEachCategory([&](const auto& category, const auto& types) {
+            TypeRegistry::foreachCategory([&](const auto& category, const auto& types) {
                 if (!m_Filters.contains(category)) {
                     m_Filters[category] = true; // Default to visible
                     m_SortedCategories.push_back(category);

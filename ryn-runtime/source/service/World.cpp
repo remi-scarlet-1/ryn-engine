@@ -22,7 +22,7 @@ namespace ryn::service {
         m_SystemIndexMap.clear();
     }
 
-    void World::onUpdate(const FrameTime& time) {
+    void World::onUpdate(const Time& time) {
         auto execute = [&](auto memberFunc) {
             for (size_t i = 0; i < m_Systems.size(); ++i) {
                 auto& entry = m_Systems[i];

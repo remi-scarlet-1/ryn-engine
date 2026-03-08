@@ -13,7 +13,7 @@ export import Ryntime;
 using rynd::detail::ImGuiBackend;
 
 export namespace rynd::service {
-    class RYN_API Editor final : public ryn::reflection::DynamicType<ryn::IService, "rynd::service::Editor"> {
+    class RYN_API Editor final : public ryn::DynamicType<ryn::IService, "rynd::service::Editor"> {
     public:
         Editor()           = default;
         ~Editor() override = default;
@@ -34,12 +34,12 @@ export namespace rynd::service {
 
         void onAttach(ryn::IServiceLocator& locator) override;
         void onDetach() override;
-        void onUpdate(const ryn::FrameTime& time) override;
+        void onUpdate(const ryn::Time& time) override;
         void onEvent(ryn::EventListener& listener) override;
 
         void imGuiInit();
         void imGuiCleanup();
-        void imGuiBeginFrame(const ryn::FrameTime& time);
+        void imGuiBeginFrame(const ryn::Time& time);
         void imGuiEndFrame();
 
         template<core::IsPanel T, typename... Args>

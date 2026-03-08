@@ -62,7 +62,7 @@ target_sources(RynRuntime
 
     source/core/primitive/__BUNDLE__.ixx
     source/core/primitive/Graphics.ixx
-    source/core/primitive/Keycodes.ixx
+    source/core/primitive/Keycode.ixx
     source/core/primitive/Math.ixx
     source/core/primitive/Time.ixx
 
@@ -75,15 +75,15 @@ target_sources(RynRuntime
     source/core/Event.ixx
     source/core/Service.ixx
 
+    source/game/__BUNDLE__.ixx
+    source/game/Hierarchy.ixx
+
     source/service/__BUNDLE__.ixx
     source/service/Graphics.ixx
     source/service/Input.ixx
     source/service/Window.ixx
     source/service/World.ixx
-
-    source/system/__BUNDLE__.ixx
-    source/system/Hierarchy.ixx
-
+    
     source/Log.ixx
     source/Ryntime.ixx
 

@@ -42,7 +42,7 @@ namespace ryn::service {
             m_Window = nullptr;
         }
     }
-    void Window::onBeginFrame([[maybe_unused]] const FrameTime& time) {
+    void Window::onBeginFrame([[maybe_unused]] const Time& time) {
         const Vector2Int clientSize      = getClientSize();
         const Vector2Int framebufferSize = getFramebufferSize();
 

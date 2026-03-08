@@ -9,17 +9,17 @@ export module Ryntime.Core.Reflection:TypeReflection;
 export import Ryntime.Core.Container;
 export import :TypeCommon;
 
-namespace ryn::reflection {
-    class RYN_API ITypeReflection {
+namespace ryn {
+    class RYN_API ITypeReflectable {
     public:
-        virtual ~ITypeReflection()                                 = default;
+        virtual ~ITypeReflectable()                                = default;
         [[nodiscard]] virtual TypeID       getTypeID() const       = 0;
         [[nodiscard]] virtual TypeCategory getTypeCategory() const = 0;
         [[nodiscard]] virtual const char*  getTypeName() const     = 0;
     };
 }
 
-export namespace ryn::reflection {
+export namespace ryn {
     class RYN_API TypeRegistry {
     public:
         static TypeRegistry&                             instance();
@@ -28,7 +28,7 @@ export namespace ryn::reflection {
         [[nodiscard]] static Span<const TypeInfo* const> queryTypesByCategory(TypeCategory category);
 
         template<typename Func>
-        static void forEachCategory(Func&& func) {
+        static void foreachCategory(Func&& func) {
             auto&            self = instance();
             std::shared_lock lock(self.m_Mutex);
             for (auto const& [cat, types] : self.m_TypesByCategory) {
@@ -57,16 +57,6 @@ export namespace ryn::reflection {
     template<typename T>
     concept IsType = IsStaticType<T> || IsDynamicType<T>;
 
-    template<size_t N>
-    struct TypeName {
-        char value[N]{};
-        consteval TypeName(const char (&str)[N]) {
-            for (size_t i = 0; i < N; ++i)
-                value[i] = str[i];
-        }
-        [[nodiscard]] constexpr const char* data() const { return value; }
-    };
-
     template<TypeCategory Category, TypeName Name, bool IsDynamic = false>
     struct StaticType {
         using StaticTypeMarker = void;
@@ -83,9 +73,9 @@ export namespace ryn::reflection {
     };
 
     template<TypeCategory Category>
-    class DynamicBase : public ITypeReflection {
+    class DynamicBase : public ITypeReflectable {
     public:
-        using DynamicBaseMarker = void;
+        using DynamicBaseMarker                     = void;
         static constexpr TypeCategory TYPE_CATEGORY = Category;
 
         [[nodiscard]] TypeCategory getTypeCategory() const final { return Category; }

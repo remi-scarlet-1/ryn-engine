@@ -9,7 +9,7 @@ namespace ryn::service {
     Input::Input()  = default;
     Input::~Input() = default;
 
-    void Input::onEndFrame([[maybe_unused]] const FrameTime& time) {
+    void Input::onEndFrame([[maybe_unused]] const Time& time) {
         // Clear the "just" states
         m_KeysJustDown.reset();
         m_KeysJustUp.reset();

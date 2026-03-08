@@ -7,8 +7,6 @@ export module Ryntime.Service:Window;
 export import Ryntime.Core;
 export import Ryntime.Core.Reflection;
 
-using namespace ryn::reflection;
-
 export namespace ryn::service {
     enum class WindowNativeType : uint64_t {
         Undefined = 0,
@@ -36,7 +34,7 @@ export namespace ryn::service {
         explicit Window(const WindowConfig& config);
         ~Window() override;
 
-        void onBeginFrame(const FrameTime& time) override;
+        void onBeginFrame(const Time& time) override;
 
         void center();
         void maintainTextInput();

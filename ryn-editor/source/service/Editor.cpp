@@ -28,7 +28,7 @@ namespace rynd::service {
 
     void Editor::onDetach() { imGuiCleanup(); }
 
-    void Editor::onUpdate(const ryn::FrameTime& time) {
+    void Editor::onUpdate(const ryn::Time& time) {
         imGuiBeginFrame(time);
 
         // Draw panels
@@ -110,7 +110,7 @@ namespace rynd::service {
         ImGui::DestroyContext();
     }
 
-    void Editor::imGuiBeginFrame(const ryn::FrameTime& time) {
+    void Editor::imGuiBeginFrame(const ryn::Time& time) {
         const auto resolution = m_Window->getFramebufferSize();
 
         // Update context

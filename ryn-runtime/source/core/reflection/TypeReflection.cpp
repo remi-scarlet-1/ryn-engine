@@ -9,7 +9,7 @@ module Ryntime.Core.Reflection;
 
 RYN_SCOPE_FILE("TypeReflection");
 
-namespace ryn::reflection {
+namespace ryn {
     TypeRegistry& TypeRegistry::instance() {
         static TypeRegistry s_Instance;
         return s_Instance;

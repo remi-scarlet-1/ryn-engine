@@ -6,7 +6,17 @@ module;
 
 export module Ryntime.Core.Reflection:TypeCommon;
 
-export namespace ryn::reflection {
+export namespace ryn {
+    template<size_t N>
+    struct TypeName {
+        char value[N]{};
+        consteval TypeName(const char (&str)[N]) {
+            for (size_t i = 0; i < N; ++i)
+                value[i] = str[i];
+        }
+        [[nodiscard]] constexpr const char* data() const { return value; }
+    };
+
     struct TypeID {
     public:
         static constexpr uint64_t INVALID_HASH = 0xDEADBEEFDEADBEEFull;
@@ -68,15 +78,15 @@ export namespace ryn::reflection {
         static const TypeCategory Event;
         static const TypeCategory System;
         static const TypeCategory Component;
-        static const TypeCategory ComponentAction;
+        static const TypeCategory ComponentRequest;
     };
 
     constexpr TypeCategory TypeCategory::None{generate("Ryn.None")};
     constexpr TypeCategory TypeCategory::Service{generate("Ryn.Service")};
     constexpr TypeCategory TypeCategory::Event{generate("Ryn.Event")};
-    constexpr TypeCategory TypeCategory::System{generate("Ryn.System")};
-    constexpr TypeCategory TypeCategory::Component{generate("Ryn.Component")};
-    constexpr TypeCategory TypeCategory::ComponentAction{generate("Ryn.ComponentAction")};
+    constexpr TypeCategory TypeCategory::System{generate("Ryn.Game.System")};
+    constexpr TypeCategory TypeCategory::Component{generate("Ryn.Game.Component")};
+    constexpr TypeCategory TypeCategory::ComponentRequest{generate("Ryn.Game.ComponentRequest")};
 
     struct TypeInfo {
         TypeID       ID        = TypeID::invalid();
@@ -87,38 +97,34 @@ export namespace ryn::reflection {
 }
 
 template<>
-struct std::hash<ryn::reflection::TypeID> {
-    inline size_t operator()(const ryn::reflection::TypeID& id) const noexcept { return id.Hash; }
+struct std::hash<ryn::TypeID> {
+    inline size_t operator()(const ryn::TypeID& id) const noexcept { return id.Hash; }
 };
 
 template<>
-struct std::hash<ryn::reflection::TypeCategory> {
-    inline size_t operator()(const ryn::reflection::TypeCategory& category) const noexcept { return category.Hash; }
+struct std::hash<ryn::TypeCategory> {
+    inline size_t operator()(const ryn::TypeCategory& category) const noexcept { return category.Hash; }
 };
 
 template<>
-struct std::formatter<ryn::reflection::TypeID> {
+struct std::formatter<ryn::TypeID> {
     constexpr auto parse(const std::format_parse_context& ctx) const { return ctx.begin(); }
 
-    inline auto format(const ryn::reflection::TypeID& id, std::format_context& ctx) const {
-        return std::format_to(ctx.out(), "0x{:X}", id.Hash);
-    }
+    inline auto format(const ryn::TypeID& id, std::format_context& ctx) const { return std::format_to(ctx.out(), "0x{:X}", id.Hash); }
 };
 
 template<>
-struct std::formatter<ryn::reflection::TypeCategory> {
+struct std::formatter<ryn::TypeCategory> {
     constexpr auto parse(const std::format_parse_context& ctx) const { return ctx.begin(); }
 
-    inline auto format(const ryn::reflection::TypeCategory cat, std::format_context& ctx) const {
-        return std::format_to(ctx.out(), "{}", cat.Name);
-    }
+    inline auto format(const ryn::TypeCategory cat, std::format_context& ctx) const { return std::format_to(ctx.out(), "{}", cat.Name); }
 };
 
 template<>
-struct std::formatter<ryn::reflection::TypeInfo> {
+struct std::formatter<ryn::TypeInfo> {
     constexpr auto parse(const std::format_parse_context& ctx) const { return ctx.begin(); }
 
-    inline auto format(const ryn::reflection::TypeInfo& info, std::format_context& ctx) const {
+    inline auto format(const ryn::TypeInfo& info, std::format_context& ctx) const {
         const char* name     = info.Name ? info.Name : "<undefined>";
         const char* category = info.Category.Name;
         return std::format_to(ctx.out(), "[ID: {}, Category: {}, Name: {}]", info.ID, category, name);

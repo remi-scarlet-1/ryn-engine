@@ -7,15 +7,13 @@ export module Ryntime.Service:Input;
 export import Ryntime.Core;
 export import Ryntime.Core.Reflection;
 
-using namespace ryn::reflection;
-
 export namespace ryn::service {
     class RYN_API Input final : public DynamicType<IService, "ryn::service::Input"> {
     public:
         explicit Input();
         ~Input() override;
 
-        void onEndFrame(const FrameTime& time) override;
+        void onEndFrame(const Time& time) override;
         void onEvent(EventListener& listener) override;
 
         [[nodiscard]] bool isKeyHeld(Keycode key) const;

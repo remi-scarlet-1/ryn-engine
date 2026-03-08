@@ -33,7 +33,7 @@ protected:
         // TODO: remove hardcoded ECS system initialization after the engine has a canon workflow for them
         //  We TOTALLY need some default ECS systems loadout that get preloaded into the world. I need to draft the actual engine workflow of
         //  ECS systems, perhaps implement a systems panel for the editor AND THEN, THEN I need to autoload systems
-        world->System.make<ryn::system::Hierarchy>();
+        world->System.make<ryn::game::HierarchySystem>();
     }
 
     void onShutdown() override {}

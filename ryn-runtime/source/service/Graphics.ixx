@@ -7,8 +7,6 @@ export module Ryntime.Service:Graphics;
 export import Ryntime.Core;
 export import Ryntime.Core.Reflection;
 
-using namespace ryn::reflection;
-
 export namespace ryn::service {
     enum class GraphicsBackend : uint8_t {
         Unknown   = 0,
@@ -35,8 +33,8 @@ export namespace ryn::service {
 
         void onAttach(IServiceLocator& locator) override;
         void onDetach() override;
-        void onBeginFrame(const FrameTime& time) override;
-        void onEndFrame(const FrameTime& time) override;
+        void onBeginFrame(const Time& time) override;
+        void onEndFrame(const Time& time) override;
         void onEvent(EventListener& listener) override;
 
         [[nodiscard]] graphics::IDevice&    getDevice() const;

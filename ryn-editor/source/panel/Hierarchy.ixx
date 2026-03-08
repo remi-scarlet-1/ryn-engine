@@ -10,12 +10,11 @@ export module Ryndition.Panel:Hierarchy;
 export import Ryndition.Core;
 import Ryntime;
 
-using namespace ryn::reflection;
 using namespace ryn::service;
-namespace comp = ryn::comp;
+namespace comp = ryn::game;
 
 export namespace rynd::panel {
-    class Hierarchy final : public DynamicType<core::IEditorPanel, "rynd::panel::Hierarchy"> {
+    class Hierarchy final : public ryn::DynamicType<core::IEditorPanel, "rynd::panel::Hierarchy"> {
     public:
         Hierarchy()           = default;
         ~Hierarchy() override = default;
@@ -24,7 +23,7 @@ export namespace rynd::panel {
 
         void onConfigure(ryn::ServiceDiscovery& discovery) override { discovery.require(m_World); }
 
-        void onDraw(const ryn::FrameTime& time, core::EditorSettings& settings, core::EditorContext& ctx) override {
+        void onDraw(const ryn::Time& time, core::EditorSettings& settings, core::EditorContext& ctx) override {
             drawToolbar();
             ImGui::Separator();
 
@@ -98,7 +97,7 @@ export namespace rynd::panel {
             baseFlags |= ImGuiTreeNodeFlags_SpanAvailWidth;
             baseFlags |= ImGuiTreeNodeFlags_NoTreePushOnOpen;
 
-            m_World->Query.foreach<Excl<comp::Hierarchy>>([&](Entity e) { drawTreeNode(e, true, baseFlags); });
+            m_World->Query.foreach<QueryExcl<comp::Hierarchy>>([&](Entity e) { drawTreeNode(e, true, baseFlags); });
 
             regionEnd();
         }
@@ -231,7 +230,7 @@ export namespace rynd::panel {
                 }
             else if (bothOrphans) { // Case: Range selection over orphans (entities not belonging to the hierarchy)
                 bool capturing = false;
-                m_World->Query.foreach<Excl<comp::Hierarchy>>([&](Entity walker) {
+                m_World->Query.foreach<QueryExcl<comp::Hierarchy>>([&](Entity walker) {
                     bool isBoundary = (walker == e1 || walker == e2);
                     if (isBoundary) capturing = !capturing;
                     if (capturing || isBoundary) m_Selection.insert(walker);

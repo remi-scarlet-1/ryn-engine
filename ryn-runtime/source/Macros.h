@@ -4,7 +4,7 @@
 #define RYN_DEFINE_CONCAT(a, b)      RYN_DEFINE_CONCAT_IMPL(a, b)
 
 #define RYN_TYPE_REFLECTION_KEEP(Type)                                                                                                     \
-    static_assert(::ryn::reflection::IsType<Type>,                                                                                         \
+    static_assert(::ryn::IsType<Type>,                                                                                         \
                   "REFLECTION ERROR: " #Type " is not reflectable. "                                                                       \
                   "Ensure it inherits either from ryn::reflection::StaticType<Category, Name> or "                                         \
                   "ryn::reflection::DynamicType<Base, Name>");                                                                             \

@@ -12,8 +12,6 @@ export import Ryntime.Core.Reflection;
 export import Ryntime.Core.Primitive;
 export import Ryntime.Core.Container;
 
-using namespace ryn::reflection;
-
 export namespace ryn {
     class IServiceLocator;
 
@@ -25,9 +23,9 @@ export namespace ryn {
         virtual inline void onAttach([[maybe_unused]] IServiceLocator& locator) {}
         virtual inline void onDetach() {}
 
-        virtual inline void onBeginFrame([[maybe_unused]] const FrameTime& time) {}
-        virtual inline void onUpdate([[maybe_unused]] const FrameTime& time) {}
-        virtual inline void onEndFrame([[maybe_unused]] const FrameTime& time) {}
+        virtual inline void onBeginFrame([[maybe_unused]] const Time& time) {}
+        virtual inline void onUpdate([[maybe_unused]] const Time& time) {}
+        virtual inline void onEndFrame([[maybe_unused]] const Time& time) {}
 
         virtual inline void onEvent([[maybe_unused]] EventListener& listener) {}
 
@@ -130,8 +128,8 @@ namespace ryn {
         EventInterceptor                      m_EventInterceptor;
         std::vector<Box<IService>>            m_Services;
         std::unordered_map<TypeID, IService*> m_ServiceLUT;
-        Clock                                 m_Clock;
-        FrameTime                             m_FrameTime;
+        Timer                                 m_Clock;
+        Time                             m_FrameTime;
 
         void      pushService(TypeID typeId, Box<IService>&& serviceBox) override;
         void      popService() override;
