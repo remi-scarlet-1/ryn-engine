@@ -12,6 +12,8 @@ import :EditorTypeCategory;
 //  - allow saving of panel layout (with the help of the ImGui .ini thing)
 //  - have a titlebar which automatically discovers all available panels and allows to make/close(destry) them on the fly
 
+// TODO: rewrite Hierarchy/Registry panels to improve performance and tie them in with EditorSettings/EditorContext
+
 using ryn::service::Entity;
 
 export namespace rynd {

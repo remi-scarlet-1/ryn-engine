@@ -32,12 +32,12 @@ export namespace rynd {
         }
 
     private:
-        EditorSettings m_EditorSettings;
-        EditorContext  m_EditorContext;
-
         ryn::IServiceLocator*   m_ServiceLocator  = nullptr;
         ryn::service::Window*   m_ServiceWindow   = nullptr;
         ryn::service::Graphics* m_ServiceGraphics = nullptr;
+
+        EditorSettings m_EditorSettings;
+        EditorContext  m_EditorContext;
 
         struct PanelEntry {
             ryn::Box<IEditorPanel> Instance;
