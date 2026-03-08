@@ -6,6 +6,13 @@ module;
 export module Ryntime.Container:Box;
 
 export namespace ryn {
+    /**
+     * @struct  Box
+     * @brief   A unique pointer with a type-erased deleter for safe cross-DLL destruction.
+     * @details Captures the destruction context at the allocation site to prevent CRT mismatches.
+     *          Ideal for heap allocated objects that will or may travel across DLL boundries.
+     * @tparam  T Type of the wrapped pointer.
+     */
     template<typename T>
     struct [[nodiscard]] Box {
         using Pointer = T*;

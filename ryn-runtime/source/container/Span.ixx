@@ -5,6 +5,13 @@ module;
 export module Ryntime.Container:Span;
 
 export namespace ryn {
+    /**
+     * @struct  Span
+     * @brief   A non-owning view over a contiguous sequence of objects.
+     * @details Provides a lightweight interface for accessing arrays or buffers without managing their lifetime.
+     *          Bounds are validated via assertions to ensure safe indexing during development.
+     * @tparam  T Type of the elements in the contiguous memory.
+     */
     template<typename T>
     struct [[nodiscard]] Span {
         using ValueType = T;
