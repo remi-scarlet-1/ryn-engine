@@ -6,6 +6,8 @@ module;
 
 module Ryndition.Detail.ImGuiBackend;
 
+RYN_SCOPE_FILE("ImGuiBackend");
+
 namespace {
     constexpr auto HLSL_VERTEX_SHADER = R"(
             cbuffer Constants {

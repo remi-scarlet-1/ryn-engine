@@ -42,22 +42,23 @@
     namespace ryn::debug {
         namespace {
             template<typename T = void>
-            struct ScopeFileName {
-                static constexpr auto value = "Unknown";
+            struct ScopeFile {
+                static constexpr const char* value = "Unknown";
+                static constexpr       bool  defined = false;
             };
         }
 
-        struct ScopeLocalTag {};
+        struct ScopeLocal {};
 
         template<typename T = void>
         [[maybe_unused]] static consteval const char* resolveScopeFile() {
-            return ScopeFileName<T>::value;
+            return ScopeFile<T>::value;
         }
-        [[maybe_unused]] static consteval const char* resolveScopeLocal(ScopeLocalTag) { return nullptr; }
+        [[maybe_unused]] static consteval const char* resolveScopeLocal(ScopeLocal) { return nullptr; }
         [[maybe_unused]] static consteval const char* resolveScopeLocal(const char* s) { return s; }
     }
 
-    static constexpr ::ryn::debug::ScopeLocalTag s_RynScopeLocal;
+    static constexpr ::ryn::debug::ScopeLocal s_RynScopeLocal;
 // clang-format on
 
     #if defined(_MSC_VER)
@@ -75,8 +76,9 @@
         namespace ryn::debug {                                                                                                             \
             namespace {                                                                                                                    \
                 template<>                                                                                                                 \
-                struct ScopeFileName<void> {                                                                                               \
-                    [[maybe_unused]] static constexpr const char* value = Name;                                                            \
+                struct ScopeFile<void> {                                                                                                   \
+                    [[maybe_unused]] static constexpr const char* value   = Name;                                                          \
+                    [[maybe_unused]] static constexpr bool        defined = true;                                                          \
                 };                                                                                                                         \
             }                                                                                                                              \
         }
@@ -88,12 +90,14 @@
 
     #define RYN_LOG(Level, Fmt, ...)                                                                                                       \
         do {                                                                                                                               \
+            static_assert(::ryn::debug::ScopeFile<>::defined,                                                                              \
+                          "RYN LOGGING ERROR: This translation unit is required to define a RYN_SCOPE_FILE(\"Category\")!");               \
             static constexpr const char* primary   = ::ryn::debug::resolveScopeFile();                                                     \
             static constexpr const char* secondary = ::ryn::debug::resolveScopeLocal(s_RynScopeLocal);                                     \
             if constexpr (secondary == nullptr) {                                                                                          \
                 ::ryn::Logger::message(Level, primary, Fmt __VA_OPT__(, ) __VA_ARGS__);                                                    \
             } else {                                                                                                                       \
-                ::ryn::Logger::messageLocal(Level, primary, secondary, Fmt __VA_OPT__(, ) __VA_ARGS__);                                    \
+                ::ryn::Logger::messageExt(Level, primary, secondary, Fmt __VA_OPT__(, ) __VA_ARGS__);                                      \
             }                                                                                                                              \
         } while (0)
 

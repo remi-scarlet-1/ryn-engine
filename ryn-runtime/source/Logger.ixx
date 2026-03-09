@@ -24,7 +24,7 @@ export namespace ryn {
         }
 
         template<typename... Args>
-        static void messageLocal(LogLevel level, const char* primary, const char* secondary, std::format_string<Args...> fmt, Args&&... args) {
+        static void messageExt(LogLevel level, const char* primary, const char* secondary, std::format_string<Args...> fmt, Args&&... args) {
             dispatch(level, primary, secondary, std::format(fmt, std::forward<Args>(args)...));
         }
 
