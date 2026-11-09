@@ -17,7 +17,7 @@ SeparateDefinitionBlocks: Leave
 MaxEmptyLinesToKeep: 1
 
 # Parameter Packing
-BinPackParameters: AlwaysOnePerLine
+BinPackParameters: OnePerLine
 BinPackArguments: false
 AlignAfterOpenBracket: true
 AllowAllParametersOfDeclarationOnNextLine: false
