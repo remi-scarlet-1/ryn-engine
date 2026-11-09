@@ -44,3 +44,4 @@ include(cmake/Ryn.cmake)
 
 # ===== Projects =====
 add_subdirectory(ryn-runtime)
+add_subdirectory(ryn-editor)
