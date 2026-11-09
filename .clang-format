@@ -17,9 +17,9 @@ SeparateDefinitionBlocks: Leave
 MaxEmptyLinesToKeep: 1
 
 # Parameter Packing
-BinPackParameters: false
+BinPackParameters: AlwaysOnePerLine
 BinPackArguments: false
-AlignAfterOpenBracket: Align
+AlignAfterOpenBracket: true
 AllowAllParametersOfDeclarationOnNextLine: false
 
 # Compactness Logic
@@ -53,7 +53,7 @@ FixNamespaceComments: false
 BreakBeforeBraces: Custom
 BraceWrapping:
   AfterClass: false
-  AfterControlStatement: false
+  AfterControlStatement: Never
   AfterFunction: false
   AfterNamespace: false
   AfterStruct: false
