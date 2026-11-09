@@ -43,3 +43,4 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 include(cmake/Ryn.cmake)
 
 # ===== Projects =====
+add_subdirectory(ryn-runtime)
