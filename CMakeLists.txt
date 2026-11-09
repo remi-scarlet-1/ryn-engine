@@ -45,3 +45,4 @@ include(cmake/Ryn.cmake)
 # ===== Projects =====
 add_subdirectory(ryn-runtime)
 add_subdirectory(ryn-editor)
+add_subdirectory(ryn-game)
