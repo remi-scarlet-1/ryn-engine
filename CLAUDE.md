@@ -4,6 +4,36 @@
 
 - Use C++ modules (`.ixx`) for all engine code. Use headers only for things modules can't express: macros
   (export/log/assert macros, RYN_PLUGIN) and similar preprocessor-only definitions.
+- A subdirectory made of module partitions has one primary module file named `_Mod.ixx` that collects and
+  re-exports them, so it sorts to the top of the directory and the path alone says what it bundles.
+  Examples: `source/core/_Mod.ixx` is the primary `ryn.core` module; `source/internal/_Mod.ixx` is the primary
+  `ryn.internal` module. Umbrella modules that re-export whole modules (e.g. `source/Ryn.ixx`) are not primary
+  modules and keep their own names.
+- Module names follow who may import them, not which binary they live in:
+  - `ryn`, `ryn.core`, `ryn.platform`, ...: public engine API in the runtime, importable by plugins.
+  - `ryn.internal`: runtime-private (private CMake file set), never importable by plugins.
+  - `ryn.editor`: the editor plugin.
+  - Game code never uses `ryn.*`; it uses its own prefix (e.g. `game.*`).
+
+## Naming
+
+- Function pointers (members, variables and function pointer types) start with `Fn`: `FnConstruct`, `FnPluginGetDesc`.
+- Function pointers meant as callbacks, invoked by someone else in response to an event rather than called at will,
+  start with `On` instead: `OnLoad`, `OnUnload`.
+- `Desc` abbreviates "descriptor" everywhere (`PluginDesc`, `PLUGIN_GET_DESC_SYMBOL`).
+
+## Documentation
+
+- Not everything needs documenting. Three comment styles, by audience:
+  - `/** ... */` (Doxygen style): longer documentation for consumers of an entity (types, functions, variables).
+  - `///`: a one-line description for consumers, when that is all an entity needs.
+  - `//`: notes for engine developers about internals and complex code. Belongs in implementation, not in
+    consumer-facing declarations.
+- A `/** ... */` block uses these sections, in this order, omitting the ones that don't apply: `@brief`, `@details`,
+  `@tparam`, `@param`, `@return`, `@warning`, `@todo`.
+- `@brief` is short and declarative: it states what the entity does for its consumer, never how it is implemented.
+- `@details` adds what a consumer needs to know (behaviour, constraints, ownership). It only describes the
+  implementation when that is so complex the entity would be incomprehensible otherwise.
 
 ## Standard library
 
