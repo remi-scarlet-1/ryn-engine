@@ -3,11 +3,11 @@
 import ryn;
 
 namespace {
-    constexpr const char* LOG = "Editor";
+    constexpr auto LOG = "Editor";
 
     struct EditorRoot {
-        void onLoad() { ryn::logMessage(ryn::LogLevel::Info, LOG, "Hello from the editor plugin"); }
-        void onUnload() { ryn::logMessage(ryn::LogLevel::Info, LOG, "Goodbye from the editor plugin"); }
+        static void onLoad() { ryn::logMessage(ryn::LogLevel::Info, LOG, "Hello from the editor plugin"); }
+        static void onUnload() { ryn::logMessage(ryn::LogLevel::Info, LOG, "Goodbye from the editor plugin"); }
     };
 }
 

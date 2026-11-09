@@ -3,11 +3,11 @@
 import ryn;
 
 namespace {
-    constexpr const char* LOG = "Sandbox";
+    constexpr auto LOG = "Sandbox";
 
     struct SandboxRoot {
-        void onLoad() { ryn::logMessage(ryn::LogLevel::Info, LOG, "Hello from the sandbox plugin"); }
-        void onUnload() { ryn::logMessage(ryn::LogLevel::Info, LOG, "Goodbye from the sandbox plugin"); }
+        static void onLoad() { ryn::logMessage(ryn::LogLevel::Info, LOG, "Hello from the sandbox plugin"); }
+        static void onUnload() { ryn::logMessage(ryn::LogLevel::Info, LOG, "Goodbye from the sandbox plugin"); }
     };
 }
 
