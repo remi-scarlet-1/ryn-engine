@@ -1,48 +1,28 @@
 #pragma once
 
-#include <cstddef>
-#include <cstdint>
 #include <new>
 
-#include "ryn/Core.h"
+#include "ryn/Defines.h"
 
-namespace ryn {
-    // Bump whenever IPlugin or PluginInfo change shape. The runtime refuses plugins built against another version.
-    inline constexpr std::uint32_t PLUGIN_API_VERSION = 1;
-
-    class IPlugin {
-    public:
-        virtual ~IPlugin() = default;
-
-        virtual void onLoad()   = 0;
-        virtual void onUnload() = 0;
-    };
-
-    // Describes a plugin to the runtime. The runtime allocates `Size` bytes aligned to `Align`
-    // and asks the plugin to construct itself there, so the runtime owns the memory.
-    struct PluginInfo {
-        std::uint32_t ApiVersion;
-        const char*   Name;
-        std::size_t   Size;
-        std::size_t   Align;
-        IPlugin* (*Construct)(void* memory);
-    };
-
-    // Name of the symbol every plugin exports (see RYN_PLUGIN)
-    inline constexpr const char* PLUGIN_ENTRY_SYMBOL = "rynPluginInfo";
-    using PluginEntryFn                              = const PluginInfo* (*)();
-}
-
-// Place once in a plugin's .cpp to export it, e.g. RYN_PLUGIN(EditorPlugin, "Editor")
-#define RYN_PLUGIN(Type, DisplayName)                                                                                  \
-    static_assert(std::is_base_of_v<::ryn::IPlugin, Type>, #Type " must derive from ryn::IPlugin");                    \
-    RYN_PLUGIN_API const ::ryn::PluginInfo* rynPluginInfo() {                                                          \
-        static constexpr ::ryn::PluginInfo info{                                                                       \
-            .ApiVersion = ::ryn::PLUGIN_API_VERSION,                                                                   \
-            .Name       = DisplayName,                                                                                 \
-            .Size       = sizeof(Type),                                                                                \
-            .Align      = alignof(Type),                                                                               \
-            .Construct  = [](void* memory) -> ::ryn::IPlugin* { return ::new (memory) Type(); },                       \
+/**
+ * @brief   Exports a plugin to the runtime.
+ * @details Use once per plugin, in a .cpp that imports ryn. Defines the PLUGIN_GET_DESC_SYMBOL function.
+ * @param   RootType    Root type, must satisfy ryn::IsPluginRoot.
+ * @param   DisplayName Plugin name as a string literal.
+ */
+#define RYN_PLUGIN(RootType, DisplayName)                                                                              \
+    static_assert(::ryn::IsPluginRoot<RootType>,                                                                       \
+                  #RootType " must be default constructible, have onLoad() and onUnload(), and no virtual functions"); \
+    extern "C" RYN_EXPORT const ::ryn::PluginDesc* rynPluginGetDesc() {                                                \
+        static constexpr ::ryn::PluginDesc desc{                                                                       \
+            .AbiVersion  = ::ryn::PLUGIN_ABI_VERSION,                                                                  \
+            .Name        = DisplayName,                                                                                \
+            .RootSize    = sizeof(RootType),                                                                           \
+            .RootAlign   = alignof(RootType),                                                                          \
+            .FnConstruct = [](void* memory) { ::new (memory) RootType(); },                                            \
+            .FnDestruct  = [](void* root) { static_cast<RootType*>(root)->~RootType(); },                              \
+            .OnLoad      = [](void* root) { static_cast<RootType*>(root)->onLoad(); },                                 \
+            .OnUnload    = [](void* root) { static_cast<RootType*>(root)->onUnload(); },                               \
         };                                                                                                             \
-        return &info;                                                                                                  \
+        return &desc;                                                                                                  \
     }

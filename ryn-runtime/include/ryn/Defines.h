@@ -1,7 +1,7 @@
 #pragma once
 
-// RYN_API marks functions the runtime exports to plugins.
-// RYN_PLUGIN_API marks the entry point a plugin exports to the runtime.
+// RYN_API marks functions and classes the runtime exports to plugins.
+// RYN_EXPORT is used directly for the entry point a plugin exports to the runtime (see RYN_PLUGIN).
 #if defined(RYN_PLATFORM_WINDOWS)
     #define RYN_EXPORT __declspec(dllexport)
     #define RYN_IMPORT __declspec(dllimport)
@@ -17,8 +17,6 @@
 #else
     #define RYN_API RYN_IMPORT
 #endif
-
-#define RYN_PLUGIN_API extern "C" RYN_EXPORT
 
 #if !defined(RYN_CONFIG_DEBUG) && !defined(RYN_CONFIG_RELEASE) && !defined(RYN_CONFIG_DIST)
     #error "Unknown configuration. Check CMake."

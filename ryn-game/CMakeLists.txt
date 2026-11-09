@@ -1,3 +1,4 @@
 ryn_add_plugin(RynGame
-    source/GamePlugin.cpp
+    PRIVATE
+    source/GameRoot.cpp
 )
