@@ -1,7 +1,6 @@
 /.idea/
 /.claude/
-/cmake-build/
-/cmake-build-debug/
-/cmake-build-release/
-/cmake-build-dist/
+
+/build/
+
 .mcp.json
