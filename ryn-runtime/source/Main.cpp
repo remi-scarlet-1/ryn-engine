@@ -6,7 +6,7 @@ import ryn.internal;
 
 namespace {
     constexpr auto LOG           = "Runtime";
-    constexpr auto GAME_PLUGIN   = "RynGame";
+    constexpr auto GAME_PLUGIN   = "RynSandbox"; // TODO(M4): read from the project file instead
     constexpr auto EDITOR_PLUGIN = "RynEditor";
 
     struct LaunchOptions {
