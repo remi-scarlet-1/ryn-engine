@@ -1,5 +1,6 @@
 #include "Entrypoint.h"
 #include "Prelude.h"
+import Ryntime.Logger;
 import Ryntime;
 import Ryndition.Editor;
 

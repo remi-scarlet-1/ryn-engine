@@ -7,6 +7,7 @@ module;
 #include <vector>
 
 export module Ryntime.Service.World:World;
+import Ryntime.Logger;
 export import Ryntime.Reflect;
 export import Ryntime.Core;
 
@@ -92,7 +93,7 @@ struct std::formatter<ryn::service::Entity> {
 
 template<>
 struct std::hash<ryn::service::Entity> {
-    size_t operator()(const ryn::service::Entity& e) const noexcept { return std::hash<ryn::service::Entity::IDType>{}(e); }
+    inline size_t operator()(const ryn::service::Entity& e) const noexcept { return std::hash<ryn::service::Entity::IDType>{}(e); }
 };
 
 namespace ryn::service {

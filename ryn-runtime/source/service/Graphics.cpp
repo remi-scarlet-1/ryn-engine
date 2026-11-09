@@ -6,12 +6,15 @@ module;
 #include <SwapChain.h>
 
 #include <EngineFactoryVk.h>
-#if defined(RYN_PLATFORM_WIN)
+#if D3D11_SUPPORTED
     #include <EngineFactoryD3D11.h>
+#endif
+#if D3D12_SUPPORTED
     #include <EngineFactoryD3D12.h>
 #endif
 
 module Ryntime.Service;
+import Ryntime.Logger;
 
 RYN_SCOPE_FILE("Service|Graphics");
 
@@ -50,12 +53,12 @@ namespace ryn::service {
 #if defined(RYN_PLATFORM_LINUX) || defined(RYN_PLATFORM_WIN)
             case GraphicsBackend::Vulkan: initVulkan(nativeWindow, swapchainDesc); break;
 #endif
-#if defined(RYN_PLATFORM_WIN)
+#if D3D12_SUPPORTED
             case GraphicsBackend::DirectX12: initD3D12(nativeWindow, swapchainDesc); break;
-
+#endif
+#if D3D11_SUPPORTED
             case GraphicsBackend::DirectX11: initD3D11(nativeWindow, swapchainDesc); break;
 #endif
-
             default: RYN_CRITICAL("Selected Graphics Backend is not supported on this platform!");
         }
 
@@ -111,7 +114,7 @@ namespace ryn::service {
         if (m_Device && m_Context) factory->CreateSwapChainVk(m_Device, m_Context, swapchainDesc, nativeWindow, &m_Swapchain);
     }
 
-#if defined(RYN_PLATFORM_WIN)
+#if D3D12_SUPPORTED
     void Graphics::initD3D12(const Diligent::NativeWindow& nativeWindow, const Diligent::SwapChainDesc& swapchainDesc) {
         RYN_TRACE("Initialize Diligent Graphics 'Direct3D 12'...");
         const auto factory = Diligent::GetEngineFactoryD3D12();
@@ -125,7 +128,9 @@ namespace ryn::service {
         factory->CreateDeviceAndContextsD3D12(info, &m_Device, &m_Context);
         if (m_Device && m_Context) factory->CreateSwapChainD3D12(m_Device, m_Context, swapchainDesc, {}, nativeWindow, &m_Swapchain);
     }
+#endif
 
+#if D3D11_SUPPORTED
     void Graphics::initD3D11(const Diligent::NativeWindow& nativeWindow, const Diligent::SwapChainDesc& swapchainDesc) {
         RYN_TRACE("Initialize Diligent Graphics 'Direct3D 11'...");
         const auto factory = Diligent::GetEngineFactoryD3D11();

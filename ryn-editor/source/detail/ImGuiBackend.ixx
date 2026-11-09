@@ -3,6 +3,7 @@ module;
 #include <cstdint>
 
 export module Ryndition.Detail.ImGuiBackend;
+import Ryntime.Logger;
 export import Ryntime;
 
 using namespace ryn::graphics;

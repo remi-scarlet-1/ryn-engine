@@ -3,6 +3,9 @@ module;
 #include <cstdint>
 
 export module Ryntime.Container:Span;
+import Ryntime.Logger;
+
+RYN_SCOPE_FILE("Container|Span");
 
 export namespace ryn {
     /**

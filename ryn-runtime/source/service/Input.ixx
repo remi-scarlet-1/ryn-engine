@@ -4,6 +4,7 @@ module;
 #include <cstdint>
 
 export module Ryntime.Service:Input;
+import Ryntime.Logger;
 export import Ryntime.Core;
 export import Ryntime.Reflect;
 

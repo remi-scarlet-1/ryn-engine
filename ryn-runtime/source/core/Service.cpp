@@ -4,6 +4,7 @@ module;
 #include <vector>
 
 module Ryntime.Core;
+import Ryntime.Logger;
 
 RYN_SCOPE_FILE("ServiceStack");
 

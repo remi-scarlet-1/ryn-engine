@@ -6,6 +6,7 @@ module;
 #include <vector>
 
 export module Ryntime.Reflect:TypeReflection;
+import Ryntime.Logger;
 export import Ryntime.Container;
 export import :TypeCommon;
 

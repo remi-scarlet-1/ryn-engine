@@ -7,6 +7,7 @@ module;
 #include <memory>
 
 module Ryndition.Editor;
+import Ryntime.Logger;
 
 RYN_SCOPE_FILE("Editor");
 

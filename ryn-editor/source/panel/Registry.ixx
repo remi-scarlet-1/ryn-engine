@@ -8,6 +8,7 @@ module;
 #include <vector>
 
 export module Ryndition.Panel:Registry;
+import Ryntime.Logger;
 export import Ryndition.Core;
 import Ryntime;
 

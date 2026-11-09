@@ -5,6 +5,7 @@ module;
 #include <string_view>
 
 module Ryntime.Service;
+import Ryntime.Logger;
 
 RYN_SCOPE_FILE("Service|Window");
 

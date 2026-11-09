@@ -4,6 +4,7 @@ module;
 #include <cstdint>
 
 export module Ryntime.Core:Time;
+import Ryntime.Logger;
 
 export namespace ryn {
     class Timer {

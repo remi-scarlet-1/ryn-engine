@@ -1,9 +1,13 @@
 module;
-#include "Prelude.h"
 #include <concepts>
+#include <cstddef>
 #include <utility>
+#include "Prelude.h"
 
 export module Ryntime.Container:Box;
+import Ryntime.Logger;
+
+RYN_SCOPE_FILE("Container|Box");
 
 export namespace ryn {
     /**

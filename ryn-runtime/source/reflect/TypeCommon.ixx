@@ -5,6 +5,7 @@ module;
 #include <functional>
 
 export module Ryntime.Reflect:TypeCommon;
+import Ryntime.Logger;
 export import Ryntime.Container;
 
 export namespace ryn {

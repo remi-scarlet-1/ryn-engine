@@ -3,6 +3,7 @@ module;
 #include <concepts>
 
 export module Ryntime.Core:ServiceEvent;
+import Ryntime.Logger;
 export import Ryntime.Reflect;
 
 export namespace ryn {

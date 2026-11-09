@@ -45,7 +45,7 @@ if(EXISTS "${DILIGENT_ERRORS_HPP}")
 
     if(NOT DILIGENT_ERRORS_CONTENT MATCHES "// RynPatched")
         string(REPLACE "throw std::runtime_error(std::move(msg));" "std::terminate();" DILIGENT_ERRORS_CONTENT "${DILIGENT_ERRORS_CONTENT}")
-        string(PREPEND DILIGENT_ERRORS_CONTENT "// RynPatched\n")
+        string(PREPEND DILIGENT_ERRORS_CONTENT "// RynPatched\n#include <exception>\n")
         file(WRITE "${DILIGENT_ERRORS_HPP}" "${DILIGENT_ERRORS_CONTENT}")
     endif()
 endif()
@@ -68,3 +68,11 @@ if(EXISTS "${DILIGENT_DEBUG_UTILS_HPP}")
         file(WRITE "${DILIGENT_DEBUG_UTILS_HPP}" "${DILIGENT_DEBUG_UTILS_CONTENT}")
     endif()
 endif()
+
+# Diligent's shared backend DLLs pass --version-script on MinGW, which only GNU ld
+# understands (lld rejects it). We link the static libs, so skip building the DLLs.
+foreach(target Diligent-GraphicsEngineVk-shared Diligent-Archiver-shared)
+    if(TARGET ${target})
+        set_target_properties(${target} PROPERTIES EXCLUDE_FROM_ALL ON)
+    endif()
+endforeach()

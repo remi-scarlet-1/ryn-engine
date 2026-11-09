@@ -6,6 +6,7 @@ module;
 #include <vector>
 
 export module Ryndition.Editor;
+import Ryntime.Logger;
 export import Ryndition.Core;
 export import Ryndition.Detail.ImGuiBackend;
 export import Ryndition.Panel;
@@ -14,7 +15,7 @@ import Ryntime;
 using rynd::detail::ImGuiBackend;
 
 export namespace rynd {
-    class RYN_API Editor final : public ryn::DynamicType<ryn::IService, "rynd::Editor"> {
+    class Editor final : public ryn::DynamicType<ryn::IService, "rynd::Editor"> {
     public:
         Editor()           = default;
         ~Editor() override = default;

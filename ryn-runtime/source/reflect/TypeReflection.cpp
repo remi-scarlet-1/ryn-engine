@@ -6,6 +6,7 @@ module;
 #include <vector>
 
 module Ryntime.Reflect;
+import Ryntime.Logger;
 
 RYN_SCOPE_FILE("TypeReflection");
 

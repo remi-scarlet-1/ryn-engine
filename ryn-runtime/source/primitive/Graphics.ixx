@@ -38,6 +38,7 @@ module;
 #include <SwapChain.h>
 
 export module Ryntime.Primitive:Graphics;
+import Ryntime.Logger;
 
 /* OTHER DILIGENT ALIASES */
 export namespace ryn::graphics {

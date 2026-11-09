@@ -3,6 +3,7 @@ module;
 #include <cstdint>
 
 export module Ryntime.Container:Identity;
+import Ryntime.Logger;
 
 export namespace ryn {
     /**

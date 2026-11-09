@@ -2,6 +2,7 @@ module;
 #include "Prelude.h"
 
 module Ryntime.Service;
+import Ryntime.Logger;
 
 RYN_SCOPE_FILE("Service|Input");
 

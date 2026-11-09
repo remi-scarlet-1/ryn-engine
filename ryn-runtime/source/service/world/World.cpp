@@ -5,6 +5,7 @@ module;
 #include <vector>
 
 module Ryntime.Service.World;
+import Ryntime.Logger;
 
 RYN_SCOPE_FILE("Service|World");
 

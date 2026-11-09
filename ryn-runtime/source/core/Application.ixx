@@ -2,6 +2,7 @@ module;
 #include "Prelude.h"
 
 export module Ryntime.Core:Application;
+import Ryntime.Logger;
 export import Ryntime.Container;
 export import :ServiceEvent;
 export import :Service;

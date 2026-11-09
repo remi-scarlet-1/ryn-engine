@@ -5,6 +5,7 @@ module;
 #include <vector>
 
 export module Ryndition.Core:EditorPanel;
+import Ryntime.Logger;
 export import Ryntime;
 import :EditorTypeCategory;
 

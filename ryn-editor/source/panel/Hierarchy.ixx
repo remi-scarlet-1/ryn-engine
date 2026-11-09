@@ -7,6 +7,7 @@ module;
 #include <vector>
 
 export module Ryndition.Panel:Hierarchy;
+import Ryntime.Logger;
 export import Ryndition.Core;
 import Ryntime;
 

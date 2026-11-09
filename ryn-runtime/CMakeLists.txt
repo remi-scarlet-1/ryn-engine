@@ -28,6 +28,11 @@ target_compile_definitions(RynRuntime
     RYN_RUNTIME
 )
 
+if(MINGW)
+    # Clang's implicit module initializers aren't dllexport'ed; export everything instead.
+    target_link_options(RynRuntime PRIVATE -Wl,--export-all-symbols)
+endif()
+
 target_include_directories(RynRuntime
     PUBLIC source
     PRIVATE source
@@ -44,9 +49,14 @@ target_link_libraries(RynRuntime
     EnTT::EnTT
     Diligent-GraphicsEngine
     Diligent-GraphicsEngineVk-static
-    $<$<PLATFORM_ID:Windows>:Diligent-GraphicsEngineD3D12-static>
-    $<$<PLATFORM_ID:Windows>:Diligent-GraphicsEngineD3D11-static>
 )
+
+if(WIN32 AND MSVC)
+    target_link_libraries(RynRuntime PRIVATE
+        Diligent-GraphicsEngineD3D12-static
+        Diligent-GraphicsEngineD3D11-static
+    )
+endif()
 
 target_sources(RynRuntime
     PUBLIC FILE_SET HEADERS BASE_DIRS source FILES

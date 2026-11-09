@@ -4,6 +4,7 @@ module;
 #include <cstdint>
 
 export module Ryntime.Service:Graphics;
+import Ryntime.Logger;
 export import Ryntime.Core;
 export import Ryntime.Reflect;
 
@@ -50,8 +51,10 @@ export namespace ryn::service {
         graphics::SharedRef<graphics::ISwapchain> m_Swapchain;
 
         void initVulkan(const Diligent::NativeWindow& nativeWindow, const Diligent::SwapChainDesc& swapchainDesc);
-#if defined(RYN_PLATFORM_WIN)
+#if D3D12_SUPPORTED
         void initD3D12(const Diligent::NativeWindow& nativeWindow, const Diligent::SwapChainDesc& swapchainDesc);
+#endif
+#if D3D11_SUPPORTED
         void initD3D11(const Diligent::NativeWindow& nativeWindow, const Diligent::SwapChainDesc& swapchainDesc);
 #endif
     };

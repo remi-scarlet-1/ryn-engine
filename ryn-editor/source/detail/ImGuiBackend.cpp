@@ -5,6 +5,7 @@ module;
 #include <vector>
 
 module Ryndition.Detail.ImGuiBackend;
+import Ryntime.Logger;
 
 RYN_SCOPE_FILE("ImGuiBackend");
 

@@ -2,6 +2,7 @@ module;
 #include "Prelude.h"
 
 export module Ryntime.Game:Hierarchy;
+import Ryntime.Logger;
 export import Ryntime.Service.World;
 export import Ryntime.Reflect;
 

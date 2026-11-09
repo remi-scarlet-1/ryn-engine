@@ -12,6 +12,7 @@ export import Ryntime.Primitive;
 export import Ryntime.Container;
 export import :ServiceEvent;
 export import :Time;
+import Ryntime.Logger;
 
 export namespace ryn {
     class IServiceLocator;
