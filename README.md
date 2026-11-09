@@ -45,7 +45,3 @@ Tested on Windows with llvm-mingw (Clang 23, UCRT). On MinGW builds, Direct3D is
 ## Status
 
 Early development. The runtime, reflection system and editor shell are in place. Rendering beyond the editor UI, asset handling and scripting are next.
-
-## License
-
-See [LICENSE](LICENSE).
