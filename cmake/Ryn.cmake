@@ -3,6 +3,7 @@ add_library(RynCommon INTERFACE)
 
 target_compile_options(RynCommon INTERFACE
     -freflection
+    -fno-exceptions -fno-rtti
     -Wall -Wextra -Wpedantic -Werror
 )
 
