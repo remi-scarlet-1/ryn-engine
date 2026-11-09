@@ -24,7 +24,7 @@ An ECS-based game engine and editor written in modern C++23, inspired by O3DE an
 
 ## Building
 
-**Requirements:** CMake 3.28+, Ninja, and a C++23 compiler with module support (Clang 18+ or MSVC 17.10+). All dependencies (Diligent, EnTT, SDL3, ImGui, spdlog, glm) are fetched automatically on the first configure.
+**Requirements:** CMake 3.28+, Ninja, and a C++23 compiler with module support (currently only supporting Clang 18+ or LLVM-Mingw Clang on Windows). All dependencies (Diligent, EnTT, SDL3, ImGui, spdlog, glm) are fetched automatically on the first configure.
 
 ```sh
 cmake -S . -B cmake-build-debug -G Ninja -DCMAKE_BUILD_TYPE=Debug \
